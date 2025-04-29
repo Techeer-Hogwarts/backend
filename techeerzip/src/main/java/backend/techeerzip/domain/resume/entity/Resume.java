@@ -5,19 +5,18 @@ import java.time.LocalDateTime;
 import jakarta.persistence.*;
 
 import backend.techeerzip.domain.user.entity.User;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "resumes")
+@NoArgsConstructor
+@Table(name = "Resume")
 public class Resume {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -28,72 +27,75 @@ public class Resume {
     @Column(nullable = false)
     private boolean isDeleted;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false)
+    private User user;
+
     @Column(nullable = false, length = 1000)
     private String title;
 
     @Column(nullable = false, length = 1000)
     private String url;
 
-    @Column(name = "is_main", nullable = false)
+    @Column(nullable = false)
     private boolean isMain;
 
-    @Column(nullable = false, length = 50)
-    private String category;
+    @Column(nullable = false)
+    private int likeCount;
+
+    @Column(nullable = false)
+    private int viewCount;
 
     @Column(nullable = false, length = 100)
     private String position;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false, length = 50)
+    private String category;
 
-    @Column(name = "like_count", nullable = false)
-    private Integer likeCount;
-
-    @Column(name = "view_count", nullable = false)
-    private Integer viewCount;
-
-    public Resume(
-            String title, String url, boolean isMain, String category, String position, User user) {
+    public Resume(User user, String title, String url, String position, String category) {
+        this.user = user;
+        this.title = title;
+        this.url = url;
+        this.position = position;
+        this.category = category;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
-        this.title = title;
-        this.url = url;
-        this.isMain = isMain;
-        this.category = category;
-        this.position = position;
-        this.user = user;
+        this.isMain = false;
         this.likeCount = 0;
         this.viewCount = 0;
     }
 
-    public void update(String title, String url, boolean isMain, String category, String position) {
+    public void update(String title, String url, String position, String category) {
         this.title = title;
         this.url = url;
-        this.isMain = isMain;
-        this.category = category;
         this.position = position;
+        this.category = category;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setMain(boolean isMain) {
+        this.isMain = isMain;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void decrementLikeCount() {
+        this.likeCount--;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
 
     public void delete() {
         this.isDeleted = true;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void increaseLikeCount() {
-        this.likeCount++;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void decreaseLikeCount() {
-        this.likeCount--;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void increaseViewCount() {
-        this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
 }
