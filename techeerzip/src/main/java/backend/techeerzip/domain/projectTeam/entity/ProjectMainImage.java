@@ -1,19 +1,18 @@
-package backend.techeerzip.domain.bookmark.entity;
+package backend.techeerzip.domain.projectTeam.entity;
 
-import backend.techeerzip.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "bookmarks", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "content_id", "category"})
-})
-public class Bookmark {
+@Table(name = "project_main_images")
+public class ProjectMainImage {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,29 +26,23 @@ public class Bookmark {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    @Column(name = "content_id", nullable = false)
-    private Long contentId;
-
-    @Column(nullable = false, length = 50)
-    private String category;
+    @Column(nullable = false, length = 3000)
+    private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "project_team_id", nullable = false)
+    private ProjectTeam projectTeam;
 
-    public Bookmark(Long contentId, String category, User user) {
+    public ProjectMainImage(String imageUrl, ProjectTeam projectTeam) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
-        this.contentId = contentId;
-        this.category = category;
-        this.user = user;
+        this.imageUrl = imageUrl;
+        this.projectTeam = projectTeam;
     }
 
     public void delete() {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
-
-    // TODO: 필요한 필드 추가
 } 

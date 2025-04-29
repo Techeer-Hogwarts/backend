@@ -11,6 +11,4 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BlogService {
     private final BlogRepository blogRepository;
-
-    // TODO: 필요한 서비스 메서드 구현
 } 

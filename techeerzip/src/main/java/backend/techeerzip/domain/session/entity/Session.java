@@ -10,13 +10,14 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "sessions")
 public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false)
@@ -26,24 +27,24 @@ public class Session {
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
-    private Boolean isDeleted = false;
+    private boolean isDeleted;
 
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(nullable = false)
-    private Integer likeCount = 0;
+    @Column(name = "like_count", nullable = false)
+    private Integer likeCount;
 
-    @Column(nullable = false)
-    private Integer viewCount = 0;
+    @Column(name = "view_count", nullable = false)
+    private Integer viewCount;
 
     @Column(nullable = false, length = 3000)
     private String thumbnail;
 
-    @Column(length = 3000)
+    @Column(name = "video_url", length = 3000)
     private String videoUrl;
 
-    @Column(length = 3000)
+    @Column(name = "file_url", length = 3000)
     private String fileUrl;
 
     @Column(nullable = false, length = 50)
@@ -57,4 +58,55 @@ public class Session {
 
     @Column(nullable = false, length = 50)
     private String position;
+
+    public Session(String title, String thumbnail, String videoUrl, String fileUrl,
+                  String presenter, String date, String category, String position, User user) {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.isDeleted = false;
+        this.title = title;
+        this.likeCount = 0;
+        this.viewCount = 0;
+        this.thumbnail = thumbnail;
+        this.videoUrl = videoUrl;
+        this.fileUrl = fileUrl;
+        this.presenter = presenter;
+        this.date = date;
+        this.category = category;
+        this.position = position;
+        this.user = user;
+    }
+
+    public void update(String title, String thumbnail, String videoUrl, String fileUrl,
+                      String presenter, String date, String category, String position) {
+        this.title = title;
+        this.thumbnail = thumbnail;
+        this.videoUrl = videoUrl;
+        this.fileUrl = fileUrl;
+        this.presenter = presenter;
+        this.date = date;
+        this.category = category;
+        this.position = position;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount--;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void increaseViewCount() {
+        this.viewCount++;
+        this.updatedAt = LocalDateTime.now();
+    }
 } 
