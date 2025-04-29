@@ -34,7 +34,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/v3/api-docs/**", "/api/v1/docs/**", "/api/v1/docs").authenticated()
                 .anyRequest().permitAll())
-            .httpBasic();
+            .httpBasic(httpBasic -> httpBasic.realmName("Swagger API Documentation"));
 
         return http.build();
     }
