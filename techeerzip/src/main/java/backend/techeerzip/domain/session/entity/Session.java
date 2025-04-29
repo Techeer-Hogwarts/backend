@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "sessions")
+@Table(name = "Session")
 public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "userId", nullable = false)
     private User user;
 
     @Column(nullable = false)
@@ -34,19 +34,19 @@ public class Session {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(name = "like_count", nullable = false)
-    private Integer likeCount;
+    @Column(name = "likeCount", nullable = false)
+    private int likeCount;
 
-    @Column(name = "view_count", nullable = false)
-    private Integer viewCount;
+    @Column(name = "viewCount", nullable = false)
+    private int viewCount;
 
     @Column(nullable = false, length = 3000)
     private String thumbnail;
 
-    @Column(name = "video_url", length = 3000)
+    @Column(name = "videoUrl", length = 3000)
     private String videoUrl;
 
-    @Column(name = "file_url", length = 3000)
+    @Column(name = "fileUrl", length = 3000)
     private String fileUrl;
 
     @Column(nullable = false, length = 50)
