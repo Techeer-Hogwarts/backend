@@ -35,27 +35,27 @@
     </appender>
 
     <!-- Root Logger -->
-    <root level="${LOGGER_LEVEL:-DEBUG}">
+    <root level="${LOGGER_LEVEL:-INFO}">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
         <appender-ref ref="ERROR_FILE" />
     </root>
 
     <!-- Application Logger -->
-    <logger name="backend.techeerzip" level="DEBUG" additivity="false">
+    <logger name="backend.techeerzip" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
         <appender-ref ref="ERROR_FILE" />
     </logger>
 
     <!-- Spring Framework Logger -->
-    <logger name="org.springframework" level="DEBUG" additivity="false">
+    <logger name="org.springframework" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
     </logger>
 
     <!-- Hibernate Logger -->
-    <logger name="org.hibernate" level="DEBUG" additivity="false">
+    <logger name="org.hibernate" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
     </logger>
