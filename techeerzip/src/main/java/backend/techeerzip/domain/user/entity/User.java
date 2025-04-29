@@ -17,6 +17,7 @@ import backend.techeerzip.domain.like.entity.Like;
 import backend.techeerzip.domain.permissionRequest.entity.PermissionRequest;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.resume.entity.Resume;
+import backend.techeerzip.domain.role.entity.Role;
 import backend.techeerzip.domain.session.entity.Session;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.userExperience.entity.UserExperience;

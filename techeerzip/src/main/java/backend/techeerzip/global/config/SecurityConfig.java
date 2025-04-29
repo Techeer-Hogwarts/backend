@@ -39,7 +39,7 @@ public class SecurityConfig {
                                         .authenticated()
                                         .anyRequest()
                                         .permitAll())
-                .httpBasic();
+                .httpBasic(httpBasic -> httpBasic.realmName("Swagger API Documentation"));
 
         return http.build();
     }

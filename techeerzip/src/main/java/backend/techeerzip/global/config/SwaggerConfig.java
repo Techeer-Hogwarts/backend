@@ -16,20 +16,19 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         Info info = new Info().title("TecheerZip API Docs").version("1.0").description("API 명세서");
 
-        // Security 스키마 설정
+        // Security 스키마 설정 - 쿠키 기반 인증
         SecurityScheme securityScheme =
                 new SecurityScheme()
-                        .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT")
-                        .in(SecurityScheme.In.HEADER)
-                        .name("Authorization");
+                        .type(SecurityScheme.Type.APIKEY)
+                        .in(SecurityScheme.In.COOKIE)
+                        .name("access_token")
+                        .description("JWT token in cookie");
 
         // Security 요청 설정
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearerAuth");
+        SecurityRequirement securityRequirement = new SecurityRequirement().addList("cookieAuth");
 
         return new OpenAPI()
-                .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
+                .components(new Components().addSecuritySchemes("cookieAuth", securityScheme))
                 .addSecurityItem(securityRequirement)
                 .info(info);
     }
