@@ -23,4 +23,4 @@ public class StudyMemberDto {
         private Long studyTeamId;
         private String role;
     }
-} 
+}

@@ -1,13 +1,14 @@
 package backend.techeerzip.domain.permissionRequest.entity;
 
-import backend.techeerzip.domain.user.entity.User;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+
+import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -57,4 +58,4 @@ public class PermissionRequest {
         this.status = StatusCategory.REJECTED;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

@@ -1,11 +1,13 @@
 package backend.techeerzip.domain.session.entity;
 
-import backend.techeerzip.domain.user.entity.User;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+
+import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -59,8 +61,16 @@ public class Session {
     @Column(nullable = false, length = 50)
     private String position;
 
-    public Session(String title, String thumbnail, String videoUrl, String fileUrl,
-                  String presenter, String date, String category, String position, User user) {
+    public Session(
+            String title,
+            String thumbnail,
+            String videoUrl,
+            String fileUrl,
+            String presenter,
+            String date,
+            String category,
+            String position,
+            User user) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -77,8 +87,15 @@ public class Session {
         this.user = user;
     }
 
-    public void update(String title, String thumbnail, String videoUrl, String fileUrl,
-                      String presenter, String date, String category, String position) {
+    public void update(
+            String title,
+            String thumbnail,
+            String videoUrl,
+            String fileUrl,
+            String presenter,
+            String date,
+            String category,
+            String position) {
         this.title = title;
         this.thumbnail = thumbnail;
         this.videoUrl = videoUrl;
@@ -109,4 +126,4 @@ public class Session {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

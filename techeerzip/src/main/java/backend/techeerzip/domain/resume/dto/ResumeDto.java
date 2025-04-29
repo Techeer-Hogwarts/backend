@@ -26,4 +26,4 @@ public class ResumeDto {
         private String githubUrl;
         private String blogUrl;
     }
-} 
+}

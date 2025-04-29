@@ -1,10 +1,11 @@
 package backend.techeerzip.domain.event.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import backend.techeerzip.domain.event.dto.EventDto;
 import backend.techeerzip.domain.event.service.EventService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/events")
@@ -23,4 +24,4 @@ public class EventController {
         // TODO: Implement getting all events
         return ResponseEntity.ok().build();
     }
-} 
+}

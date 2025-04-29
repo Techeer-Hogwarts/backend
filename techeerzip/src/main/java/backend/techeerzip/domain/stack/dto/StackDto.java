@@ -23,4 +23,4 @@ public class StackDto {
         private String category;
         private String iconUrl;
     }
-} 
+}

@@ -5,10 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class EventDto {
+
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Create {
+
         private String title;
         private String content;
         private String location;
@@ -20,6 +22,7 @@ public class EventDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Response {
+
         private Long id;
         private String title;
         private String content;
@@ -27,4 +30,4 @@ public class EventDto {
         private String startDate;
         private String endDate;
     }
-} 
+}

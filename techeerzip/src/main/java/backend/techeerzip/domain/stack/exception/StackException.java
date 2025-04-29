@@ -7,4 +7,4 @@ public class StackException extends BusinessException {
     public StackException(ErrorCode errorCode) {
         super(errorCode);
     }
-} 
+}

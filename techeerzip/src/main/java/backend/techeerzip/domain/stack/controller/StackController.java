@@ -1,10 +1,11 @@
 package backend.techeerzip.domain.stack.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import backend.techeerzip.domain.stack.dto.StackDto;
 import backend.techeerzip.domain.stack.service.StackService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/stacks")
@@ -23,4 +24,4 @@ public class StackController {
         // TODO: Implement getting stacks by category
         return ResponseEntity.ok().build();
     }
-} 
+}

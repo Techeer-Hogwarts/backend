@@ -7,4 +7,4 @@ public class EventException extends BusinessException {
     public EventException(ErrorCode errorCode) {
         super(errorCode);
     }
-} 
+}

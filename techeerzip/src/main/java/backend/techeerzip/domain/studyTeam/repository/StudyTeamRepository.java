@@ -1,9 +1,7 @@
 package backend.techeerzip.domain.studyTeam.repository;
 
-import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 
-public interface StudyTeamRepository extends JpaRepository<StudyTeam, Long> {
-} 
+public interface StudyTeamRepository extends JpaRepository<StudyTeam, Long> {}

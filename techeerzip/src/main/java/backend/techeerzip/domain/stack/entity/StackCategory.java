@@ -6,4 +6,4 @@ public enum StackCategory {
     DATABASE,
     DEVOPS,
     OTHER
-} 
+}

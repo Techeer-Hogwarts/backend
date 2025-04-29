@@ -1,11 +1,11 @@
 package backend.techeerzip.domain.bookmark.service;
 
-import backend.techeerzip.domain.bookmark.dto.BookmarkDto;
-import backend.techeerzip.domain.bookmark.entity.Bookmark;
-import backend.techeerzip.domain.bookmark.repository.BookmarkRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import backend.techeerzip.domain.bookmark.dto.BookmarkDto;
+import backend.techeerzip.domain.bookmark.repository.BookmarkRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -17,4 +17,4 @@ public class BookmarkService {
         // TODO: Implement bookmark creation logic
         return null;
     }
-} 
+}

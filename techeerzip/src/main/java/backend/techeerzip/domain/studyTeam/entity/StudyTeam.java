@@ -1,15 +1,16 @@
 package backend.techeerzip.domain.studyTeam.entity;
 
-import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
+
+import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -73,9 +74,17 @@ public class StudyTeam {
     private List<StudyResultImage> studyResultImages = new ArrayList<>();
 
     @Builder
-    public StudyTeam(boolean isRecruited, boolean isFinished, String name, String githubLink,
-                    String notionLink, String studyExplain, String goal, String rule,
-                    Integer recruitNum, String recruitExplain) {
+    public StudyTeam(
+            boolean isRecruited,
+            boolean isFinished,
+            String name,
+            String githubLink,
+            String notionLink,
+            String studyExplain,
+            String goal,
+            String rule,
+            Integer recruitNum,
+            String recruitExplain) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -93,9 +102,17 @@ public class StudyTeam {
         this.viewCount = 0;
     }
 
-    public void update(boolean isRecruited, boolean isFinished, String name, String githubLink,
-                      String notionLink, String studyExplain, String goal, String rule,
-                      Integer recruitNum, String recruitExplain) {
+    public void update(
+            boolean isRecruited,
+            boolean isFinished,
+            String name,
+            String githubLink,
+            String notionLink,
+            String studyExplain,
+            String goal,
+            String rule,
+            Integer recruitNum,
+            String recruitExplain) {
         this.isRecruited = isRecruited;
         this.isFinished = isFinished;
         this.name = name;
@@ -128,4 +145,4 @@ public class StudyTeam {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

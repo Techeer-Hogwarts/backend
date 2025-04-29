@@ -4,4 +4,4 @@ public enum StatusCategory {
     APPROVED,
     REJECT,
     PENDING
-} 
+}

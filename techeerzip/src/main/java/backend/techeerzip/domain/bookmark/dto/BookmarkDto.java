@@ -19,4 +19,4 @@ public class BookmarkDto {
         private String url;
         private Long userId;
     }
-} 
+}

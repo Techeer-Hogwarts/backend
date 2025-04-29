@@ -1,15 +1,17 @@
 package backend.techeerzip.domain.projectTeam.entity;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.*;
+
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.stack.entity.TeamStack;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -84,9 +86,19 @@ public class ProjectTeam {
     private List<ProjectMainImage> mainImages = new ArrayList<>();
 
     @Builder
-    public ProjectTeam(boolean isRecruited, boolean isFinished, String name, String githubLink,
-                      String notionLink, String projectExplain, Integer frontendNum, Integer backendNum,
-                      Integer devopsNum, Integer fullStackNum, Integer dataEngineerNum, String recruitExplain) {
+    public ProjectTeam(
+            boolean isRecruited,
+            boolean isFinished,
+            String name,
+            String githubLink,
+            String notionLink,
+            String projectExplain,
+            Integer frontendNum,
+            Integer backendNum,
+            Integer devopsNum,
+            Integer fullStackNum,
+            Integer dataEngineerNum,
+            String recruitExplain) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -106,9 +118,19 @@ public class ProjectTeam {
         this.viewCount = 0;
     }
 
-    public void update(boolean isRecruited, boolean isFinished, String name, String githubLink,
-                      String notionLink, String projectExplain, Integer frontendNum, Integer backendNum,
-                      Integer devopsNum, Integer fullStackNum, Integer dataEngineerNum, String recruitExplain) {
+    public void update(
+            boolean isRecruited,
+            boolean isFinished,
+            String name,
+            String githubLink,
+            String notionLink,
+            String projectExplain,
+            Integer frontendNum,
+            Integer backendNum,
+            Integer devopsNum,
+            Integer fullStackNum,
+            Integer dataEngineerNum,
+            String recruitExplain) {
         this.isRecruited = isRecruited;
         this.isFinished = isFinished;
         this.name = name;
@@ -143,4 +165,4 @@ public class ProjectTeam {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

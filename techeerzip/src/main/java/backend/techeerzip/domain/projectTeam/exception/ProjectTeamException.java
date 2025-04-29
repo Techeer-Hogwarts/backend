@@ -7,4 +7,4 @@ public class ProjectTeamException extends BusinessException {
     public ProjectTeamException(ErrorCode errorCode) {
         super(errorCode);
     }
-} 
+}

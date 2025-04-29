@@ -7,4 +7,4 @@ public class SessionException extends BusinessException {
     public SessionException(ErrorCode errorCode) {
         super(errorCode);
     }
-} 
+}

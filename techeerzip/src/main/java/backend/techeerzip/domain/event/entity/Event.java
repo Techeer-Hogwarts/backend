@@ -1,12 +1,13 @@
 package backend.techeerzip.domain.event.entity;
 
-import backend.techeerzip.domain.user.entity.User;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+
+import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -46,8 +47,13 @@ public class Event {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public Event(String category, String title, LocalDateTime startDate, LocalDateTime endDate,
-                String url, User user) {
+    public Event(
+            String category,
+            String title,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String url,
+            User user) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -59,8 +65,12 @@ public class Event {
         this.user = user;
     }
 
-    public void update(String category, String title, LocalDateTime startDate, LocalDateTime endDate,
-                      String url) {
+    public void update(
+            String category,
+            String title,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String url) {
         this.category = category;
         this.title = title;
         this.startDate = startDate;
@@ -73,4 +83,4 @@ public class Event {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

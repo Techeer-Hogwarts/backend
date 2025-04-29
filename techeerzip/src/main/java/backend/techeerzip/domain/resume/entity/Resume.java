@@ -1,12 +1,13 @@
 package backend.techeerzip.domain.resume.entity;
 
-import backend.techeerzip.domain.user.entity.User;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+
+import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -52,7 +53,8 @@ public class Resume {
     @Column(name = "view_count", nullable = false)
     private Integer viewCount;
 
-    public Resume(String title, String url, boolean isMain, String category, String position, User user) {
+    public Resume(
+            String title, String url, boolean isMain, String category, String position, User user) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -94,4 +96,4 @@ public class Resume {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

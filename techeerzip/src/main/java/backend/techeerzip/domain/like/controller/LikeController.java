@@ -1,10 +1,11 @@
 package backend.techeerzip.domain.like.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import backend.techeerzip.domain.like.dto.LikeDto;
 import backend.techeerzip.domain.like.service.LikeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/likes")
@@ -23,4 +24,4 @@ public class LikeController {
         // TODO: Implement like deletion
         return ResponseEntity.ok().build();
     }
-} 
+}

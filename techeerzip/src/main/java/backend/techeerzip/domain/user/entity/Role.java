@@ -1,15 +1,15 @@
 package backend.techeerzip.domain.user.entity;
 
-import backend.techeerzip.domain.user.entity.User;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -66,4 +66,4 @@ public class Role {
         this.parent = parent;
         this.parentId = parent.getId();
     }
-} 
+}

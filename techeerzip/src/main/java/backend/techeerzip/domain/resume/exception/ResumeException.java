@@ -7,4 +7,4 @@ public class ResumeException extends BusinessException {
     public ResumeException(ErrorCode errorCode) {
         super(errorCode);
     }
-} 
+}

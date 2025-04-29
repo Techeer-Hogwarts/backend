@@ -1,18 +1,22 @@
 package backend.techeerzip.domain.bookmark.entity;
 
-import backend.techeerzip.domain.user.entity.User;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+
+import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "bookmarks", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "content_id", "category"})
-})
+@Table(
+        name = "bookmarks",
+        uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"user_id", "content_id", "category"})
+        })
 public class Bookmark {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,4 +56,4 @@ public class Bookmark {
     }
 
     // TODO: 필요한 필드 추가
-} 
+}

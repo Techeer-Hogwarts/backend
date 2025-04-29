@@ -1,26 +1,27 @@
 package backend.techeerzip.domain.studyMember.entity;
 
+import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+
 import backend.techeerzip.domain.permissionRequest.entity.StatusCategory;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.domain.user.entity.User;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "study_members",
-       uniqueConstraints = {
-           @UniqueConstraint(
-               name = "uk_study_member",
-               columnNames = {"study_team_id", "user_id"}
-           )
-       })
+@Table(
+        name = "study_members",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_study_member",
+                    columnNames = {"study_team_id", "user_id"})
+        })
 public class StudyMember {
 
     @Id
@@ -61,8 +62,12 @@ public class StudyMember {
     private User user;
 
     @Builder
-    public StudyMember(boolean isLeader, Long studyTeamId, Long userId,
-                      String summary, StatusCategory status) {
+    public StudyMember(
+            boolean isLeader,
+            Long studyTeamId,
+            Long userId,
+            String summary,
+            StatusCategory status) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -88,4 +93,4 @@ public class StudyMember {
         this.isLeader = isLeader;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

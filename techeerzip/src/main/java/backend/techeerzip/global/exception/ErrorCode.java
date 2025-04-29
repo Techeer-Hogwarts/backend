@@ -1,7 +1,8 @@
 package backend.techeerzip.global.exception;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
+
+import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
@@ -30,12 +31,14 @@ public enum ErrorCode {
     // ProjectTeam
     PROJECT_TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "PT001", "Project team not found"),
     PROJECT_TEAM_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "PT002", "Project team already exists"),
-    PROJECT_TEAM_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "PT003", "Unauthorized to access this project team"),
+    PROJECT_TEAM_UNAUTHORIZED(
+            HttpStatus.UNAUTHORIZED, "PT003", "Unauthorized to access this project team"),
 
     // StudyMember
     STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SM001", "Study member not found"),
     STUDY_MEMBER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "SM002", "Study member already exists"),
-    STUDY_MEMBER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "SM003", "Unauthorized to access this study member"),
+    STUDY_MEMBER_UNAUTHORIZED(
+            HttpStatus.UNAUTHORIZED, "SM003", "Unauthorized to access this study member"),
 
     // Stack
     STACK_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "Stack not found"),
@@ -51,4 +54,4 @@ public enum ErrorCode {
         this.code = code;
         this.message = message;
     }
-} 
+}

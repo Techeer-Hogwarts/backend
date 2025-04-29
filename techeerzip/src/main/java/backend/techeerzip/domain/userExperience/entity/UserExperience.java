@@ -1,24 +1,25 @@
 package backend.techeerzip.domain.userExperience.entity;
 
-import backend.techeerzip.domain.user.entity.User;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+
+import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "user_experiences", 
-       uniqueConstraints = {
-           @UniqueConstraint(
-               name = "uk_user_experience",
-               columnNames = {"user_id", "position", "company_name", "start_date"}
-           )
-       })
+@Table(
+        name = "user_experiences",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_user_experience",
+                    columnNames = {"user_id", "position", "company_name", "start_date"})
+        })
 public class UserExperience {
 
     @Id
@@ -60,8 +61,14 @@ public class UserExperience {
     private User user;
 
     @Builder
-    public UserExperience(Long userId, String position, String companyName, LocalDateTime startDate,
-                         LocalDateTime endDate, String category, boolean isFinished) {
+    public UserExperience(
+            Long userId,
+            String position,
+            String companyName,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String category,
+            boolean isFinished) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -74,8 +81,13 @@ public class UserExperience {
         this.isFinished = isFinished;
     }
 
-    public void update(String position, String companyName, LocalDateTime startDate,
-                      LocalDateTime endDate, String category, boolean isFinished) {
+    public void update(
+            String position,
+            String companyName,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String category,
+            boolean isFinished) {
         this.position = position;
         this.companyName = companyName;
         this.startDate = startDate;
@@ -89,4 +101,4 @@ public class UserExperience {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

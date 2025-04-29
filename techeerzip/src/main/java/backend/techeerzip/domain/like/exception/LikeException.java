@@ -7,4 +7,4 @@ public class LikeException extends BusinessException {
     public LikeException(ErrorCode errorCode) {
         super(errorCode);
     }
-} 
+}

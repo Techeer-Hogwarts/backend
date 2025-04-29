@@ -1,10 +1,11 @@
 package backend.techeerzip.domain.bookmark.repository;
 
-import backend.techeerzip.domain.bookmark.entity.Bookmark;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import backend.techeerzip.domain.bookmark.entity.Bookmark;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     List<Bookmark> findByUserId(Long userId);
-} 
+}

@@ -1,14 +1,15 @@
 package backend.techeerzip.domain.stack.entity;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -58,4 +59,4 @@ public class Stack {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

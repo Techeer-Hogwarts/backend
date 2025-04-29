@@ -27,25 +27,31 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/v3/api-docs/**", "/api/v1/docs/**", "/api/v1/docs").authenticated()
-                .anyRequest().permitAll())
-            .httpBasic();
+        http.csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(
+                        auth ->
+                                auth.requestMatchers(
+                                                "/v3/api-docs/**",
+                                                "/api/v1/docs/**",
+                                                "/api/v1/docs")
+                                        .authenticated()
+                                        .anyRequest()
+                                        .permitAll())
+                .httpBasic();
 
         return http.build();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        UserDetails user = User.builder()
-            .username(swaggerUsername)
-            .password(passwordEncoder().encode(swaggerPassword))
-            .roles("USER")
-            .build();
+        UserDetails user =
+                User.builder()
+                        .username(swaggerUsername)
+                        .password(passwordEncoder().encode(swaggerPassword))
+                        .roles("USER")
+                        .build();
 
         return new InMemoryUserDetailsManager(user);
     }
@@ -54,4 +60,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-} 
+}

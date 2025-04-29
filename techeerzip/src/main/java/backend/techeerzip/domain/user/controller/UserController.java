@@ -7,4 +7,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/users")
 public class UserController {
     // TODO: 사용자 관련 API 구현
-} 
+}

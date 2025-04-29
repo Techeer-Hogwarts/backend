@@ -1,11 +1,12 @@
 package backend.techeerzip.domain.studyTeam.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -45,4 +46,4 @@ public class StudyResultImage {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

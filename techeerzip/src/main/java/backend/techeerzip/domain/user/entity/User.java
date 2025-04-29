@@ -1,5 +1,15 @@
 package backend.techeerzip.domain.user.entity;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.Array;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import backend.techeerzip.domain.blog.entity.Blog;
 import backend.techeerzip.domain.bookmark.entity.Bookmark;
 import backend.techeerzip.domain.event.entity.Event;
@@ -10,18 +20,10 @@ import backend.techeerzip.domain.resume.entity.Resume;
 import backend.techeerzip.domain.session.entity.Session;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.userExperience.entity.UserExperience;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Array;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -130,10 +132,25 @@ public class User {
     private List<UserExperience> experiences = new ArrayList<>();
 
     @Builder
-    public User(String name, String email, String nickname, Integer year, String password, boolean isLft,
-                String githubUrl, String mainPosition, String subPosition, String school, String profileImage,
-                String[] stack, boolean isAuth, Role role, String grade, String mediumUrl, String tistoryUrl,
-                String velogUrl) {
+    public User(
+            String name,
+            String email,
+            String nickname,
+            Integer year,
+            String password,
+            boolean isLft,
+            String githubUrl,
+            String mainPosition,
+            String subPosition,
+            String school,
+            String profileImage,
+            String[] stack,
+            boolean isAuth,
+            Role role,
+            String grade,
+            String mediumUrl,
+            String tistoryUrl,
+            String velogUrl) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -157,9 +174,19 @@ public class User {
         this.velogUrl = velogUrl;
     }
 
-    public void update(String name, String nickname, String githubUrl, String mainPosition, String subPosition,
-                      String school, String profileImage, String[] stack, String grade, String mediumUrl,
-                      String tistoryUrl, String velogUrl) {
+    public void update(
+            String name,
+            String nickname,
+            String githubUrl,
+            String mainPosition,
+            String subPosition,
+            String school,
+            String profileImage,
+            String[] stack,
+            String grade,
+            String mediumUrl,
+            String tistoryUrl,
+            String velogUrl) {
         this.name = name;
         this.nickname = nickname;
         this.githubUrl = githubUrl;
@@ -179,4 +206,4 @@ public class User {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

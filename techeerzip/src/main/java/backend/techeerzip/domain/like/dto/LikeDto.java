@@ -22,4 +22,4 @@ public class LikeDto {
         private Long targetId;
         private String targetType;
     }
-} 
+}

@@ -1,26 +1,27 @@
 package backend.techeerzip.domain.projectMember.entity;
 
+import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+
 import backend.techeerzip.domain.permissionRequest.entity.StatusCategory;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.user.entity.User;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "project_members",
-       uniqueConstraints = {
-           @UniqueConstraint(
-               name = "uk_project_member",
-               columnNames = {"project_team_id", "user_id"}
-           )
-       })
+@Table(
+        name = "project_members",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_project_member",
+                    columnNames = {"project_team_id", "user_id"})
+        })
 public class ProjectMember {
 
     @Id
@@ -64,8 +65,13 @@ public class ProjectMember {
     private User user;
 
     @Builder
-    public ProjectMember(boolean isLeader, String teamRole, Long projectTeamId, Long userId,
-                        String summary, StatusCategory status) {
+    public ProjectMember(
+            boolean isLeader,
+            String teamRole,
+            Long projectTeamId,
+            Long userId,
+            String summary,
+            StatusCategory status) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -93,4 +99,4 @@ public class ProjectMember {
         this.isLeader = isLeader;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

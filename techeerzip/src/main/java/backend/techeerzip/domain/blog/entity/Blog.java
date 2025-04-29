@@ -1,15 +1,22 @@
 package backend.techeerzip.domain.blog.entity;
 
 import backend.techeerzip.domain.user.entity.User;
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Builder;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -21,14 +28,14 @@ public class Blog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
-    private boolean isDeleted;
+    private boolean isDeleted = false;
 
     @Column(nullable = false, length = 1000)
     private String title;
@@ -51,10 +58,8 @@ public class Blog {
     @Column(length = 2000)
     private String thumbnail;
 
-    @ElementCollection
-    @CollectionTable(name = "blog_tags", joinColumns = @JoinColumn(name = "blog_id"))
-    @Column(name = "tag", length = 300)
-    private List<String> tags = new ArrayList<>();
+    @Column(name = "tag", columnDefinition = "text[]")
+    private List<String> tags = List.of();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -67,8 +72,16 @@ public class Blog {
     private Integer viewCount;
 
     @Builder
-    public Blog(String title, String url, LocalDateTime date, String author, String authorImage,
-                String category, String thumbnail, List<String> tags, User user) {
+    public Blog(
+            String title,
+            String url,
+            LocalDateTime date,
+            String author,
+            String authorImage,
+            String category,
+            String thumbnail,
+            List<String> tags,
+            User user) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -85,8 +98,15 @@ public class Blog {
         this.viewCount = 0;
     }
 
-    public void update(String title, String url, LocalDateTime date, String author, String authorImage,
-                      String category, String thumbnail, List<String> tags) {
+    public void update(
+            String title,
+            String url,
+            LocalDateTime date,
+            String author,
+            String authorImage,
+            String category,
+            String thumbnail,
+            List<String> tags) {
         this.title = title;
         this.url = url;
         this.date = date;
@@ -117,4 +137,4 @@ public class Blog {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

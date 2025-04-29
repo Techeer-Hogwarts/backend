@@ -1,10 +1,11 @@
 package backend.techeerzip.domain.studyMember.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import backend.techeerzip.domain.studyMember.dto.StudyMemberDto;
 import backend.techeerzip.domain.studyMember.service.StudyMemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/study-members")
@@ -13,7 +14,8 @@ public class StudyMemberController {
     private final StudyMemberService studyMemberService;
 
     @PostMapping
-    public ResponseEntity<StudyMemberDto.Response> createStudyMember(@RequestBody StudyMemberDto.Create request) {
+    public ResponseEntity<StudyMemberDto.Response> createStudyMember(
+            @RequestBody StudyMemberDto.Create request) {
         // TODO: Implement study member creation
         return ResponseEntity.ok().build();
     }
@@ -23,4 +25,4 @@ public class StudyMemberController {
         // TODO: Implement getting study members by study team ID
         return ResponseEntity.ok().build();
     }
-} 
+}

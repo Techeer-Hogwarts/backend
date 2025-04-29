@@ -27,4 +27,4 @@ public class StudyTeamDto {
         private String endDate;
         private Integer maxMemberCount;
     }
-} 
+}

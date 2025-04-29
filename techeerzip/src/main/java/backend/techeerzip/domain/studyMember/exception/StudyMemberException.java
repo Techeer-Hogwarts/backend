@@ -7,4 +7,4 @@ public class StudyMemberException extends BusinessException {
     public StudyMemberException(ErrorCode errorCode) {
         super(errorCode);
     }
-} 
+}

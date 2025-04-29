@@ -1,10 +1,11 @@
 package backend.techeerzip.domain.projectMember.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberDto;
 import backend.techeerzip.domain.projectMember.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/project-members")
@@ -13,7 +14,8 @@ public class ProjectMemberController {
     private final ProjectMemberService projectMemberService;
 
     @PostMapping
-    public ResponseEntity<ProjectMemberDto.Response> createProjectMember(@RequestBody ProjectMemberDto.Create request) {
+    public ResponseEntity<ProjectMemberDto.Response> createProjectMember(
+            @RequestBody ProjectMemberDto.Create request) {
         // TODO: Implement project member creation
         return ResponseEntity.ok().build();
     }
@@ -23,4 +25,4 @@ public class ProjectMemberController {
         // TODO: Implement getting project members by project team ID
         return ResponseEntity.ok().build();
     }
-} 
+}

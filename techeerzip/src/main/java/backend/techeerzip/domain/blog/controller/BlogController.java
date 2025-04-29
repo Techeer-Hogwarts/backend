@@ -7,4 +7,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/blogs")
 public class BlogController {
     // TODO: 블로그 관련 API 구현
-} 
+
+}
