@@ -13,14 +13,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "bookmarks",
+        name = "Bookmark",
         uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"user_id", "content_id", "category"})
+            @UniqueConstraint(columnNames = {"userId", "contentId", "category"})
         })
 public class Bookmark {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -31,17 +31,17 @@ public class Bookmark {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    @Column(name = "content_id", nullable = false)
-    private Long contentId;
+    @Column(name = "contentId", nullable = false)
+    private int contentId;
 
     @Column(nullable = false, length = 50)
     private String category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "userId", nullable = false)
     private User user;
 
-    public Bookmark(Long contentId, String category, User user) {
+    public Bookmark(int contentId, String category, User user) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
