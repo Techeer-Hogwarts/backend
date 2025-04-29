@@ -1,4 +1,4 @@
-package backend.techeerzip.global.entity.sync.entity;
+package backend.techeerzip.global.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
