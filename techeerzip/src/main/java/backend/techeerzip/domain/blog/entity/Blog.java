@@ -67,7 +67,7 @@ public class Blog {
     private String[] tags;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, foreignKey = @jakarta.persistence.ForeignKey(name = "\"Blog_userId_fkey\""))
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @jakarta.persistence.ForeignKey(name = "Blog_userId_fkey"))
     private User user;
 
     @Column(name = "like_count", nullable = false)

@@ -1,51 +1,79 @@
 package backend.techeerzip.domain.user.entity;
 
-import backend.techeerzip.global.entity.StatusCategory;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "permission_requests")
+@Table(name = "\"PermissionRequest\"")
 public class PermissionRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @SequenceGenerator(
+            name = "pr_id_seq_gen",
+            sequenceName = "\"PermissionRequest_id_seq\"",
+            allocationSize = 1
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pr_id_seq_gen")
+    private int id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(
+            name = "userId",
+            nullable = false
+    )
+    private int userId;
 
-    @Column(name = "requested_role_id", nullable = false)
-    private Long requestedRoleId;
+    @Column(
+            name = "requestedRoleId",
+            nullable = false
+    )
+    private int requestedRoleId;
 
-    @Column(nullable = false)
+    @CreationTimestamp
+    @Column(
+            name = "createdAt",
+            nullable = false,
+            updatable = false
+    )
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @UpdateTimestamp
+    @Column(
+            name = "updatedAt",
+            nullable = false
+    )
     private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(
+            name = "status",
+            nullable = false
+    )
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false,
-            foreignKey = @ForeignKey(name = "\"PermissionRequest_userId_fkey\""))
+    @JoinColumn(
+            name = "userId",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(
+                    name = "\"PermissionRequest_userId_fkey\""
+            )
+    )
     private User user;
 
     @Builder
-    public PermissionRequest(Long userId, Long requestedRoleId) {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    public PermissionRequest(Integer userId, Integer requestedRoleId) {
         this.userId = userId;
         this.requestedRoleId = requestedRoleId;
         this.status = StatusCategory.PENDING;

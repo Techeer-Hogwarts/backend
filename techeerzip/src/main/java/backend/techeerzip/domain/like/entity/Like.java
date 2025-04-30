@@ -39,7 +39,7 @@ public class Like {
     private String category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false, foreignKey = @ForeignKey(name = "\"Like_userId_fkey\""))
+    @JoinColumn(name = "userId", nullable = false, foreignKey = @ForeignKey(name = "Like_userId_fkey"))
     private User user;
 
     public Like(int contentId, String category, User user) {

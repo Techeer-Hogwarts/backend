@@ -58,7 +58,7 @@ public class StudyMember {
     private StudyTeam studyTeam;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "\"StudyMember_userId_fkey\""))
+    @JoinColumn(name = "user_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "StudyMember_userId_fkey"))
     private User user;
 
     @Builder

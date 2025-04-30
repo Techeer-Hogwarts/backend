@@ -14,37 +14,27 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "\"Resume\"")
+@Table(name = "Resume")
 public class Resume {
 
     @Id
     @SequenceGenerator(
             name = "resume_id_seq_gen",
-            sequenceName = "\"Resume_id_seq\"",
+            sequenceName = "Resume_id_seq",
             allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_id_seq_gen")
     private Integer id;
 
     @CreationTimestamp
-    @Column(
-            name = "createdAt",
-            nullable = false,
-            updatable = false
-    )
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(
-            name = "updatedAt",
-            nullable = false
-    )
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(
-            name = "isDeleted",
-            nullable = false
-    )
+    @Column(nullable = false)
     private boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,55 +42,30 @@ public class Resume {
             name = "userId",
             nullable = false,
             foreignKey = @ForeignKey(
-                    name = "\"Resume_userId_fkey\""
+                    name = "Resume_userId_fkey"
             )
     )
     private User user;
 
-    @Column(
-            name = "title",
-            nullable = false,
-            length = 1000
-    )
+    @Column(nullable = false, length = 1000)
     private String title;
 
-    @Column(
-            name = "url",
-            nullable = false,
-            length = 1000
-    )
+    @Column(nullable = false, length = 1000)
     private String url;
 
-    @Column(
-            name = "isMain",
-            nullable = false
-    )
+    @Column(nullable = false)
     private boolean isMain;
 
-    @Column(
-            name = "likeCount",
-            nullable = false
-    )
+    @Column(nullable = false)
     private int likeCount;
 
-    @Column(
-            name = "viewCount",
-            nullable = false
-    )
+    @Column(nullable = false)
     private int viewCount;
 
-    @Column(
-            name = "position",
-            nullable = false,
-            length = 100
-    )
+    @Column(nullable = false, length = 100)
     private String position;
 
-    @Column(
-            name = "category",
-            nullable = false,
-            length = 50
-    )
+    @Column(nullable = false, length = 50)
     private String category;
     public Resume(User user, String title, String url, String position, String category) {
         this.user = user;

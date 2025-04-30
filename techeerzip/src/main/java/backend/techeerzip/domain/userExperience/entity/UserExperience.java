@@ -16,9 +16,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "\"UserExperience\"",
+        name = "UserExperience",
         uniqueConstraints = @UniqueConstraint(
-                name = "\"UserExperience_userId_position_companyName_startDate_key\"",
+                name = "UserExperience_userId_position_companyName_startDate_key",
                 columnNames = {"userId", "position", "companyName", "startDate"}
         )
 )
@@ -27,75 +27,41 @@ public class UserExperience {
     @Id
     @SequenceGenerator(
             name = "ue_id_seq_gen",
-            sequenceName = "\"UserExperience_id_seq\"",
+            sequenceName = "UserExperience_id_seq",
             allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ue_id_seq_gen")
     private Integer id;
 
     @CreationTimestamp
-    @Column(
-            name = "createdAt",
-            nullable = false,
-            updatable = false
-    )
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(
-            name = "updatedAt",
-            nullable = false
-    )
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(
-            name = "isDeleted",
-            nullable = false
-    )
+    @Column(nullable = false)
     private boolean isDeleted;
 
-    @Column(
-            name = "userId",
-            nullable = false
-    )
+    @Column(nullable = false)
     private Integer userId;
 
-    @Column(
-            name = "position",
-            nullable = false,
-            length = 100
-    )
+    @Column(nullable = false, length = 100)
     private String position;
 
-    @Column(
-            name = "companyName",
-            nullable = false,
-            length = 200
-    )
+    @Column(nullable = false, length = 200)
     private String companyName;
 
-    @Column(
-            name = "startDate",
-            nullable = false
-    )
+    @Column(nullable = false)
     private LocalDateTime startDate;
 
-    @Column(
-            name = "endDate"
-    )
     private LocalDateTime endDate;
 
-    @Column(
-            name = "category",
-            nullable = false,
-            length = 100
-    )
+    @Column(nullable = false, length = 100)
     private String category;
 
-    @Column(
-            name = "isFinished",
-            nullable = false
-    )
+    @Column(nullable = false)
     private boolean isFinished;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -104,7 +70,7 @@ public class UserExperience {
             insertable = false,
             updatable = false,
             foreignKey = @ForeignKey(
-                    name = "\"UserExperience_userId_fkey\""
+                    name = "UserExperience_userId_fkey"
             )
     )
     private User user;

@@ -15,7 +15,6 @@ import backend.techeerzip.domain.blog.entity.Blog;
 import backend.techeerzip.domain.bookmark.entity.Bookmark;
 import backend.techeerzip.domain.event.entity.Event;
 import backend.techeerzip.domain.like.entity.Like;
-import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.resume.entity.Resume;
 import backend.techeerzip.domain.role.entity.Role;
