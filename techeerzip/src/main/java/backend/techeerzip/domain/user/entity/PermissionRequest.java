@@ -1,5 +1,6 @@
-package backend.techeerzip.domain.permissionRequest.entity;
+package backend.techeerzip.domain.user.entity;
 
+import backend.techeerzip.global.entity.StatusCategory;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
@@ -37,7 +38,8 @@ public class PermissionRequest {
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false,
+            foreignKey = @ForeignKey(name = "\"PermissionRequest_userId_fkey\""))
     private User user;
 
     @Builder
@@ -55,7 +57,7 @@ public class PermissionRequest {
     }
 
     public void reject() {
-        this.status = StatusCategory.REJECTED;
+        this.status = StatusCategory.REJECT;
         this.updatedAt = LocalDateTime.now();
     }
 }
