@@ -102,7 +102,7 @@ public class User {
     @Column(nullable = false, length = 1000)
     private String profileImage;
     @JdbcTypeCode(SqlTypes.ARRAY)
-    private String[] stack;
+    private List<String> stack;
     @Column(nullable = false)
     private boolean isAuth;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -132,7 +132,7 @@ public class User {
             String subPosition,
             String school,
             String profileImage,
-            String[] stack,
+            List<String> stack,
             boolean isAuth,
             Role role,
             String grade,
@@ -168,7 +168,7 @@ public class User {
             String subPosition,
             String school,
             String profileImage,
-            String[] stack,
+            List<String> stack,
             String grade,
             String mediumUrl,
             String tistoryUrl,
