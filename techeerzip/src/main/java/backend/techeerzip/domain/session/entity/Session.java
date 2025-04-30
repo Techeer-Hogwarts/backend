@@ -19,7 +19,7 @@ public class Session {
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "userId", nullable = false, foreignKey = @ForeignKey(name = "\"Session_userId_fkey\""))
     private User user;
 
     @Column(nullable = false)
