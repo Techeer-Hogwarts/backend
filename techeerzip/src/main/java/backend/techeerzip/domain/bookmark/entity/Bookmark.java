@@ -14,9 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "Bookmark",
-        uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"userId", "contentId", "category"})
-        })
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"userId", "contentId", "category"})})
 public class Bookmark {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +36,10 @@ public class Bookmark {
     private String category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false, foreignKey = @ForeignKey(name = "Bookmark_userId_fkey"))
+    @JoinColumn(
+            name = "userId",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "Bookmark_userId_fkey"))
     private User user;
 
     public Bookmark(int contentId, String category, User user) {

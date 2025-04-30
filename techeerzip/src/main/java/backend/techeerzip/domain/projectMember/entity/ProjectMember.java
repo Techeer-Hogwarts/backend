@@ -61,7 +61,10 @@ public class ProjectMember {
     private ProjectTeam projectTeam;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false,
+    @JoinColumn(
+            name = "user_id",
+            insertable = false,
+            updatable = false,
             foreignKey = @ForeignKey(name = "\"ProjectMember_userId_fkey\""))
     private User user;
 

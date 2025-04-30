@@ -18,8 +18,7 @@ public class SyncDb {
     @SequenceGenerator(
             name = "syncdb_id_seq_gen",
             sequenceName = "SyncDb_id_seq",
-            allocationSize = 1
-    )
+            allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "syncdb_id_seq_gen")
     @Column(name = "id", nullable = false)
     private Long id;

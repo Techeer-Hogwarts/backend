@@ -4,12 +4,13 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -21,8 +22,7 @@ public class Resume {
     @SequenceGenerator(
             name = "resume_id_seq_gen",
             sequenceName = "Resume_id_seq",
-            allocationSize = 1
-    )
+            allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_id_seq_gen")
     private Integer id;
 
@@ -41,10 +41,7 @@ public class Resume {
     @JoinColumn(
             name = "userId",
             nullable = false,
-            foreignKey = @ForeignKey(
-                    name = "Resume_userId_fkey"
-            )
-    )
+            foreignKey = @ForeignKey(name = "Resume_userId_fkey"))
     private User user;
 
     @Column(nullable = false, length = 1000)
@@ -67,6 +64,7 @@ public class Resume {
 
     @Column(nullable = false, length = 50)
     private String category;
+
     public Resume(User user, String title, String url, String position, String category) {
         this.user = user;
         this.title = title;

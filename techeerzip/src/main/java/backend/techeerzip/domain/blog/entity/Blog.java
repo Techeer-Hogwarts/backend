@@ -1,8 +1,6 @@
 package backend.techeerzip.domain.blog.entity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,13 +12,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -67,7 +66,10 @@ public class Blog {
     private String[] tags;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, foreignKey = @jakarta.persistence.ForeignKey(name = "Blog_userId_fkey"))
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            foreignKey = @jakarta.persistence.ForeignKey(name = "Blog_userId_fkey"))
     private User user;
 
     @Column(name = "like_count", nullable = false)

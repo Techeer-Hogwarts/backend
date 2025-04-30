@@ -4,72 +4,52 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "\"PermissionRequest\"")
+@Table(name = "PermissionRequest")
 public class PermissionRequest {
 
     @Id
     @SequenceGenerator(
             name = "pr_id_seq_gen",
-            sequenceName = "\"PermissionRequest_id_seq\"",
-            allocationSize = 1
-    )
+            sequenceName = "PermissionRequest_id_seq",
+            allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pr_id_seq_gen")
     private int id;
 
-    @Column(
-            name = "userId",
-            nullable = false
-    )
+    @Column(nullable = false)
     private int userId;
 
-    @Column(
-            name = "requestedRoleId",
-            nullable = false
-    )
+    @Column( nullable = false)
     private int requestedRoleId;
 
     @CreationTimestamp
-    @Column(
-            name = "createdAt",
-            nullable = false,
-            updatable = false
-    )
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(
-            name = "updatedAt",
-            nullable = false
-    )
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(
-            name = "status",
-            nullable = false
-    )
+    @Column(nullable = false)
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "userId",
             insertable = false,
             updatable = false,
-            foreignKey = @ForeignKey(
-                    name = "\"PermissionRequest_userId_fkey\""
-            )
-    )
+            foreignKey = @ForeignKey(name = "PermissionRequest_userId_fkey"))
     private User user;
 
     @Builder

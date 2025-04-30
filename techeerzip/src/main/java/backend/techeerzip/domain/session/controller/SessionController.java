@@ -1,28 +1,13 @@
 package backend.techeerzip.domain.session.controller;
-
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import backend.techeerzip.domain.session.dto.SessionDto;
-import backend.techeerzip.domain.session.service.SessionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "세션", description = "세션 관련 API")
 @RestController
-@RequestMapping("/api/sessions")
+@RequestMapping("/api/v1/sessions")
 @RequiredArgsConstructor
 public class SessionController {
-    private final SessionService sessionService;
 
-    @PostMapping
-    public ResponseEntity<SessionDto.Response> createSession(
-            @RequestBody SessionDto.Create request) {
-        // TODO: Implement session creation
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{sessionId}")
-    public ResponseEntity<Void> deleteSession(@PathVariable Long sessionId) {
-        // TODO: Implement session deletion
-        return ResponseEntity.ok().build();
-    }
 }

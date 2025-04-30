@@ -4,32 +4,31 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "UserExperience",
-        uniqueConstraints = @UniqueConstraint(
-                name = "UserExperience_userId_position_companyName_startDate_key",
-                columnNames = {"userId", "position", "companyName", "startDate"}
-        )
-)
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "UserExperience_userId_position_companyName_startDate_key",
+                        columnNames = {"userId", "position", "companyName", "startDate"}))
 public class UserExperience {
 
     @Id
     @SequenceGenerator(
             name = "ue_id_seq_gen",
             sequenceName = "UserExperience_id_seq",
-            allocationSize = 1
-    )
+            allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ue_id_seq_gen")
     private Integer id;
 
@@ -69,10 +68,7 @@ public class UserExperience {
             name = "userId",
             insertable = false,
             updatable = false,
-            foreignKey = @ForeignKey(
-                    name = "UserExperience_userId_fkey"
-            )
-    )
+            foreignKey = @ForeignKey(name = "UserExperience_userId_fkey"))
     private User user;
 
     @Builder
@@ -83,8 +79,7 @@ public class UserExperience {
             LocalDateTime startDate,
             LocalDateTime endDate,
             String category,
-            boolean isFinished
-    ) {
+            boolean isFinished) {
         this.userId = userId;
         this.position = position;
         this.companyName = companyName;
@@ -100,8 +95,7 @@ public class UserExperience {
             LocalDateTime startDate,
             LocalDateTime endDate,
             String category,
-            boolean isFinished
-    ) {
+            boolean isFinished) {
         this.position = position;
         this.companyName = companyName;
         this.startDate = startDate;
