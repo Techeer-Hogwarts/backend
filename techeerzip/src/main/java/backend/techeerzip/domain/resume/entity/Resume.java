@@ -1,32 +1,55 @@
 package backend.techeerzip.domain.resume.entity;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.*;
-
 import backend.techeerzip.domain.user.entity.User;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "resumes")
+@Table(name = "Resume")
 public class Resume {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "resume_id_seq_gen",
+            sequenceName = "Resume_id_seq",
+            allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_id_seq_gen")
     private Long id;
 
-    @Column(nullable = false)
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private boolean isDeleted;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "userId",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "Resume_userId_fkey"))
+    private User user;
 
     @Column(nullable = false, length = 1000)
     private String title;
@@ -34,66 +57,65 @@ public class Resume {
     @Column(nullable = false, length = 1000)
     private String url;
 
-    @Column(name = "is_main", nullable = false)
+    @Column(nullable = false)
     private boolean isMain;
 
-    @Column(nullable = false, length = 50)
-    private String category;
+    @Column(nullable = false)
+    private int likeCount;
+
+    @Column(nullable = false)
+    private int viewCount;
 
     @Column(nullable = false, length = 100)
     private String position;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false, length = 50)
+    private String category;
 
-    @Column(name = "like_count", nullable = false)
-    private Integer likeCount;
-
-    @Column(name = "view_count", nullable = false)
-    private Integer viewCount;
-
-    public Resume(
-            String title, String url, boolean isMain, String category, String position, User user) {
+    public Resume(User user, String title, String url, String position, String category) {
+        this.user = user;
+        this.title = title;
+        this.url = url;
+        this.position = position;
+        this.category = category;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
-        this.title = title;
-        this.url = url;
-        this.isMain = isMain;
-        this.category = category;
-        this.position = position;
-        this.user = user;
+        this.isMain = false;
         this.likeCount = 0;
         this.viewCount = 0;
     }
 
-    public void update(String title, String url, boolean isMain, String category, String position) {
+    public void update(String title, String url, String position, String category) {
         this.title = title;
         this.url = url;
-        this.isMain = isMain;
-        this.category = category;
         this.position = position;
+        this.category = category;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setMain(boolean isMain) {
+        this.isMain = isMain;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void decrementLikeCount() {
+        this.likeCount--;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
 
     public void delete() {
         this.isDeleted = true;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void increaseLikeCount() {
-        this.likeCount++;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void decreaseLikeCount() {
-        this.likeCount--;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void increaseViewCount() {
-        this.viewCount++;
         this.updatedAt = LocalDateTime.now();
     }
 }

@@ -1,63 +1,82 @@
 package backend.techeerzip.domain.userExperience.entity;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.*;
-
 import backend.techeerzip.domain.user.entity.User;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "user_experiences",
-        uniqueConstraints = {
-            @UniqueConstraint(
-                    name = "uk_user_experience",
-                    columnNames = {"user_id", "position", "company_name", "start_date"})
-        })
+        name = "UserExperience",
+        uniqueConstraints =
+        @UniqueConstraint(
+                name = "UserExperience_userId_position_companyName_startDate_key",
+                columnNames = {"userId", "position", "companyName", "startDate"}))
 public class UserExperience {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "ue_id_seq_gen",
+            sequenceName = "UserExperience_id_seq",
+            allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ue_id_seq_gen")
     private Long id;
 
-    @Column(nullable = false)
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private boolean isDeleted;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
     private Long userId;
 
     @Column(nullable = false, length = 100)
     private String position;
 
-    @Column(name = "company_name", nullable = false, length = 200)
+    @Column(nullable = false, length = 200)
     private String companyName;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime startDate;
 
-    @Column(name = "end_date")
     private LocalDateTime endDate;
 
     @Column(nullable = false, length = 100)
     private String category;
 
-    @Column(name = "is_finished", nullable = false)
+    @Column(nullable = false)
     private boolean isFinished;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(
+            name = "userId",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(name = "UserExperience_userId_fkey"))
     private User user;
 
     @Builder
@@ -69,9 +88,6 @@ public class UserExperience {
             LocalDateTime endDate,
             String category,
             boolean isFinished) {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.isDeleted = false;
         this.userId = userId;
         this.position = position;
         this.companyName = companyName;

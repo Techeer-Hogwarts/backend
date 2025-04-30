@@ -13,25 +13,6 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
-spotless {
-    java {
-        // Google Java 포맷 적용
-        /*
-            googleJavaFormat() : 탭은 2개의 공백
-            googleJavaFormat().aosp() : 탭은 4개의 공백
-            [참고] https://github.com/google/google-java-format/issues/525
-         */
-        googleJavaFormat().aosp()
-        // 아래 순서로 import문 정렬
-        importOrder('java', 'javax', 'jakarta', 'org', 'com')
-        // 사용하지 않는 import 제거
-        removeUnusedImports()
-        // 각 라인 끝에 있는 공백을 제거
-        trimTrailingWhitespace()
-        // 파일 끝에 새로운 라인 추가
-        endWithNewline()
-    }
-}
 
 configurations {
     compileOnly {
@@ -70,8 +51,59 @@ dependencies {
 
     // SpringDoc OpenAPI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-core:5.0.0'
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// QueryDSL 설정
+def querydslDir = "$buildDir/generated/querydsl"
+
+sourceSets {
+    main.java.srcDir querydslDir
+}
+
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+
+clean {
+    delete file(querydslDir)
+}
+
+spotless {
+    java {
+        // Google Java 포맷 적용
+        /*
+            googleJavaFormat() : 탭은 2개의 공백
+            googleJavaFormat().aosp() : 탭은 4개의 공백
+            [참고] https://github.com/google/google-java-format/issues/525
+         */
+        target 'src/**/*.java'
+        googleJavaFormat().aosp()
+        // 아래 순서로 import문 정렬
+        importOrder('java', 'javax', 'jakarta', 'org', 'com')
+        // 사용하지 않는 import 제거
+        removeUnusedImports()
+        // 각 라인 끝에 있는 공백을 제거
+        trimTrailingWhitespace()
+        // 파일 끝에 새로운 라인 추가
+        endWithNewline()
+    }
+}
+
+// Spotless가 compileJava 이후에 실행되도록 설정
+spotlessJava.dependsOn compileJava

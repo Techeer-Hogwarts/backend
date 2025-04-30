@@ -1,10 +1,17 @@
 package backend.techeerzip.domain.event.entity;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.*;
-
 import backend.techeerzip.domain.user.entity.User;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "events")
+@Table(name = "Event")
 public class Event {
 
     @Id
@@ -34,17 +41,20 @@ public class Event {
     @Column(nullable = false, length = 2000)
     private String title;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "startDate", nullable = false)
     private LocalDateTime startDate;
 
-    @Column(name = "end_date")
+    @Column(name = "endDate")
     private LocalDateTime endDate;
 
     @Column(length = 200)
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(
+            name = "userId",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "Event_userId_fkey"))
     private User user;
 
     public Event(

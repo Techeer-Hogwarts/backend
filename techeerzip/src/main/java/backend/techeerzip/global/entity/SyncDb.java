@@ -1,13 +1,8 @@
-package backend.techeerzip.global.entity.sync.entity;
+package backend.techeerzip.global.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,14 +11,19 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "sync_dbs")
+@Table(name = "SyncDb")
 public class SyncDb {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "syncdb_id_seq_gen",
+            sequenceName = "SyncDb_id_seq",
+            allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "syncdb_id_seq_gen")
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "last_synced_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime lastSyncedAt;
 
     public void updateLastSyncedAt() {
