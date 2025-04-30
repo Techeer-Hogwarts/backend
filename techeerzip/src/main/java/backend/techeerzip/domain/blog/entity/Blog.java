@@ -19,6 +19,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -60,11 +62,12 @@ public class Blog {
     @Column(length = 2000)
     private String thumbnail;
 
-    @Column(name = "tag", columnDefinition = "text[]")
-    private List<String> tags = List.of();
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "tags")
+    private String[] tags;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @jakarta.persistence.ForeignKey(name = "\"Blog_userId_fkey\""))
     private User user;
 
     @Column(name = "like_count", nullable = false)
@@ -82,7 +85,7 @@ public class Blog {
             String authorImage,
             String category,
             String thumbnail,
-            List<String> tags,
+            String[] tags,
             User user) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -94,7 +97,7 @@ public class Blog {
         this.authorImage = authorImage;
         this.category = category;
         this.thumbnail = thumbnail;
-        this.tags = tags != null ? tags : new ArrayList<>();
+        this.tags = tags;
         this.user = user;
         this.likeCount = 0;
         this.viewCount = 0;
@@ -108,7 +111,7 @@ public class Blog {
             String authorImage,
             String category,
             String thumbnail,
-            List<String> tags) {
+            String[] tags) {
         this.title = title;
         this.url = url;
         this.date = date;
@@ -116,7 +119,7 @@ public class Blog {
         this.authorImage = authorImage;
         this.category = category;
         this.thumbnail = thumbnail;
-        this.tags = tags != null ? tags : new ArrayList<>();
+        this.tags = tags;
         this.updatedAt = LocalDateTime.now();
     }
 
