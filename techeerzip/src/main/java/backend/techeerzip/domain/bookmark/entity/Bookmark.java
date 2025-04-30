@@ -38,7 +38,7 @@ public class Bookmark {
     private String category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "userId", nullable = false, foreignKey = @ForeignKey(name = "\"Bookmark_userId_fkey\""))
     private User user;
 
     public Bookmark(int contentId, String category, User user) {
@@ -54,6 +54,4 @@ public class Bookmark {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
-
-    // TODO: 필요한 필드 추가
 }
