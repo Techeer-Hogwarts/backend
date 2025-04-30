@@ -2,11 +2,23 @@ package backend.techeerzip.domain.projectMember.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import backend.techeerzip.domain.permissionRequest.entity.StatusCategory;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,37 +28,31 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "project_members",
+        name = "ProjectMember",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_project_member",
-                    columnNames = {"project_team_id", "user_id"})
+                    columnNames = {"projectTeamId", "userId"})
         })
-public class ProjectMember {
+public class ProjectMember extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private boolean isDeleted = false;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(nullable = false)
-    private boolean isDeleted;
-
-    @Column(name = "is_leader", nullable = false)
     private boolean isLeader;
 
-    @Column(name = "team_role", nullable = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String teamRole;
 
-    @Column(name = "project_team_id", nullable = false)
+    @Column(nullable = false)
     private Long projectTeamId;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
     private Long userId;
 
     @Column(nullable = false, length = 3000)
@@ -57,11 +63,11 @@ public class ProjectMember {
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_team_id", insertable = false, updatable = false)
+    @JoinColumn(name = "projectTeamId", insertable = false, updatable = false)
     private ProjectTeam projectTeam;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "userId", insertable = false, updatable = false)
     private User user;
 
     @Builder
@@ -72,9 +78,6 @@ public class ProjectMember {
             Long userId,
             String summary,
             StatusCategory status) {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.isDeleted = false;
         this.isLeader = isLeader;
         this.teamRole = teamRole;
         this.projectTeamId = projectTeamId;

@@ -4,9 +4,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,38 +23,38 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "study_teams")
-public class StudyTeam {
+@Table(name = "StudyTeam")
+public class StudyTeam extends BaseEntity {
+
+    @OneToMany(mappedBy = "studyTeam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<StudyMember> studyMembers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "studyTeam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<StudyResultImage> studyResultImages = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private boolean isDeleted = false;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(nullable = false)
-    private boolean isDeleted;
-
-    @Column(name = "is_recruited", nullable = false)
     private boolean isRecruited;
 
-    @Column(name = "is_finished", nullable = false)
+    @Column(nullable = false)
     private boolean isFinished;
 
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(name = "github_link", nullable = false, length = 500)
+    @Column(nullable = false, length = 500)
     private String githubLink;
 
-    @Column(name = "notion_link", nullable = false, length = 500)
+    @Column(nullable = false, length = 500)
     private String notionLink;
 
-    @Column(name = "study_explain", nullable = false, length = 3000)
+    @Column(nullable = false, length = 3000)
     private String studyExplain;
 
     @Column(nullable = false, length = 3000)
@@ -55,23 +63,17 @@ public class StudyTeam {
     @Column(nullable = false, length = 3000)
     private String rule;
 
-    @Column(name = "recruit_num", nullable = false)
+    @Column(nullable = false)
     private Integer recruitNum;
 
-    @Column(name = "recruit_explain", nullable = false, length = 3000)
+    @Column(nullable = false, length = 3000)
     private String recruitExplain;
 
-    @Column(name = "like_count", nullable = false)
+    @Column(nullable = false)
     private Integer likeCount;
 
-    @Column(name = "view_count", nullable = false)
+    @Column(nullable = false)
     private Integer viewCount;
-
-    @OneToMany(mappedBy = "studyTeam", cascade = CascadeType.ALL)
-    private List<StudyMember> studyMembers = new ArrayList<>();
-
-    @OneToMany(mappedBy = "studyTeam", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<StudyResultImage> studyResultImages = new ArrayList<>();
 
     @Builder
     public StudyTeam(
@@ -85,9 +87,6 @@ public class StudyTeam {
             String rule,
             Integer recruitNum,
             String recruitExplain) {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.isDeleted = false;
         this.isRecruited = isRecruited;
         this.isFinished = isFinished;
         this.name = name;
