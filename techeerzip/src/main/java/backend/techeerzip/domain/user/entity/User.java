@@ -6,15 +6,16 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.Array;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import backend.techeerzip.domain.blog.entity.Blog;
 import backend.techeerzip.domain.bookmark.entity.Bookmark;
 import backend.techeerzip.domain.event.entity.Event;
 import backend.techeerzip.domain.like.entity.Like;
-import backend.techeerzip.domain.permissionRequest.entity.PermissionRequest;
+import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.resume.entity.Resume;
 import backend.techeerzip.domain.role.entity.Role;
@@ -29,77 +30,160 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "users")
+@Table(
+        name = "\"User\"",
+        uniqueConstraints = @UniqueConstraint(
+                name = "\"User_email_key\"",
+                columnNames = "email"
+        )
+)
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @SequenceGenerator(
+            name = "user_id_seq_gen",
+            sequenceName = "\"User_id_seq\"",
+            allocationSize = 1
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq_gen")
+    private Integer id;
 
-    @Column(nullable = false)
+    @CreationTimestamp
+    @Column(
+            name = "createdAt",
+            nullable = false,
+            updatable = false
+    )
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @UpdateTimestamp
+    @Column(
+            name = "updatedAt",
+            nullable = false
+    )
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
+    @Column(
+            name = "isDeleted",
+            nullable = false
+    )
     private boolean isDeleted;
 
-    @Column(nullable = false)
+    @Column(
+            name = "name",
+            nullable = false
+    )
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(
+            name = "email",
+            nullable = false
+    )
     private String email;
 
-    @Column(length = 200)
+    @Column(
+            name = "nickname",
+            length = 200
+    )
     private String nickname;
 
-    @Column(nullable = false)
+    @Column(
+            name = "year",
+            nullable = false
+    )
     private Integer year;
 
-    @Column(nullable = false)
+    @Column(
+            name = "password",
+            nullable = false
+    )
     private String password;
 
-    @Column(nullable = false)
+    @Column(
+            name = "isLft",
+            nullable = false
+    )
     private boolean isLft;
 
-    @Column(nullable = false, length = 500)
+    @Column(
+            name = "githubUrl",
+            nullable = false,
+            length = 500
+    )
     private String githubUrl;
 
-    @Column(nullable = false, length = 100)
+    @Column(
+            name = "mainPosition",
+            nullable = false,
+            length = 100
+    )
     private String mainPosition;
 
-    @Column(length = 100)
+    @Column(
+            name = "subPosition",
+            length = 100
+    )
     private String subPosition;
 
-    @Column(nullable = false, length = 100)
+    @Column(
+            name = "school",
+            nullable = false,
+            length = 100
+    )
     private String school;
 
-    @Column(nullable = false, length = 1000)
+    @Column(
+            name = "profileImage",
+            nullable = false,
+            length = 1000
+    )
     private String profileImage;
 
     @JdbcTypeCode(SqlTypes.ARRAY)
-    @Array(length = 100)
-    @Column(columnDefinition = "text[]")
+    @Column(
+            name = "stack"
+    )
     private String[] stack;
 
-    @Column(nullable = false)
+    @Column(
+            name = "isAuth",
+            nullable = false
+    )
     private boolean isAuth;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false)
+    @JoinColumn(
+            name = "roleId",
+            nullable = false,
+            foreignKey = @ForeignKey(
+                    name = "\"User_roleId_fkey\""
+            )
+    )
     private Role role;
 
-    @Column(nullable = false, length = 100)
+    @Column(
+            name = "grade",
+            nullable = false,
+            length = 100
+    )
     private String grade;
 
-    @Column(length = 300)
+    @Column(
+            name = "mediumUrl",
+            length = 300
+    )
     private String mediumUrl;
 
-    @Column(length = 300)
+    @Column(
+            name = "tistoryUrl",
+            length = 300
+    )
     private String tistoryUrl;
 
-    @Column(length = 300)
+    @Column(
+            name = "velogUrl",
+            length = 300
+    )
     private String velogUrl;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -151,10 +235,8 @@ public class User {
             String grade,
             String mediumUrl,
             String tistoryUrl,
-            String velogUrl) {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.isDeleted = false;
+            String velogUrl
+    ) {
         this.name = name;
         this.email = email;
         this.nickname = nickname;
@@ -173,6 +255,7 @@ public class User {
         this.mediumUrl = mediumUrl;
         this.tistoryUrl = tistoryUrl;
         this.velogUrl = velogUrl;
+        // createdAt/updatedAt/isDeleted default는 JPA/DB에 위임
     }
 
     public void update(
@@ -187,7 +270,8 @@ public class User {
             String grade,
             String mediumUrl,
             String tistoryUrl,
-            String velogUrl) {
+            String velogUrl
+    ) {
         this.name = name;
         this.nickname = nickname;
         this.githubUrl = githubUrl;
