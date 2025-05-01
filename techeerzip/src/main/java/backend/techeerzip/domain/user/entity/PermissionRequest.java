@@ -1,12 +1,12 @@
 package backend.techeerzip.domain.user.entity;
 
-import backend.techeerzip.global.entity.StatusCategory;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,13 +14,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -55,10 +57,7 @@ public class PermissionRequest {
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            insertable = false,
-            updatable = false,
-            foreignKey = @ForeignKey(name = "PermissionRequest_userId_fkey"))
+    @JoinColumn(insertable = false, updatable = false)
     private User user;
 
     @Builder

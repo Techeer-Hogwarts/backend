@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
         name = "ProjectMember",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_project_member",
+                    name = "ProjectMember_projectTeamId_userId_key",
                     columnNames = {"projectTeamId", "userId"})
         })
 public class ProjectMember extends BaseEntity {

@@ -5,6 +5,4 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class SessionDto {
-
-}
+public class SessionDto {}

@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -55,17 +54,11 @@ public class StudyMember extends BaseEntity {
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "studyTeamId",
-            foreignKey = @ForeignKey(name = "StudyMember_studyTeamId_fkey"),
-            updatable = false)
+    @JoinColumn(name = "studyTeamId", updatable = false)
     private StudyTeam studyTeam;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "userId",
-            foreignKey = @ForeignKey(name = "StudyMember_userId_fkey"),
-            updatable = false)
+    @JoinColumn(name = "userId", updatable = false)
     private User user;
 
     @Builder

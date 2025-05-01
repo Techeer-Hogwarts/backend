@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,19 +42,11 @@ public class TeamStack extends BaseEntity {
     private Long projectTeamId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "projectTeamId",
-            foreignKey = @ForeignKey(name = "TeamStack_projectTeamId_fkey"),
-            insertable = false,
-            updatable = false)
+    @JoinColumn(name = "projectTeamId", insertable = false, updatable = false)
     private ProjectTeam projectTeam;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "stackId",
-            foreignKey = @ForeignKey(name = "TeamStack_stackId_fkey"),
-            insertable = false,
-            updatable = false)
+    @JoinColumn(name = "stackId", insertable = false, updatable = false)
     private Stack stack;
 
     @Builder

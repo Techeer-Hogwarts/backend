@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,10 +34,7 @@ public class StudyResultImage extends BaseEntity {
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "studyTeamId",
-            foreignKey = @ForeignKey(name = "StudyResultImage_studyTeamId_fkey"),
-            nullable = false)
+    @JoinColumn(name = "studyTeamId", nullable = false)
     private StudyTeam studyTeam;
 
     public StudyResultImage(String imageUrl, StudyTeam studyTeam) {

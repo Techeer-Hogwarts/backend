@@ -8,6 +8,4 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class SessionService {
-
-}
+public class SessionService {}

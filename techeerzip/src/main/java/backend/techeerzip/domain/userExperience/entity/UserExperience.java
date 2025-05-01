@@ -1,10 +1,10 @@
 package backend.techeerzip.domain.userExperience.entity;
 
-import backend.techeerzip.domain.user.entity.User;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,13 +13,15 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -27,9 +29,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(
         name = "UserExperience",
         uniqueConstraints =
-        @UniqueConstraint(
-                name = "UserExperience_userId_position_companyName_startDate_key",
-                columnNames = {"userId", "position", "companyName", "startDate"}))
+                @UniqueConstraint(
+                        name = "UserExperience_userId_position_companyName_startDate_key",
+                        columnNames = {"userId", "position", "companyName", "startDate"}))
 public class UserExperience {
 
     @Id
@@ -72,11 +74,7 @@ public class UserExperience {
     private boolean isFinished;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "userId",
-            insertable = false,
-            updatable = false,
-            foreignKey = @ForeignKey(name = "UserExperience_userId_fkey"))
+    @JoinColumn(name = "userId", insertable = false, updatable = false)
     private User user;
 
     @Builder
