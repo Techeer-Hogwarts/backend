@@ -1,16 +1,10 @@
 FROM openjdk:21-slim AS builder
 WORKDIR /app
 RUN apt-get update && apt-get install -y findutils
-COPY ./techeerzip/gradlew .
-COPY ./techeerzip/gradle gradle
-COPY ./techeerzip/build.gradle .
-COPY ./techeerzip/settings.gradle .
-COPY ./techeerzip/src src
+COPY ./techeerzip/ /app/
 RUN chmod +x ./gradlew
-RUN ./gradlew bootJAR
+RUN ./gradlew bootJar -PexcludeDevTools --no-daemon
 
-FROM openjdk:21-slim
-WORKDIR /app
+FROM gcr.io/distroless/java21-debian12
 COPY --from=builder /app/build/libs/*.jar app.jar
-EXPOSE 8000
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "/app.jar"]
