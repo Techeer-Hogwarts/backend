@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "세션", description = "세션 관련 API")
 @RestController
-@RequestMapping("/api/v1/sessions")
+@RequestMapping("/api/v3/sessions")
 @RequiredArgsConstructor
 public class SessionController {}

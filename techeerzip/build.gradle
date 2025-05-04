@@ -20,12 +20,6 @@ configurations {
     }
 }
 
-configurations {
-    developmentOnly
-    runtimeClasspath {
-        exclude group: "org.springframework.boot", module: "spring-boot-devtools"
-    }
-}
 
 repositories {
     mavenCentral()

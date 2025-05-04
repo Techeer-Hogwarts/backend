@@ -8,7 +8,7 @@ import backend.techeerzip.domain.projectTeam.service.ProjectTeamService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/project-teams")
+@RequestMapping("/api/v3/project-teams")
 @RequiredArgsConstructor
 public class ProjectTeamController {
     private final ProjectTeamService projectTeamService;

@@ -8,7 +8,7 @@ import backend.techeerzip.domain.studyMember.service.StudyMemberService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/study-members")
+@RequestMapping("/api/v3/study-members")
 @RequiredArgsConstructor
 public class StudyMemberController {
     private final StudyMemberService studyMemberService;

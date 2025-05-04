@@ -8,7 +8,7 @@ import backend.techeerzip.domain.resume.service.ResumeService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/resumes")
+@RequestMapping("/api/v3/resumes")
 @RequiredArgsConstructor
 public class ResumeController {
     private final ResumeService resumeService;
