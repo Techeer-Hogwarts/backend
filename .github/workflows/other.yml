@@ -31,12 +31,17 @@ jobs:
           ./gradlew test jacocoTestReport
 
       - name: Publish JUnit test results to GitHub Checks
-        if: always()                      # 테스트 실패해도 이 스텝은 실행
+        if: always()                      # even if tests fail
         uses: dorny/test-reporter@v1
         with:
-          name: JUnit Tests               # Checks에 표시될 타이틀
-          path: techeerzip/build/test-results/test/*.xml
-          reporter: junit                 # JUnit 형식 리포트 사용
+          name: JUnit Tests               # the check-run title
+          working-directory: techeerzip    # cd into your project
+          path: build/test-results/test/*.xml
+          reporter: java-junit            # <-- the only “junit”-style parser it has
+          list-suites: all
+          list-tests: all
+          fail-on-error: false            # don’t fail the action if there are test failures
+          fail-on-empty: false            # don’t fail if it finds no files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
