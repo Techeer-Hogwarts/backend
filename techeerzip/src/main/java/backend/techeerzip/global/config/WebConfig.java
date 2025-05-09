@@ -10,7 +10,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://www.techeerzip.cloud", "https://api.techeerzip.cloud")
+                // .allowedOrigins(
+                //     "https://www.techeerzip.cloud", 
+                //     "https://api.techeerzip.cloud", 
+                //     "https://*.yje.kr",
+                //     )
                 .allowedOriginPatterns(
                         "http://localhost:*",
                         "http://127.0.0.1:*",
