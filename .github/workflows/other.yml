@@ -29,19 +29,16 @@ jobs:
         run: |
           cd techeerzip
           ./gradlew test jacocoTestReport
-          
-      - name: Check coverage
-        continue-on-error: true
-        uses: madrapps/jacoco-report@v1.7.2
+
+      - name: Publish JUnit test results to GitHub Checks
+        if: always()                      # 테스트 실패해도 이 스텝은 실행
+        uses: dorny/test-reporter@v1
         with:
-          paths: |
-            ${{ github.workspace }}/techeerzip/build/reports/jacoco/test/html/index.html
-            ${{ github.workspace }}/techeerzip/build/reports/jacoco/test/jacocoTestReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 30
-          min-coverage-changed-files: 50
-          title: JaCoCo Coverage Report
-          update-comment: true
+          name: JUnit Tests               # Checks에 표시될 타이틀
+          path: techeerzip/build/test-results/test/*.xml
+          reporter: junit                 # JUnit 형식 리포트 사용
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show build number
         run: |
