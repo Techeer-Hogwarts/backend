@@ -27,6 +27,9 @@ repositories {
 }
 
 dependencies {
+    // test H2
+    testImplementation 'com.h2database:h2:2.2.224'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -131,6 +134,11 @@ jacocoTestReport {
                 '**/config/**',       // 설정 클래스 제외
                 '**/dto/**',          // DTO 클래스 제외
                 '**/exception/**'     // 예외 클래스 제외
+                '**/Q*',
+                '**/*Builder*',
+                '**/config/**',
+                '**/infra/**',
+                '**/global/**',
             ])
         }))
     }
