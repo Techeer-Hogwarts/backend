@@ -30,18 +30,18 @@ jobs:
           cd techeerzip
           ./gradlew test jacocoTestReport
 
-      - name: Publish JUnit test results to GitHub Checks
-        if: always()                      # even if tests fail
-        uses: dorny/test-reporter@v1
+      - name: Publish Jacoco coverage report
+        uses: PavanMudigonda/jacoco-reporter@v1
         with:
-          name: JUnit Tests               # the check-run title
-          working-directory: techeerzip    # cd into your project
-          path: build/test-results/test/*.xml
-          reporter: java-junit            # <-- the only “junit”-style parser it has
-          list-suites: all
-          list-tests: all
-          fail-on-error: false            # don’t fail the action if there are test failures
-          fail-on-empty: false            # don’t fail if it finds no files
+          # These paths assume your Gradle jacocoTestReport is producing:
+          #  - XML at build/reports/jacoco/test/jacocoTestReport.xml
+          #  - HTML at build/reports/jacoco/test/html/index.html
+          xml: techeerzip/build/reports/jacoco/test/jacocoTestReport.xml
+          html: techeerzip/build/reports/jacoco/test/html/index.html
+          # Only comment on changed files (annotate your diff)
+          reportType: inline
+          coverageThreshold: 30   # overall minimum % (match your needs)
+          failOnLowCoverage: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
