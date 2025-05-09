@@ -34,8 +34,8 @@ public class SecurityConfig {
                         auth ->
                                 auth.requestMatchers(
                                                 "/v3/api-docs/**",
-                                                "/api/v1/docs/**",
-                                                "/api/v1/docs")
+                                                "/api/v3/docs/**",
+                                                "/api/v3/docs")
                                         .authenticated()
                                         .anyRequest()
                                         .permitAll())

@@ -1,9 +1,9 @@
-name: Staing CI
+name: Other CI
 
 on:
-  push:
+  pull_request:
     branches:
-      - develop
+      - '**' # 모든 브랜치에 PR 올릴 때 실행
 
 jobs:
   build:
@@ -19,26 +19,30 @@ jobs:
 #         run: |
 #           npm install
 
+      # - name: Run Tests and Generate Coverage
+      #   run: |
+      #       npm run test:cov
+
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #       token: ${{ secrets.CODECOV_TOKEN }}
+      #       flags: unittests # optional
+      #       name: codecov-coverage
+
       - name: Show build number
         run: |
           echo "Build Number: ${{ github.run_number }}"
       - name: Show pull request number
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           echo "PR Number: ${{ github.event.pull_request.number }}"
-      - name: Get PR Number for Main Branch Merge
-        id: get_pr_number
-        run: |
-          PR_NUMBER=$(gh pr list --repo ${{ github.repository }} --state closed --json number,mergeCommit --jq ".[] | select(.mergeCommit.oid == \"${{ github.sha }}\") | .number")
-          echo "PR_NUMBER=${PR_NUMBER}"
-          echo "PR_NUMBER"="${PR_NUMBER}" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set Docker Image Tag
         id: set_docker_image_tag
         env:
           PR_NUMBER: ${{ steps.get_pr_number.outputs.PR_NUMBER }}
         run: |
-          DOCKER_IMAGE_TAG="1.1.$PR_NUMBER"-dev
+          DOCKER_IMAGE_TAG="0.${{ github.event.pull_request.number }}.${{ github.run_number }}-pre-dev"
           echo "Docker Image Tag: $DOCKER_IMAGE_TAG"
           echo "DOCKER_IMAGE_TAG"="${DOCKER_IMAGE_TAG}" >> $GITHUB_OUTPUT
 
@@ -60,20 +64,3 @@ jobs:
             --platform linux/amd64 \
             --push \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/techeerism-spring:$DOCKER_IMAGE_TAG .
-
-      - name: Send Image and Version to Slack
-        env:
-          IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/techeerism-spring
-          DOCKER_IMAGE_TAG: ${{ steps.set_docker_image_tag.outputs.DOCKER_IMAGE_TAG }}
-          SLACK_SECRET: ${{ secrets.SLACK_DEPLOY_SECRET }}
-        run: |
-          commit_link="https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/commit/${{ github.sha }}"
-          curl -X POST https://techeer-029051b54345.herokuapp.com/api/v1/deploy/image \
-          -H "Content-Type: application/json" \
-          -d '{
-                "imageName": "'"$IMAGE_NAME"'",
-                "imageTag": "'"$DOCKER_IMAGE_TAG"'",
-                "commitLink": "'"$commit_link"'",
-                "environment": "staging",
-                "secret": "'"$SLACK_SECRET"'"
-              }'
