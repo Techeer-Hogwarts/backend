@@ -3,6 +3,8 @@ plugins {
     id 'org.springframework.boot' version '3.3.1'
     id 'io.spring.dependency-management' version '1.1.5'
     id 'com.diffplug.spotless' version '6.25.0'
+    id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
+    id 'jacoco'
 }
 
 group = 'backend'
@@ -111,3 +113,51 @@ spotless {
 
 // Spotless가 compileJava 이후에 실행되도록 설정
 spotlessJava.dependsOn compileJava
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/Q*.class',        // QueryDSL 생성 클래스 제외
+                '**/config/**',       // 설정 클래스 제외
+                '**/dto/**',          // DTO 클래스 제외
+                '**/exception/**'     // 예외 클래스 제외
+            ])
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'  // 클래스 단위로 검사
+            
+            limit {
+                counter = 'LINE'           // 라인 커버리지
+                value = 'COVEREDRATIO'     // 커버리지 비율
+                minimum = 0.80            // 최소 80% 요구
+            }
+            
+            limit {
+                counter = 'BRANCH'         // 브랜치 커버리지
+                value = 'COVEREDRATIO'     // 커버리지 비율
+                minimum = 0.80            // 최소 80% 요구
+            }
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()  // JUnit 5 사용
+    finalizedBy jacocoTestReport           // 테스트 후 리포트 생성
+    finalizedBy jacocoTestCoverageVerification  // 테스트 후 커버리지 검증
+}
