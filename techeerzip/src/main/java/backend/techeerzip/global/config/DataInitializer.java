@@ -16,7 +16,6 @@ import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
 
 @Component
-@Profile("!test")
 @RequiredArgsConstructor
 public class DataInitializer {
 
