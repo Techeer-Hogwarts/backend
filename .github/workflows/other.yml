@@ -28,10 +28,8 @@ jobs:
       - name: Run tests with coverage
         run: |
           cd techeerzip
-          ./gradlew test jacocoTestReport \
-            -Dspring.profiles.active=test \
-            -Dspring.config.location=src/test/resources/application-test.properties
-
+          ./gradlew test jacocoTestReport
+          
       - name: Check coverage
         continue-on-error: true
         uses: madrapps/jacoco-report@v1.7.2

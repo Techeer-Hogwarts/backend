@@ -39,9 +39,6 @@ public class PermissionRequest {
     private Long id;
 
     @Column(nullable = false)
-    private Long userId;
-
-    @Column(nullable = false)
     private Long requestedRoleId;
 
     @CreationTimestamp
@@ -61,8 +58,7 @@ public class PermissionRequest {
     private User user;
 
     @Builder
-    public PermissionRequest(Long userId, Long requestedRoleId) {
-        this.userId = userId;
+    public PermissionRequest(Long requestedRoleId) {
         this.requestedRoleId = requestedRoleId;
         this.status = StatusCategory.PENDING;
     }
