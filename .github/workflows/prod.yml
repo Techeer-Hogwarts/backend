@@ -21,17 +21,21 @@ jobs:
           cache: gradle
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: |
+          cd techeerzip
+          chmod +x gradlew
 
       - name: Run tests with coverage
-        run: ./gradlew test jacocoTestReport # 단위 테스트 
+        run: |
+          cd techeerzip
+          ./gradlew test jacocoTestReport # 단위 테스트
 
       - name: Check coverage
         uses: madrapps/jacoco-report@v1.7.2
         with:
           paths: |
-            ${{ github.workspace }}/**/build/reports/jacoco/test/html/index.html
-            ${{ github.workspace }}/**/build/reports/jacoco/test/jacocoTestReport.xml
+            ${{ github.workspace }}/techeerzip/build/reports/jacoco/test/html/index.html
+            ${{ github.workspace }}/techeerzip/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 80
