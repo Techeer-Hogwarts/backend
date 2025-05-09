@@ -28,7 +28,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           cd techeerzip
-          ./gradlew test jacocoTestReport # 단위 테스트
+          ./gradlew test jacocoTestReport
 
       - name: Check coverage
         continue-on-error: true
