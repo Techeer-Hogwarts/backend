@@ -31,16 +31,12 @@ jobs:
           ./gradlew test jacocoTestReport
 
       - name: Publish Jacoco coverage report
-        uses: PavanMudigonda/jacoco-reporter@v1
+        uses: PavanMudigonda/jacoco-reporter@v5.0
         with:
-          # These paths assume your Gradle jacocoTestReport is producing:
-          #  - XML at build/reports/jacoco/test/jacocoTestReport.xml
-          #  - HTML at build/reports/jacoco/test/html/index.html
           xml: techeerzip/build/reports/jacoco/test/jacocoTestReport.xml
           html: techeerzip/build/reports/jacoco/test/html/index.html
-          # Only comment on changed files (annotate your diff)
           reportType: inline
-          coverageThreshold: 30   # overall minimum % (match your needs)
+          coverageThreshold: 30
           failOnLowCoverage: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
