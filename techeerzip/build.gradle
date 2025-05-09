@@ -122,67 +122,54 @@ jacoco {
     toolVersion = "0.8.11"
 }
 
-jacocoTestReport {
+// 공통 exclusion 패턴 정의
+def jacocoExcluded = [
+        '**/Q*.class',      // QueryDSL generated
+        '**/*Builder*',     // Lombok builder
+        '**/dto/**',        // DTO
+        '**/exception/**',  // Exception
+        '**/config/**',     // Config
+        '**/infra/**',      // Infra (S3, MQ 등)
+        '**/global/**'      // Global 패키지
+]
+
+// jacocoReport
+tasks.named('jacocoTestReport') {
+    dependsOn test
     reports {
         xml.required = true
         html.required = true
     }
-    
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                '**/Q*.class',        // QueryDSL 생성 클래스 제외
-                '**/config/**',       // 설정 클래스 제외
-                '**/dto/**',          // DTO 클래스 제외
-                '**/exception/**',     // 예외 클래스 제외
-                '**/Q*',
-                '**/*Builder*',
-                '**/config/**',
-                '**/infra/**',
-                '**/global/**',
-            ])
-        }))
-    }
+    classDirectories.setFrom(files(
+            classDirectories.files.collect { fileTree(dir: it, exclude: jacocoExcluded) }
+    ))
 }
 
-jacocoTestCoverageVerification {
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                '**/Q*.class',        // QueryDSL 생성 클래스 제외
-                '**/config/**',       // 설정 클래스 제외
-                '**/dto/**',          // DTO 클래스 제외
-                '**/exception/**',     // 예외 클래스 제외
-                '**/Q*',
-                '**/*Builder*',
-                '**/config/**',
-                '**/infra/**',
-                '**/global/**',
-            ])
-        }))
-    }
-    
+// jacocoCoverage 확인
+tasks.named('jacocoTestCoverageVerification') {
+    classDirectories.setFrom(files(
+            classDirectories.files.collect { fileTree(dir: it, exclude: jacocoExcluded) }
+    ))
+
     violationRules {
         rule {
-            element = 'CLASS'  // 클래스 단위로 검사
-            
+            element = 'CLASS'
             limit {
-                counter = 'LINE'           // 라인 커버리지
-                value = 'COVEREDRATIO'     // 커버리지 비율
-                minimum = 0.00            // 최소 30% 요구
+                counter = 'LINE'
+                value   = 'COVEREDRATIO'
+                minimum = 0.00
             }
-            
             limit {
-                counter = 'BRANCH'         // 브랜치 커버리지
-                value = 'COVEREDRATIO'     // 커버리지 비율
-                minimum = 0.00            // 최소 30% 요구
+                counter = 'BRANCH'
+                value   = 'COVEREDRATIO'
+                minimum = 0.00
             }
         }
     }
 }
 
-test {
-    useJUnitPlatform()  // JUnit 5 사용
-    finalizedBy jacocoTestReport           // 테스트 후 리포트 생성
-    finalizedBy jacocoTestCoverageVerification  // 테스트 후 커버리지 검증
+// 테스트 task 마무리 설정
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification
 }
