@@ -33,13 +33,13 @@ jobs:
       - name: Publish Jacoco coverage report
         uses: PavanMudigonda/jacoco-reporter@v5.0
         with:
-          xml: techeerzip/build/reports/jacoco/test/jacocoTestReport.xml
-          html: techeerzip/build/reports/jacoco/test/html/index.html
-          reportType: inline
-          coverageThreshold: 30
-          failOnLowCoverage: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          coverage_results_path: techeerzip/build/reports/jacoco/test/jacocoTestReport.xml
+          coverage_paths: techeerzip/build/reports/jacoco/test/html/index.html
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          minimum_coverage: 30
+          fail_below_threshold: false
+          output_level: inline
+          coverage_report_name: JaCoCo Coverage
 
       - name: Show build number
         run: |
