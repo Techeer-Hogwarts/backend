@@ -1,10 +1,12 @@
 package backend.techeerzip.global.logger;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -33,9 +35,8 @@ public class CustomLogger {
     private static final String LEVEL_WARN = "warn";
     private static final String LEVEL_INFO = "info";
 
-    private static final List<String> SENSITIVE_FIELDS = List.of(
-            "password", "token", "secret", "authorization"
-    );
+    private static final List<String> SENSITIVE_FIELDS =
+            List.of("password", "token", "secret", "authorization");
 
     private final Logger logger;
     private final String logLevel;
@@ -82,7 +83,9 @@ public class CustomLogger {
             int statusCode,
             HttpServletRequest request) {
         if (shouldLog(LEVEL_ERROR) && logger.isErrorEnabled()) {
-            String logMessage = String.format("""
+            String logMessage =
+                    String.format(
+                            """
                             %s[ERROR] %s%s
                             %s* ERROR CODE:    %s%s
                             %s* ERROR MESSAGE: %s%s
@@ -93,16 +96,31 @@ public class CustomLogger {
                             %s* STACK TRACE:   %s%s
                             %s━━━━━━━━━━━━━━━━
                             """,
-                    ANSI_RED, new Date(), ANSI_RESET,
-                    ANSI_RED, errorCode, ANSI_RESET,
-                    ANSI_RED, errorMessage, ANSI_RESET,
-                    ANSI_RED, statusCode, ANSI_RESET,
-                    ANSI_RED, request.getRequestURI(), ANSI_RESET,
-                    ANSI_RED, request.getMethod(), ANSI_RESET,
-                    ANSI_RED, sanitizeRequestBody(request), ANSI_RESET,
-                    ANSI_RED, e.getStackTrace()[0], ANSI_RESET,
-                    ANSI_RED
-            );
+                            ANSI_RED,
+                            new Date(),
+                            ANSI_RESET,
+                            ANSI_RED,
+                            errorCode,
+                            ANSI_RESET,
+                            ANSI_RED,
+                            errorMessage,
+                            ANSI_RESET,
+                            ANSI_RED,
+                            statusCode,
+                            ANSI_RESET,
+                            ANSI_RED,
+                            request.getRequestURI(),
+                            ANSI_RESET,
+                            ANSI_RED,
+                            request.getMethod(),
+                            ANSI_RESET,
+                            ANSI_RED,
+                            sanitizeRequestBody(request),
+                            ANSI_RESET,
+                            ANSI_RED,
+                            e.getStackTrace()[0],
+                            ANSI_RESET,
+                            ANSI_RED);
             logger.error(logMessage);
         }
     }
@@ -129,8 +147,10 @@ public class CustomLogger {
 
     private String sanitizeSensitiveData(String body) {
         for (String field : SENSITIVE_FIELDS) {
-            body = body.replaceAll("(?i)\"" + field + "\":\"[^\"]*\"",
-                    "\"" + field + "\":\"" + REDACTED + "\"");
+            body =
+                    body.replaceAll(
+                            "(?i)\"" + field + "\":\"[^\"]*\"",
+                            "\"" + field + "\":\"" + REDACTED + "\"");
         }
         return body;
     }
