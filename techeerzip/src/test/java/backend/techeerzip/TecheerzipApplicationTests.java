@@ -8,6 +8,8 @@ import org.springframework.test.context.ActiveProfiles;
 import backend.techeerzip.infra.s3.S3Service;
 import backend.techeerzip.infra.slack.SlackEventHandler;
 
+import org.springframework.test.context.ActiveProfiles;
+
 @SpringBootTest
 @ActiveProfiles("test")
 class TecheerzipApplicationTests {
