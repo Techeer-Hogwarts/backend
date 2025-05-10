@@ -15,10 +15,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import backend.techeerzip.domain.permissionRequest.entity.StatusCategory;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.global.entity.BaseEntity;
+import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,13 +48,7 @@ public class ProjectMember extends BaseEntity {
     private boolean isLeader;
 
     @Column(nullable = false, length = 100)
-    private String teamRole;
-
-    @Column(nullable = false)
-    private Long projectTeamId;
-
-    @Column(nullable = false)
-    private Long userId;
+    private TeamRole teamRole;
 
     @Column(nullable = false, length = 3000)
     private String summary;
@@ -63,39 +58,50 @@ public class ProjectMember extends BaseEntity {
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "projectTeamId", insertable = false, updatable = false)
+    @JoinColumn(name = "projectTeamId", updatable = false, nullable = false)
     private ProjectTeam projectTeam;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", insertable = false, updatable = false)
+    @JoinColumn(name = "userId", updatable = false, nullable = false)
     private User user;
 
     @Builder
     public ProjectMember(
             boolean isLeader,
-            String teamRole,
-            Long projectTeamId,
-            Long userId,
+            TeamRole teamRole,
             String summary,
-            StatusCategory status) {
+            StatusCategory status,
+            ProjectTeam projectTeam,
+            User user) {
         this.isLeader = isLeader;
         this.teamRole = teamRole;
-        this.projectTeamId = projectTeamId;
-        this.userId = userId;
         this.summary = summary;
         this.status = status;
+        this.projectTeam = projectTeam;
+        this.user = user;
     }
 
-    public void update(String teamRole, String summary, StatusCategory status) {
+    public void update(TeamRole teamRole, StatusCategory status, Boolean isLeader) {
         this.teamRole = teamRole;
-        this.summary = summary;
         this.status = status;
+        this.isLeader = isLeader;
         this.updatedAt = LocalDateTime.now();
     }
 
     public void delete() {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void toInactive() {
+        this.isDeleted = true;
+    }
+
+    public void toActive(TeamRole teamRole, Boolean isLeader) {
+        this.teamRole = teamRole;
+        this.isLeader = isLeader;
+        this.status = StatusCategory.APPROVED;
+        this.isDeleted = false;
     }
 
     public void changeLeaderStatus(boolean isLeader) {
