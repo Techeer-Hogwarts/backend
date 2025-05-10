@@ -45,6 +45,10 @@ public class S3Service {
         }
     }
 
+    private static String getFileName(String urlPrefix, String ext, Integer index) {
+        return urlPrefix + "-" + System.currentTimeMillis() + "-" + index + ext;
+    }
+
     private PutObjectRequest setPutObjectRequest(String keyPath, String ext) {
         return PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -57,6 +61,24 @@ public class S3Service {
         return RequestBody.fromInputStream(file.getInputStream(), file.getSize());
     }
 
+    public List<String> upload(MultipartFile file, String folderPath, String urlPrefix) {
+        if (file == null) {
+            return List.of();
+        }
+        final String ext = extractExtension(file.getOriginalFilename());
+        final String fileName = getFileName(urlPrefix, ext, 0);
+        final String keyPath = makeKeyPath(fileName, folderPath);
+        try {
+            this.s3Client.putObject(this.setPutObjectRequest(keyPath, ext), this.getFile(file));
+            return List.of(
+                    s3Client.utilities()
+                            .getUrl(GetUrlRequest.builder().bucket(bucketName).key(keyPath).build())
+                            .toString());
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     public List<String> uploadMany(List<MultipartFile> files, String folderPath, String urlPrefix) {
         if (files.isEmpty()) {
             return List.of();
@@ -67,14 +89,7 @@ public class S3Service {
                                 i -> {
                                     final String ext =
                                             extractExtension(files.get(i).getOriginalFilename());
-                                    final String fileName =
-                                            urlPrefix
-                                                    + "-"
-                                                    + System.currentTimeMillis()
-                                                    + "-"
-                                                    + i
-                                                    + ext;
-
+                                    final String fileName = getFileName(urlPrefix, ext, i);
                                     return uploadAsync(files.get(i), folderPath, fileName, ext);
                                 })
                         .toList();
