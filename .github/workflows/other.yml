@@ -1,5 +1,9 @@
 name: Other CI
 
+permissions:
+  contents: read   
+  checks: write   
+  
 on:
   pull_request:
     branches:
@@ -10,25 +14,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-#       - name: Set up Node
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '18'
 
-#       - name: Install Dependencies
-#         run: |
-#           npm install
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
 
-      # - name: Run Tests and Generate Coverage
-      #   run: |
-      #       npm run test:cov
+      - name: Grant execute permission for gradlew
+        run: |
+          cd techeerzip
+          chmod +x gradlew
 
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v4
-      #   with:
-      #       token: ${{ secrets.CODECOV_TOKEN }}
-      #       flags: unittests # optional
-      #       name: codecov-coverage
+      - name: Run tests with coverage
+        run: |
+          cd techeerzip
+          ./gradlew test jacocoTestReport
+
+      - name: Publish Jacoco coverage report
+        uses: PavanMudigonda/jacoco-reporter@v5.0
+        with:
+          coverage_results_path: techeerzip/build/reports/jacoco/test/jacocoTestReport.xml
+          coverage_paths: techeerzip/build/reports/jacoco/test/html/index.html
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          minimum_coverage: 30
+          fail_below_threshold: false
+          output_level: inline
+          coverage_report_name: JaCoCo Coverage
 
       - name: Show build number
         run: |
