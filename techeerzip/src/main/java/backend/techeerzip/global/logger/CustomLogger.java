@@ -18,7 +18,6 @@ public class CustomLogger {
     // ANSI 색상 상수
     private static final String ANSI_RESET  = "\u001B[0m";
     private static final String ANSI_RED    = "\u001B[31m";
-    private static final String ANSI_GREEN  = "\u001B[32m";
     private static final String ANSI_YELLOW = "\u001B[33m";
     private static final String ANSI_BLUE   = "\u001B[34m";
     private static final String ANSI_CYAN   = "\u001B[36m";
@@ -36,36 +35,36 @@ public class CustomLogger {
     private final Logger logger = LoggerFactory.getLogger(CustomLogger.class);
 
     //-------------------------------------------------------------------------------
-    // 기본 메시지 로깅 (색상 + 포맷만 담당)
+    // 기본 메시지 로깅 (색상 + SLF4J 플레이스홀더 지원)
     //-------------------------------------------------------------------------------
 
-    public void info(String message) {
+    public void info(String format, Object... args) {
         if (logger.isInfoEnabled()) {
-            logger.info(getColoredMessage("INFO", ANSI_CYAN, message));
+            logger.info(getColoredMessage("INFO", ANSI_CYAN, format), args);
         }
     }
 
-    public void warn(String message) {
+    public void warn(String format, Object... args) {
         if (logger.isWarnEnabled()) {
-            logger.warn(getColoredMessage("WARN", ANSI_YELLOW, message));
+            logger.warn(getColoredMessage("WARN", ANSI_YELLOW, format), args);
         }
     }
 
-    public void error(String message) {
+    public void error(String format, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(getColoredMessage("ERROR", ANSI_RED, message));
+            logger.error(getColoredMessage("ERROR", ANSI_RED, format), args);
         }
     }
 
-    public void debug(String message) {
+    public void debug(String format, Object... args) {
         if (logger.isDebugEnabled()) {
-            logger.debug(getColoredMessage("DEBUG", ANSI_BLUE, message));
+            logger.debug(getColoredMessage("DEBUG", ANSI_BLUE, format), args);
         }
     }
 
-    public void fatal(String message) {
+    public void fatal(String format, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.error(getColoredMessage("FATAL", ANSI_PURPLE, message));
+            logger.error(getColoredMessage("FATAL", ANSI_PURPLE, format), args);
         }
     }
 
@@ -166,8 +165,8 @@ public class CustomLogger {
     //-------------------------------------------------------------------------------
 
     /** 로그 메시지에 ANSI 컬러를 붙여서 반환 */
-    private String getColoredMessage(String level, String color, String message) {
-        return String.format("%s[%s]%s %s", color, level, ANSI_RESET, message);
+    private String getColoredMessage(String level, String color, String format) {
+        return String.format("%s[%s]%s %s", color, level, ANSI_RESET, format);
     }
 
     /** HTTP 요청 바디를 읽어서 민감 필드를 마스킹 */
