@@ -29,7 +29,7 @@ public class RedisService {
                 "processed", "false"
             ));
             redisTemplate.expire(taskId, 3600, TimeUnit.SECONDS); // expire 1시간 = 3600초
-            logger.debug(String.format("Task status set for taskId: %s", taskId), CONTEXT);
+            logger.info(String.format("Task status set for taskId: %s", taskId), CONTEXT);
         } catch (Exception e) {
             logger.error("Failed to set task status for taskId: %s, error: %s", taskId, e.getMessage());
             throw e;
@@ -42,7 +42,7 @@ public class RedisService {
     public Map<Object, Object> getTaskDetails(String taskId) {
         try {
             Map<Object, Object> details = redisTemplate.opsForHash().entries(taskId);
-            logger.debug(String.format("Retrieved task details for taskId: %s", taskId), CONTEXT);
+            logger.info(String.format("Retrieved task details for taskId: %s", taskId), CONTEXT);
             return details;
         } catch (Exception e) {
             logger.error("Failed to get task details for taskId: %s, error: %s", taskId, e.getMessage());
@@ -58,10 +58,10 @@ public class RedisService {
             ChannelTopic topic = new ChannelTopic(channel);
             redisMessageListenerContainer.addMessageListener((message, pattern) -> {
                 String messageContent = new String(message.getBody());
-                logger.debug(String.format("Message received on channel %s: %s", channel, messageContent), CONTEXT);
+                logger.info(String.format("Message received on channel %s: %s", channel, messageContent), CONTEXT);
                 messageListener.onMessage(messageContent);
             }, topic);
-            logger.debug(String.format("Subscribed to channel: %s", channel), CONTEXT);
+            logger.info(String.format("Subscribed to channel: %s", channel), CONTEXT);
         } catch (Exception e) {
             logger.error("Failed to subscribe to channel: %s, error: %s", channel, e.getMessage());
             throw e;
@@ -77,7 +77,7 @@ public class RedisService {
             if (Boolean.FALSE.equals(deleted)) {
                 logger.error("Failed to delete task: %s, task not found", taskId, CONTEXT);
             } else {
-                logger.debug(String.format("Successfully deleted task: %s", taskId), CONTEXT);
+                logger.info(String.format("Successfully deleted task: %s", taskId), CONTEXT);
             }
         } catch (Exception e) {
             logger.error("Failed to delete task: %s, error: %s", taskId, CONTEXT);
