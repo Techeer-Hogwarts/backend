@@ -29,7 +29,7 @@ public class RabbitMqService {
                     return message;
                 }
             );
-            logger.debug(String.format("Sent task: %s - type: %s", task, type), CONTEXT);
+            logger.info(String.format("Sent task: %s - type: %s", task, type), CONTEXT);
         } catch (Exception e) {
             logger.error(
                     "Failed to send task: {}, error: {}",
