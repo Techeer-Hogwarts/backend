@@ -74,14 +74,12 @@ public class RedisService {
     public void subscribeToChannel(String channel, MessageListener messageListener) {
         try {
             ChannelTopic topic = new ChannelTopic(channel);
-            redisMessageListenerContainer.addMessageListener(
-                    (message, pattern) -> {
-                        String messageContent = new String(message.getBody());
-                        logger.info("Message received on channel {}: {}", channel, messageContent);
-                        messageListener.onMessage(messageContent);
-                    },
-                    topic);
-            logger.info("Successfully subscribed to channel: {}", channel);
+            redisMessageListenerContainer.addMessageListener((message, pattern) -> {
+                String messageContent = new String(message.getBody());
+                logger.info(String.format("Message received on channel %s: %s", channel, messageContent), CONTEXT);
+                messageListener.onMessage(messageContent);
+            }, topic);
+            logger.info(String.format("Subscribed to channel: %s", channel), CONTEXT);
         } catch (Exception e) {
             logger.error("Failed to subscribe to channel: {}, error: {}", channel, e.getMessage());
             throw e;
