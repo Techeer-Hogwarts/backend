@@ -34,8 +34,9 @@ public class Blog extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private boolean isDeleted = false;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false)
+    private User user;
 
     @Column(nullable = false, length = 1000)
     private String title;
@@ -61,15 +62,13 @@ public class Blog extends BaseEntity {
     @JdbcTypeCode(SqlTypes.ARRAY)
     private List<String> tags = List.of();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private Integer viewCount;
+
+    private boolean isDeleted;
 
     @Column(nullable = false)
     private Integer likeCount;
-
-    @Column(nullable = false)
-    private Integer viewCount;
 
     @Builder
     public Blog(
@@ -82,6 +81,7 @@ public class Blog extends BaseEntity {
             String thumbnail,
             List<String> tags,
             User user) {
+        this.user = user;
         this.title = title;
         this.url = url;
         this.date = date;
@@ -90,9 +90,9 @@ public class Blog extends BaseEntity {
         this.category = category;
         this.thumbnail = thumbnail;
         this.tags = tags != null ? tags : new ArrayList<>();
-        this.user = user;
         this.likeCount = 0;
         this.viewCount = 0;
+        this.isDeleted = false;
     }
 
     public void update(
@@ -115,7 +115,7 @@ public class Blog extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void delete() {
+    public void softDelete() {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
