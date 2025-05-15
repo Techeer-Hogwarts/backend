@@ -1,22 +1,22 @@
 version: '3.8'
 
 services:
-    spring-boot:
-        container_name: spring-boot
-        build:
-            context: .
-            dockerfile: Dockerfile
-        restart: always
-        env_file:
-            - .env
-        ports:
-            - '8000:8000'
-        depends_on:
-            - postgresql
-            - redis
-            - rabbitmq
-        networks:
-            - techeerism
+#    spring-boot:
+#        container_name: spring-boot
+#        build:
+#            context: .
+#            dockerfile: Dockerfile
+#        restart: always
+#        env_file:
+#            - .env
+#        ports:
+#            - '8000:8000'
+#        depends_on:
+#            - postgresql
+#            - redis
+#            - rabbitmq
+#        networks:
+#            - techeerism
 
     postgresql:
         container_name: postgresql

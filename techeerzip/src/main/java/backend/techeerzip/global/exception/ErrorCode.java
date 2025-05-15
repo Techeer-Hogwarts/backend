@@ -43,7 +43,10 @@ public enum ErrorCode {
     // Stack
     STACK_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "Stack not found"),
     STACK_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "S002", "Stack already exists"),
-    STACK_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "S003", "Unauthorized to access this stack");
+    STACK_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "S003", "Unauthorized to access this stack"),
+
+    // Event
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "Event not found");
 
     private final HttpStatus status;
     private final String code;
