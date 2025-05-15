@@ -101,7 +101,10 @@ public enum ErrorCode {
     REDIS_CONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "R001", "Redis connection error"),
     REDIS_MESSAGE_PROCESSING_ERROR(
             HttpStatus.INTERNAL_SERVER_ERROR, "R002", "Redis message processing error"),
-    REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found");
+    REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found"),
+
+    // Event
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "Event not found");
 
     private final HttpStatus status;
     private final String code;

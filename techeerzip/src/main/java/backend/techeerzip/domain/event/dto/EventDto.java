@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 public class EventDto {
 
     @Getter
@@ -11,11 +13,13 @@ public class EventDto {
     @AllArgsConstructor
     public static class Create {
 
+        private Long id;
+        private Long userId;
+        private String category;
         private String title;
-        private String content;
-        private String location;
-        private String startDate;
-        private String endDate;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
+        private String url;
     }
 
     @Getter
@@ -24,10 +28,14 @@ public class EventDto {
     public static class Response {
 
         private Long id;
+        private Long userId;
+        private String category;
         private String title;
-        private String content;
-        private String location;
         private String startDate;
         private String endDate;
+        private String url;
+        private String userName;
+        private String userNickName;
+        private String userProfileImage;
     }
 }
