@@ -6,6 +6,14 @@ import backend.techeerzip.domain.event.dto.response.CreateEventResponse;
 import backend.techeerzip.domain.event.dto.response.GetEventResponse;
 import backend.techeerzip.domain.event.entity.Event;
 import backend.techeerzip.domain.event.exception.EventException;
+import backend.techeerzip.domain.event.dto.EventDto;
+import backend.techeerzip.domain.event.entity.Event;
+import backend.techeerzip.domain.event.exception.EventException;
+import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.repository.UserRepository;
+import backend.techeerzip.global.exception.ErrorCode;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import backend.techeerzip.domain.event.repository.EventRepository;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
@@ -15,6 +23,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.util.List;
 import java.util.stream.Collectors;

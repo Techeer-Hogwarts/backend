@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,6 @@ public class EventController {
         CreateEventResponse response = eventService.createEvent(userId, request);
         logger.debug("이벤트 생성 요청 처리 완료", EventController.class.getSimpleName());
         return ResponseEntity.ok(response);
-    }
 
     @Operation(summary = "이벤트 목록 조회 및 검색", description = "이벤트 목록을 조회하고 검색합니다.")
     @GetMapping
