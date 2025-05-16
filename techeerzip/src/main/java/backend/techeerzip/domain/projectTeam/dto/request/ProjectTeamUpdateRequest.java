@@ -19,11 +19,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProjectTeamUpdateRequest {
 
-    @NotNull @Valid private final List<ProjectMemberInfoRequest> projectMember = List.of();
-    private final List<TeamStackInfo.WithName> teamStacks = List.of();
-    private final List<Long> deleteMembers = List.of();
-    private final List<Long> deleteMainImages = List.of();
-    private final List<Long> deleteResultImages = List.of();
+    @NotNull @Valid @Builder.Default
+    private final List<ProjectMemberInfoRequest> projectMember = List.of();
+
+    @Builder.Default private final List<TeamStackInfo.WithName> teamStacks = List.of();
+    @Builder.Default private final List<Long> deleteMembers = List.of();
+    @Builder.Default private final List<Long> deleteMainImages = List.of();
+    @Builder.Default private final List<Long> deleteResultImages = List.of();
     @NotNull @Valid @JsonUnwrapped private TeamData teamData;
     @NotNull @Valid @JsonUnwrapped private RecruitCounts recruitCounts;
 }
