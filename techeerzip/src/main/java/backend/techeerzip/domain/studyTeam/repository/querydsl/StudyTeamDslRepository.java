@@ -6,5 +6,9 @@ import backend.techeerzip.domain.projectTeam.dto.response.StudyTeamGetAllRespons
 
 public interface StudyTeamDslRepository {
 
-    List<StudyTeamGetAllResponse> fetchStudyTeams(Boolean isRecruited, Boolean isFinished);
+    List<StudyTeamGetAllResponse> sliceYoungTeam(
+            Boolean isRecruited, Boolean isFinished, Long limit);
+
+    List<StudyTeamGetAllResponse> findManyYoungTeamById(
+            List<Long> keys, Boolean isRecruited, Boolean isFinished);
 }

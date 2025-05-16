@@ -25,7 +25,7 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         super(StudyTeam.class, em, factory);
     }
 
-    public List<StudyTeamGetAllResponse> fetchStudyTeams(Boolean isRecruited, Boolean isFinished) {
+    private static BooleanBuilder setBuilder(Boolean isRecruited, Boolean isFinished) {
         final BooleanBuilder builder = new BooleanBuilder();
 
         if (isRecruited != null) {
@@ -34,7 +34,26 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         if (isFinished != null) {
             builder.and(STUDY_TEAM.isFinished.eq(isFinished));
         }
+        return builder;
+    }
 
+    public List<StudyTeamGetAllResponse> sliceYoungTeam(
+            Boolean isRecruited, Boolean isFinished, Long limit) {
+        final BooleanBuilder builder = setBuilder(isRecruited, isFinished);
+
+        List<StudyTeam> teams =
+                selectFrom(STUDY_TEAM)
+                        .where(builder)
+                        .orderBy(STUDY_TEAM.createdAt.desc())
+                        .limit(limit)
+                        .fetch();
+        return teams.stream().map(StudyTeamMapper::toGetAllResponse).toList();
+    }
+
+    public List<StudyTeamGetAllResponse> findManyYoungTeamById(
+            List<Long> keys, Boolean isRecruited, Boolean isFinished) {
+        final BooleanBuilder builder = setBuilder(isRecruited, isFinished);
+        builder.and(STUDY_TEAM.id.in(keys));
         List<StudyTeam> teams =
                 selectFrom(STUDY_TEAM).where(builder).orderBy(STUDY_TEAM.createdAt.desc()).fetch();
         return teams.stream().map(StudyTeamMapper::toGetAllResponse).toList();

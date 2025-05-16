@@ -37,13 +37,13 @@ public class StudyTeam extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private boolean isDeleted = false;
+    private Boolean isDeleted = false;
 
     @Column(nullable = false)
-    private boolean isRecruited;
+    private Boolean isRecruited;
 
     @Column(nullable = false)
-    private boolean isFinished;
+    private Boolean isFinished;
 
     @Column(nullable = false, unique = true, length = 100)
     private String name;
