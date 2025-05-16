@@ -1,27 +1,30 @@
 package backend.techeerzip.domain.projectTeam.repository;
 
-import jakarta.persistence.EntityManager;
+import java.util.List;
 
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+import backend.techeerzip.domain.projectTeam.entity.TeamStack;
+import backend.techeerzip.domain.stack.entity.Stack;
+import backend.techeerzip.domain.stack.entity.StackCategory;
+import backend.techeerzip.domain.stack.repository.StackRepository;
 
 @ActiveProfiles("test")
 @DataJpaTest
-class ProjectTeamRepositoryTest {
+class ProjectTeamStackRepositoryTest {
 
-    @Autowired private ProjectTeamRepository projectTeamRepository;
-
-    @Autowired private EntityManager em;
+    @Autowired ProjectTeamStackRepository projectTeamStackRepository;
+    @Autowired ProjectTeamRepository projectTeamRepository;
+    @Autowired StackRepository stackRepository;
 
     private ProjectTeam savedTeam;
+    private Stack savedStack;
 
     @BeforeEach
     void setup() {
@@ -41,38 +44,20 @@ class ProjectTeamRepositoryTest {
                                 .backendNum(1)
                                 .isFinished(false)
                                 .build());
+        savedStack =
+                stackRepository.save(
+                        Stack.builder().category(StackCategory.BACKEND).name("").build());
     }
 
     @Test
-    void existsByNameTrue() {
-        Assertions.assertThat(projectTeamRepository.existsByName("name")).isTrue();
-    }
-
-    @Test
-    @Transactional
-    void checkViewCountIncrease() {
-        final ProjectTeam pm = projectTeamRepository.findById(1L).orElseThrow();
-        pm.increaseViewCount();
-        em.flush();
-        em.clear();
-
-        Assertions.assertThat(projectTeamRepository.findById(1L)).isPresent();
-    }
-
-    @Nested
-    class CreateTest {
-
-        @Test
-        void createProjectTeamEntity() {
-            Assertions.assertThat(savedTeam.getId()).isEqualTo(1L);
-        }
-
-        @Test
-        void findByIdProjectTeam() {
-            ProjectTeam saved = projectTeamRepository.save(savedTeam);
-            ProjectTeam find = projectTeamRepository.findById(1L).orElseThrow();
-
-            Assertions.assertThat(saved.getId()).isEqualTo(find.getId());
-        }
+    void deleteAllByProjectTeam() {
+        final TeamStack stack1 =
+                TeamStack.builder().stack(savedStack).projectTeam(savedTeam).isMain(true).build();
+        final TeamStack stack2 =
+                TeamStack.builder().stack(savedStack).projectTeam(savedTeam).isMain(true).build();
+        projectTeamStackRepository.saveAll(List.of(stack1, stack2));
+        projectTeamStackRepository.deleteAllByProjectTeam(savedTeam);
+        final List<TeamStack> expect = projectTeamStackRepository.findAll();
+        Assertions.assertTrue(expect.isEmpty());
     }
 }

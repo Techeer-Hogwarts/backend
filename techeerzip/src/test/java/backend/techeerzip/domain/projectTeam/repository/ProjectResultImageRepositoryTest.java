@@ -1,25 +1,23 @@
 package backend.techeerzip.domain.projectTeam.repository;
 
-import jakarta.persistence.EntityManager;
+import java.util.List;
 
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
+import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 
 @ActiveProfiles("test")
 @DataJpaTest
-class ProjectTeamRepositoryTest {
+class ProjectResultImageRepositoryTest {
 
     @Autowired private ProjectTeamRepository projectTeamRepository;
-
-    @Autowired private EntityManager em;
+    @Autowired private ProjectResultImageRepository projectResultImageRepository;
 
     private ProjectTeam savedTeam;
 
@@ -44,35 +42,15 @@ class ProjectTeamRepositoryTest {
     }
 
     @Test
-    void existsByNameTrue() {
-        Assertions.assertThat(projectTeamRepository.existsByName("name")).isTrue();
-    }
+    void countByProjectTeamId() {
+        final ProjectResultImage img1 =
+                ProjectResultImage.builder().projectTeam(savedTeam).imageUrl("").build();
+        final ProjectResultImage img2 =
+                ProjectResultImage.builder().projectTeam(savedTeam).imageUrl("").build();
 
-    @Test
-    @Transactional
-    void checkViewCountIncrease() {
-        final ProjectTeam pm = projectTeamRepository.findById(1L).orElseThrow();
-        pm.increaseViewCount();
-        em.flush();
-        em.clear();
+        projectResultImageRepository.saveAll(List.of(img1, img2));
 
-        Assertions.assertThat(projectTeamRepository.findById(1L)).isPresent();
-    }
-
-    @Nested
-    class CreateTest {
-
-        @Test
-        void createProjectTeamEntity() {
-            Assertions.assertThat(savedTeam.getId()).isEqualTo(1L);
-        }
-
-        @Test
-        void findByIdProjectTeam() {
-            ProjectTeam saved = projectTeamRepository.save(savedTeam);
-            ProjectTeam find = projectTeamRepository.findById(1L).orElseThrow();
-
-            Assertions.assertThat(saved.getId()).isEqualTo(find.getId());
-        }
+        Assertions.assertEquals(
+                projectResultImageRepository.countByProjectTeamId(savedTeam.getId()), 2);
     }
 }
