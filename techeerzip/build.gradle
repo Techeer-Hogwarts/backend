@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.3.1'
     id 'io.spring.dependency-management' version '1.1.5'
     id 'com.diffplug.spotless' version '6.25.0'
+    id 'jacoco'
 }
 
 group = 'backend'
@@ -20,11 +21,15 @@ configurations {
     }
 }
 
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    // test H2
+    testImplementation 'com.h2database:h2:2.2.224'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -56,6 +61,7 @@ dependencies {
     // QueryDSL
     implementation 'com.querydsl:querydsl-core:5.0.0'
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    implementation 'com.querydsl:querydsl-apt:5.0.0:jakarta'
 
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
@@ -65,8 +71,11 @@ dependencies {
     implementation "software.amazon.awssdk:s3:2.31.32"
 }
 
-tasks.named('test') {
+tasks.named('test', Test) {
+    systemProperty 'spring.profiles.active', 'test'
+    systemProperty 'spring.config.location', "$projectDir/src/test/resources/application-test.properties"
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
 
 // QueryDSL 설정
@@ -111,3 +120,59 @@ spotless {
 
 // Spotless가 compileJava 이후에 실행되도록 설정
 spotlessJava.dependsOn compileJava
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+// 공통 exclusion 패턴 정의
+def jacocoExcluded = [
+        '**/Q*.class',      // QueryDSL generated
+        '**/*Builder*',     // Lombok builder
+        '**/dto/**',        // DTO
+        '**/exception/**',  // Exception
+        '**/config/**',     // Config
+        '**/infra/**',      // Infra (S3, MQ 등)
+        '**/global/**'      // Global 패키지
+]
+
+// jacocoReport
+tasks.named('jacocoTestReport') {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    classDirectories.setFrom(files(
+            classDirectories.files.collect { fileTree(dir: it, exclude: jacocoExcluded) }
+    ))
+}
+
+// jacocoCoverage 확인
+tasks.named('jacocoTestCoverageVerification') {
+    classDirectories.setFrom(files(
+            classDirectories.files.collect { fileTree(dir: it, exclude: jacocoExcluded) }
+    ))
+
+    violationRules {
+        rule {
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value   = 'COVEREDRATIO'
+                minimum = 0.00
+            }
+            limit {
+                counter = 'BRANCH'
+                value   = 'COVEREDRATIO'
+                minimum = 0.00
+            }
+        }
+    }
+}
+
+// 테스트 task 마무리 설정
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
+}

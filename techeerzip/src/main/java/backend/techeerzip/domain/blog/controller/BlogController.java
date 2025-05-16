@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import backend.techeerzip.global.logger.CustomLogger;
 
 @RestController
-@RequestMapping("/api/v1/blogs")
+@RequestMapping("/api/v3/blogs")
 public class BlogController {
     private final CustomLogger logger;
 

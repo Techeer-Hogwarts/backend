@@ -13,7 +13,7 @@ import backend.techeerzip.domain.projectMember.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/project-members")
+@RequestMapping("/api/v3/project-members")
 @RequiredArgsConstructor
 public class ProjectMemberController {
 

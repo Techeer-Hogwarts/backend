@@ -8,7 +8,7 @@ import backend.techeerzip.domain.like.service.LikeService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/likes")
+@RequestMapping("/api/v3/likes")
 @RequiredArgsConstructor
 public class LikeController {
     private final LikeService likeService;

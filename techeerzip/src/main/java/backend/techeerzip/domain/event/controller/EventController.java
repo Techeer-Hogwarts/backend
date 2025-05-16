@@ -8,7 +8,7 @@ import backend.techeerzip.domain.event.service.EventService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping("/api/v3/events")
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;

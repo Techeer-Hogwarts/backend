@@ -8,7 +8,7 @@ import backend.techeerzip.domain.stack.service.StackService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/stacks")
+@RequestMapping("/api/v3/stacks")
 @RequiredArgsConstructor
 public class StackController {
     private final StackService stackService;
