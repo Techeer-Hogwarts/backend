@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.projectTeam.mapper;
 
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
+import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.entity.TeamStack;
 
 public class TeamStackMapper {
@@ -11,11 +12,11 @@ public class TeamStackMapper {
         return new TeamStackInfo.WithName(teamStack.getStack().getName(), teamStack.isMain());
     }
 
-    // public static TeamStack toEntity(TeamStackInfo.WithName dto, Stack stack, ProjectTeam team) {
-    //     return TeamStack.builder()
-    //             .stack(stack)
-    //             .projectTeam(team)
-    //             .isMain(dto.getIsMain())
-    //             .build();
-    // }
+    public static TeamStack toEntity(TeamStackInfo.WithStack dto, ProjectTeam team) {
+        return TeamStack.builder()
+                .stack(dto.getStack())
+                .isMain(dto.getIsMain())
+                .projectTeam(team)
+                .build();
+    }
 }
