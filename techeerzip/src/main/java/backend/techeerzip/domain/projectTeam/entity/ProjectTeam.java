@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
+import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -182,8 +183,13 @@ public class ProjectTeam extends BaseEntity {
         this.resultImages.addAll(images);
     }
 
-    public void delete() {
+    public void softDelete() {
         this.isDeleted = true;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void close() {
+        this.isRecruited = false;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -204,5 +210,13 @@ public class ProjectTeam extends BaseEntity {
 
     public boolean hasUserId(Long userId) {
         return this.projectMembers.stream().anyMatch(m -> m.getUser().getId().equals(userId));
+    }
+
+    public boolean isRecruited() {
+        return this.isRecruited;
+    }
+
+    public boolean isRecruitPosition(TeamRole teamRole) {
+        return teamRole.getCount(this) > 0;
     }
 }
