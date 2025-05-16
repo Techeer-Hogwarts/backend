@@ -1,7 +1,10 @@
 package backend.techeerzip.domain.projectMember.entity;
 
-import java.time.LocalDateTime;
-
+import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+import backend.techeerzip.domain.projectTeam.type.TeamRole;
+import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.BaseEntity;
+import backend.techeerzip.global.entity.StatusCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,12 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-
-import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.type.TeamRole;
-import backend.techeerzip.domain.user.entity.User;
-import backend.techeerzip.global.entity.BaseEntity;
-import backend.techeerzip.global.entity.StatusCategory;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,9 +29,9 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "ProjectMember",
         uniqueConstraints = {
-            @UniqueConstraint(
-                    name = "ProjectMember_projectTeamId_userId_key",
-                    columnNames = {"projectTeamId", "userId"})
+                @UniqueConstraint(
+                        name = "ProjectMember_projectTeamId_userId_key",
+                        columnNames = {"projectTeamId", "userId"})
         })
 public class ProjectMember extends BaseEntity {
 
@@ -104,8 +102,16 @@ public class ProjectMember extends BaseEntity {
         this.isDeleted = false;
     }
 
-    public void changeLeaderStatus(boolean isLeader) {
-        this.isLeader = isLeader;
-        this.updatedAt = LocalDateTime.now();
+    public void toApplicant() {
+        this.status = StatusCategory.PENDING;
+    }
+
+    public void toActive() {
+        this.status = StatusCategory.APPROVED;
+        this.isDeleted = false;
+    }
+
+    public void toReject() {
+        this.status = StatusCategory.REJECT;
     }
 }
