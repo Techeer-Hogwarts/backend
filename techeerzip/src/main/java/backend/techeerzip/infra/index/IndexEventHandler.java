@@ -28,7 +28,6 @@ public class IndexEventHandler {
             log.debug("Index CREATE 요청 보냄: " + url);
         } catch (Exception e) {
             log.error("인덱스 생성 중 오류 발생: " + url + e.getMessage());
-            throw e;
         }
     }
 
