@@ -35,6 +35,7 @@ public enum ErrorCode {
             HttpStatus.BAD_REQUEST, "PM003", "프로젝트 멤버만 접근할 수 있습니다."),
     PROJECT_MEMBER_APPLICATION_EXISTS(HttpStatus.BAD_REQUEST, "PM004", "이미 해당 프로젝트에 지원하셨습니다."),
     PROJECT_MEMBER_ALREADY_ACTIVE(HttpStatus.BAD_REQUEST, "PM005", "이미 해당 프로젝트에서 활동 중인 멤버입니다."),
+    PROJECT_MEMBER_NOT_APPLICANT(HttpStatus.BAD_REQUEST, "PM006", "해당 프로젝트 지원자가 아닙니다."),
 
     // ==== ProjectTeam ====
     PROJECT_TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "PT001", "프로젝트 팀을 찾을 수 없습니다."),
@@ -45,10 +46,10 @@ public enum ErrorCode {
     PROJECT_TEAM_DUPLICATE_DELETE_UPDATE(
             HttpStatus.CONFLICT, "PT006", "프로젝트 삭제 멤버와 업데이트 멤버가 중복됩니다."),
     PROJECT_TEAM_INVALID_TEAM_STACK(HttpStatus.BAD_REQUEST, "PT007", "팀 스택이 유효하지 않은 존재입니다."),
-    PROJECT_TEAM_INVALID_RECRUIT_NUM(HttpStatus.BAD_REQUEST, "PT008", "모집 인원이 음수 입니다."),
+    PROJECT_TEAM_POSITION_CLOSED(HttpStatus.BAD_REQUEST, "PT008", "모집 인원이 음수 입니다."),
     PROJECT_TEAM_MISSING_UPDATE_MEMBER(
             HttpStatus.BAD_REQUEST, "PT009", "프로젝트 팀 멤버 업데이트에 누락된 인원이 존재합니다."),
-    PROJECT_TEAM_RECRUITMENT_ENDED(HttpStatus.BAD_REQUEST, "PT010", "프로젝트 팀 모집이 종료되었습니다."),
+    PROJECT_TEAM_RECRUITMENT_CLOSED(HttpStatus.BAD_REQUEST, "PT010", "프로젝트 팀 모집이 종료되었습니다."),
     PROJECT_TEAM_INVALID_TEAM_ROLE(HttpStatus.BAD_REQUEST, "PT011", "유효하지 않은 팀 역할입니다."),
     PROJECT_TEAM_INVALID_UPDATE_MEMBER(HttpStatus.BAD_REQUEST, "PT012", "업데이트 멤버가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_APPLICANT(HttpStatus.BAD_REQUEST, "PT013", "유효하지 않은 지원자입니다."),
