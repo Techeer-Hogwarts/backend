@@ -19,7 +19,7 @@ public class IndexEventHandler {
     private final RestTemplate restTemplate;
     private final CustomLogger log;
 
-    @Async("taskExecutor")
+    @Async("defaultExecutor")
     @EventListener
     public void handleCreate(IndexEvent.Create<?> event) {
         final String url = indexApiUrl + "/index/" + event.getIndex();
@@ -31,7 +31,7 @@ public class IndexEventHandler {
         }
     }
 
-    @Async("taskExecutor")
+    @Async("defaultExecutor")
     @EventListener
     public void handleDelete(IndexEvent.Delete event) {
         final String url =

@@ -24,7 +24,6 @@ class IndexEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        handler = new IndexEventHandler(restTemplate, log);
         ReflectionTestUtils.setField(handler, "indexApiUrl", "http://localhost");
     }
 

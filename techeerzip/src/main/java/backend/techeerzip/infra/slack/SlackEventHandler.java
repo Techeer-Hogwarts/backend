@@ -22,25 +22,25 @@ public class SlackEventHandler {
     private final RestTemplate restTemplate;
     private final CustomLogger log;
 
-    @Async("taskExecutor")
+    @Async("defaultExecutor")
     @EventListener
     public void sendChannel(SlackEvent.Channel<?> event) {
         try {
             log.debug("SlackEvent Channel 요청 보냄: " + channelUrl);
             restTemplate.postForEntity(channelUrl, event.getPayload(), Void.class);
         } catch (Exception e) {
-            log.error("인덱스 생성 중 오류 발생: " + channelUrl + e.getMessage());
+            log.error("SlackEvent Channel 메시지 전송 중 오류 발생: " + channelUrl + e.getMessage());
         }
     }
 
-    @Async("taskExecutor")
+    @Async("defaultExecutor")
     @EventListener
     public void sendDM(SlackEvent.DM<?> event) {
         try {
             log.debug("SlackEvent DM 요청 보냄: " + dmUrl);
             restTemplate.postForEntity(dmUrl, event.getPayload(), Void.class);
         } catch (Exception e) {
-            log.error("인덱스 삭제 중 오류 발생: " + dmUrl + e.getMessage());
+            log.error("Slack DM 메시지 전송 중 오류 발생: " + dmUrl + " " + e.getMessage(), e);
         }
     }
 }

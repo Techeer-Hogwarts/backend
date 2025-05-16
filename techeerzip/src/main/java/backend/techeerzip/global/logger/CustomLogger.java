@@ -184,4 +184,8 @@ public class CustomLogger {
     private boolean isSensitiveField(String fieldName) {
         return SENSITIVE_FIELDS.stream().anyMatch(field -> fieldName.toLowerCase().contains(field));
     }
+
+    public void error(String format, Object... args) {
+        logger.debug(format, args);
+    }
 }
