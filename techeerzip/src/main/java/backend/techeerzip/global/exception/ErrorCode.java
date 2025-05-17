@@ -40,6 +40,12 @@ public enum ErrorCode {
     STUDY_MEMBER_UNAUTHORIZED(
             HttpStatus.UNAUTHORIZED, "SM003", "Unauthorized to access this study member"),
 
+    // Session
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND,"SS001", "Session not found"),
+    SESSION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "SS002", "Session already exists"),
+    SESSION_UNAUTHORIZED(
+            HttpStatus.UNAUTHORIZED, "SS003", "Unauthorized to access this Session"),
+
     // Stack
     STACK_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "Stack not found"),
     STACK_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "S002", "Stack already exists"),
