@@ -154,5 +154,24 @@ public class EventService {
             logger.error(String.format("이벤트 삭제 실패 - eventId: %d, error: %s", eventId, e.getMessage()), CONTEXT);
             throw e;
         }
+
+        event.delete();
+    }
+
+    private EventDto.Response toResponse(Event event) {
+        return new EventDto.Response(
+                event.getId(),
+                event.getUser().getId(),
+                event.getCategory(),
+                event.getTitle(),
+                event.getStartDate(),
+                event.getEndDate(),
+                event.getUrl(),
+                new EventDto.Response.UserDto(
+                        event.getUser().getName(),
+                        event.getUser().getNickname(),
+                        event.getUser().getProfileImage()
+                )
+        );
     }
 }
