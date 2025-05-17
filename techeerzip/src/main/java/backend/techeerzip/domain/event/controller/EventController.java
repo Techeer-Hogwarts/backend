@@ -82,4 +82,27 @@ public class EventController {
         logger.debug("이벤트 삭제 요청 처리 완료", EventController.class.getSimpleName());
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{eventId}")
+    public ResponseEntity<EventDto.Response> getEvent(@PathVariable Long eventId) {
+        return ResponseEntity.ok(eventService.getEvent(eventId));
+    }
+
+    @PatchMapping("/{eventId}")
+    public ResponseEntity<EventDto.Response> updateEvent(
+            @PathVariable Long eventId,
+            @Valid @RequestBody EventDto.Create request,
+            @AuthenticationPrincipal(expression = "id") Long userId) {
+
+        return ResponseEntity.ok(eventService.updateEvent(userId, eventId, request));
+    }
+
+    @DeleteMapping("/{eventId}")
+    public ResponseEntity<EventDto.Response> deleteEvent(
+            @PathVariable Long eventId,
+            @AuthenticationPrincipal(expression = "id") Long userId) {
+
+        eventService.deleteEvent(userId, eventId);
+        return ResponseEntity.noContent().build();
+    }
 }
