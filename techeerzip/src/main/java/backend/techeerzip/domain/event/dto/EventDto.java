@@ -31,11 +31,18 @@ public class EventDto {
         private Long userId;
         private String category;
         private String title;
-        private String startDate;
-        private String endDate;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
         private String url;
-        private String userName;
-        private String userNickName;
-        private String userProfileImage;
+        private UserDto user;
+
+        @Getter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        public static class UserDto {
+            private String name;
+            private String nickname;
+            private String profileImage;
+        }
     }
 }
