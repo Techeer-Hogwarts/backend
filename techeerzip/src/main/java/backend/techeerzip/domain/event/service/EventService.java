@@ -93,7 +93,7 @@ public class EventService {
                 event.getStartDate(),
                 event.getEndDate(),
                 event.getUrl(),
-                new EventDto.Response(UserDto(
+                new EventDto.Response.UserDto(
                         event.getUser().getName(),
                         event.getUser().getNickname(),
                         event.getUser().getProfileImage()
