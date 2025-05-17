@@ -26,7 +26,6 @@ public class EventController {
             @Valid @RequestBody EventDto.Create request,
             @AuthenticationPrincipal(expression = "id") Long userId) {
 
-        // TODO: Implement event creation
         EventDto.Response response = eventService.createEvent(userId, request);
         return ResponseEntity.ok().build();
     }

@@ -22,7 +22,6 @@ public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
 
-    // TODO: 필요한 서비스 메서드 구현
     @Transactional
     public EventDto.Response createEvent(Long userId, EventDto.Create request) {
         User user = userRepository.findById(userId)
