@@ -1,9 +1,9 @@
 package backend.techeerzip.domain.projectTeam.dto.response;
 
-import backend.techeerzip.domain.common.dto.IndexRequest;
-import backend.techeerzip.domain.common.dto.SlackRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectIndexRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import lombok.Builder;
 
 @Builder
 public record ProjectTeamUpdateResponse(
-        Long id, SlackRequest slackRequest, IndexRequest indexRequest) {}
+        Long id, SlackRequest.Channel slackRequest, ProjectIndexRequest indexRequest) {}

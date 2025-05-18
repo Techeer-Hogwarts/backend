@@ -1,3 +1,5 @@
 package backend.techeerzip.domain.projectTeam.dto.response;
 
-public record TeamLeaderAlertData(String teamId, String teamName, String leaderEmail) {}
+import java.util.List;
+
+public record TeamLeaderAlertData(String teamId, String teamName, List<String> leaderEmail) {}

@@ -12,6 +12,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.entity.QProjectMember;
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.global.entity.StatusCategory;
 
@@ -43,6 +44,17 @@ public class ProjectMemberDslRepositoryImpl extends AbstractQuerydslRepository
                         PM.status.eq(StatusCategory.PENDING),
                         PM.projectTeam.id.eq(teamId),
                         PM.isDeleted.eq(false))
+                .fetch();
+    }
+
+    public List<LeaderInfo> findManyLeaders(Long teamId) {
+        return select(PM)
+                .select(Projections.constructor(LeaderInfo.class, PM.user.name, PM.user.email))
+                .from(PM)
+                .where(
+                        PM.isLeader.eq(true),
+                        PM.isDeleted.eq(false),
+                        PM.status.eq(StatusCategory.APPROVED))
                 .fetch();
     }
 }

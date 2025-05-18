@@ -1,7 +1,7 @@
 package backend.techeerzip.domain.projectTeam.dto.response;
 
-import backend.techeerzip.domain.common.dto.IndexRequest;
-import backend.techeerzip.domain.common.dto.SlackRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectIndexRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 
 public record ProjectTeamCreateResponse(
-        Long id, SlackRequest slackRequest, IndexRequest indexRequest) {}
+        Long id, SlackRequest.Channel slackRequest, ProjectIndexRequest indexRequest) {}

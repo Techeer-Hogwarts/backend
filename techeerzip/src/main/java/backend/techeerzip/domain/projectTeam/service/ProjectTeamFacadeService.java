@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
-import backend.techeerzip.domain.projectTeam.dto.request.GetTeamQueryRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ImageRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
@@ -30,7 +30,7 @@ public interface ProjectTeamFacadeService {
             ProjectTeamUpdateRequest request);
 
     ResponseEntity<List<TeamGetAllResponse>> getAllProjectAndStudyTeams(
-            GetTeamQueryRequest request);
+            GetTeamsQueryRequest request);
 
     ResponseEntity<EmptyResponse> closeRecruit(Long projectTeamId, Long userId);
 

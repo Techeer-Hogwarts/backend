@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
-import backend.techeerzip.domain.projectTeam.dto.request.GetTeamQueryRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
@@ -57,7 +57,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @GetMapping("/allTeams")
-    public ResponseEntity<List<TeamGetAllResponse>> getAllTeams(GetTeamQueryRequest request) {
+    public ResponseEntity<List<TeamGetAllResponse>> getAllTeams(GetTeamsQueryRequest request) {
         return projectTeamFacadeService.getAllProjectAndStudyTeams(request);
     }
 
@@ -73,13 +73,13 @@ public class ProjectTeamController implements ProjectTeamSwagger {
         return projectTeamFacadeService.softDeleteTeam(projectTeamId, userId);
     }
 
-    @PostMapping("/apply}")
+    @PostMapping("/apply")
     public ResponseEntity<EmptyResponse> applyToProject(ProjectTeamApplyRequest request) {
         final Long userId = 1L;
         return projectTeamFacadeService.applyToProject(request, userId);
     }
 
-    @GetMapping("/{projectTeamId}/applicants}")
+    @GetMapping("/{projectTeamId}/applicants")
     public ResponseEntity<List<ProjectMemberApplicantResponse>> getApplicants(
             @PathVariable Long projectTeamId) {
         final Long userId = 1L;

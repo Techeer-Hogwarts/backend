@@ -9,6 +9,7 @@ import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberDslRepository;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
@@ -61,22 +62,28 @@ public class ProjectMemberService {
     }
 
     @Transactional
-    public void acceptApplicant(Long teamId, Long applicantId) {
+    public ProjectMember acceptApplicant(Long teamId, Long applicantId) {
         final ProjectMember projectMember =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
                         .orElseThrow(ProjectMemberNotFoundException::new);
         projectMember.toActive();
+        return projectMember;
     }
 
     @Transactional
-    public void rejectApplicant(Long teamId, Long applicantId) {
+    public ProjectMember rejectApplicant(Long teamId, Long applicantId) {
         final ProjectMember projectMember =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
                         .orElseThrow(ProjectMemberNotFoundException::new);
         projectMember.toReject();
+        return projectMember;
+    }
+
+    public List<LeaderInfo> getLeaders(Long teamId) {
+        return projectMemberDslRepository.findManyLeaders(teamId);
     }
 }

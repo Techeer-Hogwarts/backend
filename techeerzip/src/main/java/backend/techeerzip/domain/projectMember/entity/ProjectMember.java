@@ -1,10 +1,7 @@
 package backend.techeerzip.domain.projectMember.entity;
 
-import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.type.TeamRole;
-import backend.techeerzip.domain.user.entity.User;
-import backend.techeerzip.global.entity.BaseEntity;
-import backend.techeerzip.global.entity.StatusCategory;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,7 +14,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
+
+import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+import backend.techeerzip.domain.projectTeam.type.TeamRole;
+import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.BaseEntity;
+import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,9 +31,9 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "ProjectMember",
         uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "ProjectMember_projectTeamId_userId_key",
-                        columnNames = {"projectTeamId", "userId"})
+            @UniqueConstraint(
+                    name = "ProjectMember_projectTeamId_userId_key",
+                    columnNames = {"projectTeamId", "userId"})
         })
 public class ProjectMember extends BaseEntity {
 
@@ -45,14 +47,15 @@ public class ProjectMember extends BaseEntity {
     @Column(nullable = false)
     private boolean isLeader;
 
-    @Column(nullable = false, length = 100)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private TeamRole teamRole;
 
     @Column(nullable = false, length = 3000)
     private String summary;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -86,7 +89,7 @@ public class ProjectMember extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void delete() {
+    public void softDelete() {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }

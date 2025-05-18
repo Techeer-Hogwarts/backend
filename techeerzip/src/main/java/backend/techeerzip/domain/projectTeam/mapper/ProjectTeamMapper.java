@@ -7,10 +7,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.request.ImageRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse.MainImageInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse.ProjectMemberInfo;
@@ -18,6 +20,7 @@ import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailRespo
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse.TeamStackDetail;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse.TeamStackDetail.StackInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.exception.ProjectImageException;
@@ -75,7 +78,8 @@ public class ProjectTeamMapper {
                 .build();
     }
 
-    public static ProjectTeamDetailResponse toDetailResponse(ProjectTeam projectTeam) {
+    public static ProjectTeamDetailResponse toDetailResponse(
+            ProjectTeam projectTeam, List<ProjectMember> projectMembers) {
         return ProjectTeamDetailResponse.builder()
                 .id(projectTeam.getId())
                 .isDeleted(projectTeam.isDeleted())
@@ -135,7 +139,7 @@ public class ProjectTeamMapper {
                                                         .build())
                                 .toList())
                 .projectMember(
-                        projectTeam.getProjectMembers().stream()
+                        projectMembers.stream()
                                 .map(
                                         pm ->
                                                 ProjectMemberInfo.builder()
@@ -148,6 +152,22 @@ public class ProjectTeamMapper {
                                                                 pm.getUser().getProfileImage())
                                                         .build())
                                 .toList())
+                .build();
+    }
+
+    public static ProjectTeamUpdateResponse toNonSlackUpdatedResponse(
+            Long projectTeamId, ProjectTeam team, List<LeaderInfo> leaders) {
+        return ProjectTeamUpdateResponse.builder()
+                .id(projectTeamId)
+                .slackRequest(ProjectSlackMapper.toChannelRequest(team, leaders))
+                .indexRequest(ProjectIndexMapper.toIndexRequest(team))
+                .build();
+    }
+
+    public static ProjectTeamUpdateResponse toUpdateResponse(Long projectTeamId, ProjectTeam team) {
+        return ProjectTeamUpdateResponse.builder()
+                .id(projectTeamId)
+                .indexRequest(ProjectIndexMapper.toIndexRequest(team))
                 .build();
     }
 

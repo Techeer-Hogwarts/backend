@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import backend.techeerzip.domain.common.dto.IndexRequest;
-import backend.techeerzip.domain.common.dto.SlackRequest;
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
@@ -23,14 +21,15 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
+import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamLeaderAlertData;
 import backend.techeerzip.domain.projectTeam.entity.ProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
@@ -45,6 +44,8 @@ import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundExcept
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectImageMapper;
+import backend.techeerzip.domain.projectTeam.mapper.ProjectIndexMapper;
+import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamMapper;
 import backend.techeerzip.domain.projectTeam.mapper.TeamStackMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectMainImageRepository;
@@ -102,8 +103,10 @@ public class ProjectTeamService {
         }
     }
 
-    private static void validateProjectActiveMember(Long userId, ProjectTeam team) {
-        if (!team.hasUserId(userId)) {
+    private void validateProjectActiveMember(Long teamId, Long userId) {
+        final boolean isActive =
+                projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
+        if (!isActive) {
             throw new ProjectInvalidActiveRequester();
         }
     }
@@ -193,12 +196,16 @@ public class ProjectTeamService {
         teamEntity.addTeamStacks(teamStackEntities);
         this.log.debug("CreateProjectTeam: 엔티티 맵핑 완료");
 
-        final Long savedTeamId = projectTeamRepository.save(teamEntity).getId();
+        final ProjectTeam team = projectTeamRepository.save(teamEntity);
+        final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
         this.log.debug("CreateProjectTeam: 프로젝트 팀 생성 완료");
 
         // indexService, slackService
         // return 수정
-        return new ProjectTeamCreateResponse(savedTeamId, new SlackRequest(), new IndexRequest());
+        return new ProjectTeamCreateResponse(
+                team.getId(),
+                ProjectSlackMapper.toChannelRequest(team, leaders),
+                ProjectIndexMapper.toIndexRequest(team));
     }
 
     /**
@@ -296,21 +303,19 @@ public class ProjectTeamService {
         /* 4. Recruit 준비 */
         final boolean wasRecruit = teamData.getIsRecruited();
         final boolean isRecruited = this.checkRecruit(recruitCounts, teamData.getIsRecruited());
-        final ProjectTeam currentTeam =
+        final ProjectTeam team =
                 projectTeamRepository
                         .findById(projectTeamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
         /* 4. TeamStack 검증 */
         if (!request.getTeamStacks().isEmpty()) {
-            teamStackService.update(teamStacksInfo, currentTeam);
+            teamStackService.update(teamStacksInfo, team);
         }
         if (!mainImage.isEmpty()) {
-            mainImgRepository.save(
-                    ProjectImageMapper.toMainEntity(mainImage.getFirst(), currentTeam));
+            mainImgRepository.save(ProjectImageMapper.toMainEntity(mainImage.getFirst(), team));
         }
         if (!resultImages.isEmpty()) {
-            resultImgRepository.saveAll(
-                    ProjectImageMapper.toResultEntities(resultImages, currentTeam));
+            resultImgRepository.saveAll(ProjectImageMapper.toResultEntities(resultImages, team));
         }
         validateResultImageCount(projectTeamId, resultImages, request);
         final List<ProjectMember> existingMembers =
@@ -322,28 +327,22 @@ public class ProjectTeamService {
                         existingMembers, updateMembersInfo, deleteMembersId);
 
         /* 10. 프로젝트 팀 업데이트 */
-        currentTeam.update(teamData, isRecruited);
+        team.update(teamData, isRecruited);
         if (!incomingMembersInfo.isEmpty()) {
             final Map<Long, User> users = getIdAndUserMap(incomingMembersInfo);
             final List<ProjectMember> incomingMembers =
-                    ProjectMemberMapper.toEntities(incomingMembersInfo, currentTeam, users);
+                    ProjectMemberMapper.toEntities(incomingMembersInfo, team, users);
             projectMemberRepository.saveAll(incomingMembers);
         }
         /* 12.isRecruited 값이 false → true 로 변경되었을 때 Slack 알림 전송 **/
         if (!wasRecruit && isRecruited) {
             // send Slack
-            return ProjectTeamUpdateResponse.builder()
-                    .id(projectTeamId)
-                    .slackRequest(new SlackRequest())
-                    .indexRequest(new IndexRequest())
-                    .build();
+            final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
+            return ProjectTeamMapper.toNonSlackUpdatedResponse(projectTeamId, team, leaders);
         }
 
         /* 13. 인덱스 업데이트 */
-        return ProjectTeamUpdateResponse.builder()
-                .id(projectTeamId)
-                .indexRequest(new IndexRequest())
-                .build();
+        return ProjectTeamMapper.toUpdateResponse(projectTeamId, team);
     }
 
     private void validateResultImageCount(
@@ -504,11 +503,12 @@ public class ProjectTeamService {
      * @return 프로젝트 팀 상세 정보
      * @throws java.util.NoSuchElementException 팀이 존재하지 않는 경우
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public ProjectTeamDetailResponse updateViewCountAndGetDetail(Long projectTeamId) {
         final ProjectTeam project = projectTeamRepository.findById(projectTeamId).orElseThrow();
         project.increaseViewCount();
-        return ProjectTeamMapper.toDetailResponse(project);
+        final List<ProjectMember> pm = project.getProjectMembers();
+        return ProjectTeamMapper.toDetailResponse(project, pm);
     }
 
     /**
@@ -611,7 +611,7 @@ public class ProjectTeamService {
      * @throws ProjectTeamPositionClosedException 해당 포지션의 모집이 종료된 경우
      */
     @Transactional
-    public SlackRequest apply(ProjectTeamApplyRequest request, Long applicantId) {
+    public List<SlackRequest.DM> apply(ProjectTeamApplyRequest request, Long applicantId) {
         final Long teamId = request.projectTeamId();
         final TeamRole teamRole = request.teamRole();
         final String summary = request.summary();
@@ -628,7 +628,10 @@ public class ProjectTeamService {
         }
         final ProjectMember pm =
                 projectMemberService.applyApplicant(pt, applicantId, teamRole, summary);
-        return new SlackRequest();
+        final List<LeaderInfo> leaders = projectMemberService.getLeaders(pm.getId());
+        final String applicantEmail = pm.getUser().getEmail();
+
+        return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.PENDING);
     }
 
     /**
@@ -642,16 +645,20 @@ public class ProjectTeamService {
      * @throws ProjectMemberNotFoundException 지원 정보가 존재하지 않는 경우
      */
     @Transactional
-    public SlackRequest cancelApplication(Long teamId, Long applicantId) {
+    public List<SlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
         final ProjectMember pm =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserId(teamId, applicantId)
                         .orElseThrow(ProjectMemberNotFoundException::new);
         final String applicantEmail = pm.getUser().getEmail();
         projectMemberRepository.delete(pm);
-        final List<TeamLeaderAlertData> alertInfo =
-                projectTeamDslRepository.findAlertDataForLeader(teamId);
-        return new SlackRequest();
+        final ProjectTeam pt =
+                projectTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(ProjectTeamNotFoundException::new);
+        final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
+        return ProjectSlackMapper.toDmRequest(
+                pt, leaders, applicantEmail, StatusCategory.CANCELLED);
     }
 
     /**
@@ -682,9 +689,16 @@ public class ProjectTeamService {
      * @param applicantId 승인할 지원자 ID
      * @throws ProjectInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
-    public void acceptApplicant(Long teamId, Long userId, Long applicantId) {
-        validateProjectActiveMember(userId, projectTeamRepository.getReferenceById(teamId));
-        projectMemberService.acceptApplicant(teamId, applicantId);
+    public List<SlackRequest.DM> acceptApplicant(Long teamId, Long userId, Long applicantId) {
+        validateProjectActiveMember(teamId, userId);
+        final ProjectMember pm = projectMemberService.acceptApplicant(teamId, applicantId);
+        final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
+        final String applicantEmail = pm.getUser().getEmail();
+        final ProjectTeam pt =
+                projectTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(ProjectTeamNotFoundException::new);
+        return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.APPROVED);
     }
 
     /**
@@ -697,8 +711,16 @@ public class ProjectTeamService {
      * @param applicantId 거절할 지원자 ID
      * @throws ProjectInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
-    public void rejectApplicant(Long teamId, Long userId, Long applicantId) {
-        validateProjectActiveMember(userId, projectTeamRepository.getReferenceById(teamId));
-        projectMemberService.rejectApplicant(teamId, applicantId);
+    public List<SlackRequest.DM> rejectApplicant(Long teamId, Long userId, Long applicantId) {
+        validateProjectActiveMember(teamId, userId);
+        final ProjectMember pm = projectMemberService.rejectApplicant(teamId, applicantId);
+
+        final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
+        final String applicantEmail = pm.getUser().getEmail();
+        final ProjectTeam pt =
+                projectTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(ProjectTeamNotFoundException::new);
+        return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.REJECT);
     }
 }

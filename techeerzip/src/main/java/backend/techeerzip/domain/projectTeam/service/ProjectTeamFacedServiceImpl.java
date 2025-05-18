@@ -1,24 +1,26 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
+import backend.techeerzip.domain.projectTeam.mapper.TeamViewMapper;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import backend.techeerzip.domain.common.dto.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
-import backend.techeerzip.domain.projectTeam.dto.request.GetTeamQueryRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.GetTeamQueryRequest.GetTeamQuery;
+import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ImageRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
@@ -33,7 +35,9 @@ import backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDs
 import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
 import backend.techeerzip.domain.studyTeam.service.StudyTeamService;
+import backend.techeerzip.infra.index.IndexEvent;
 import backend.techeerzip.infra.s3.S3Service;
+import backend.techeerzip.infra.slack.SlackEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -44,6 +48,7 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
     private final ProjectTeamService projectTeamService;
     private final StudyTeamService studyTeamService;
     private final TeamUnionViewDslRepository teamUnionViewDslRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final S3Service s3Service;
 
     // slack 은 애바?
@@ -99,8 +104,12 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
         // Transaction
         final ProjectTeamCreateResponse response =
                 projectTeamService.create(mainImagesUrl, resultImageUrls, request);
-        // Index Service
         // Slack Service
+        eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
+        // Index Service
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>(
+                        response.indexRequest().getName(), response.indexRequest()));
         return ResponseEntity.ok(response.id());
     }
 
@@ -126,15 +135,18 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
                         projectTeamId, userId, mainImagesUrl, resultImageUrls, request);
 
         if (response.slackRequest() != null) {
-            // send Slack
+            eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
         }
         // Index Service
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>(
+                        response.indexRequest().getName(), response.indexRequest()));
         return ResponseEntity.ok(response.id());
     }
 
     public ResponseEntity<List<TeamGetAllResponse>> getAllProjectAndStudyTeams(
-            GetTeamQueryRequest request) {
-        final GetTeamQuery query = request.toQuery();
+            GetTeamsQueryRequest request) {
+        final GetTeamsQuery query = TeamViewMapper.mapToQuery(request);
         final List<PositionNumType> numTypes = query.getPositionNumTypes();
         final List<TeamType> teamTypes = query.getTeamTypes();
         final Long limit = query.getLimit();
@@ -175,8 +187,8 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
 
     public ResponseEntity<EmptyResponse> applyToProject(
             ProjectTeamApplyRequest request, Long userId) {
-        SlackRequest slackRequest = projectTeamService.apply(request, userId);
-        // slack send
+        final List<SlackRequest.DM> slackRequest = projectTeamService.apply(request, userId);
+        eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.ok(new EmptyResponse());
     }
 
@@ -188,7 +200,9 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
     }
 
     public ResponseEntity<EmptyResponse> cancelApplication(Long teamId, Long applicantId) {
-        projectTeamService.cancelApplication(teamId, applicantId);
+        final List<SlackRequest.DM> slackRequest =
+                projectTeamService.cancelApplication(teamId, applicantId);
+        eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.ok(new EmptyResponse());
     }
 
@@ -196,7 +210,10 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
             ProjectApplicantRequest request, Long userId) {
         final Long teamId = request.teamId();
         final Long applicantId = request.applicantId();
-        projectTeamService.acceptApplicant(teamId, userId, applicantId);
+        final List<SlackRequest.DM> slackRequest =
+                projectTeamService.acceptApplicant(teamId, userId, applicantId);
+
+        eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.ok(new EmptyResponse());
     }
 
@@ -204,7 +221,9 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
             ProjectApplicantRequest request, Long userId) {
         final Long teamId = request.teamId();
         final Long applicantId = request.applicantId();
-        projectTeamService.rejectApplicant(teamId, userId, applicantId);
+        final List<SlackRequest.DM> slackRequest =
+                projectTeamService.rejectApplicant(teamId, userId, applicantId);
+        eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.ok(new EmptyResponse());
     }
 
