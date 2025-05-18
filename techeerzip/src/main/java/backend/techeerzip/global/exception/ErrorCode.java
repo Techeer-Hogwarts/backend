@@ -46,7 +46,7 @@ public enum ErrorCode {
     PROJECT_TEAM_DUPLICATE_DELETE_UPDATE(
             HttpStatus.CONFLICT, "PT006", "프로젝트 삭제 멤버와 업데이트 멤버가 중복됩니다."),
     PROJECT_TEAM_INVALID_TEAM_STACK(HttpStatus.BAD_REQUEST, "PT007", "팀 스택이 유효하지 않은 존재입니다."),
-    PROJECT_TEAM_POSITION_CLOSED(HttpStatus.BAD_REQUEST, "PT008", "모집 인원이 음수 입니다."),
+    PROJECT_TEAM_POSITION_CLOSED(HttpStatus.BAD_REQUEST, "PT008", "모집하는 포지션이 아닙니다."),
     PROJECT_TEAM_MISSING_UPDATE_MEMBER(
             HttpStatus.BAD_REQUEST, "PT009", "프로젝트 팀 멤버 업데이트에 누락된 인원이 존재합니다."),
     PROJECT_TEAM_RECRUITMENT_CLOSED(HttpStatus.BAD_REQUEST, "PT010", "프로젝트 팀 모집이 종료되었습니다."),
