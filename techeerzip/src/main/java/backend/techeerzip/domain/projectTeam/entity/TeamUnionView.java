@@ -1,7 +1,5 @@
 package backend.techeerzip.domain.projectTeam.entity;
 
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.util.UUID;
 import org.hibernate.annotations.Immutable;
 
 import backend.techeerzip.domain.projectTeam.type.TeamType;
