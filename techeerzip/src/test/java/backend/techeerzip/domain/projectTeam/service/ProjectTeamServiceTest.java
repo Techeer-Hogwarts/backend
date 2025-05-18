@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,12 +21,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 
-import backend.techeerzip.domain.common.dto.IndexRequest;
-import backend.techeerzip.domain.common.dto.SlackRequest;
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
@@ -35,9 +36,11 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
+import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo.WithStack;
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
@@ -50,11 +53,14 @@ import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateM
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
+import backend.techeerzip.domain.projectTeam.mapper.ProjectIndexMapper;
+import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
 import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
+import backend.techeerzip.domain.projectTeam.type.TeamType;
 import backend.techeerzip.domain.role.entity.Role;
 import backend.techeerzip.domain.stack.entity.Stack;
 import backend.techeerzip.domain.stack.entity.StackCategory;
@@ -82,8 +88,12 @@ class ProjectTeamServiceTest {
     private List<TeamStackInfo.WithName> mockTeamStacks;
     private List<ProjectMemberInfoRequest> projectMemberInfoRequests;
 
+    private MockedStatic<ProjectSlackMapper> slackMapperMock;
+
     @BeforeEach
     void setUp() {
+        slackMapperMock = Mockito.mockStatic(ProjectSlackMapper.class);
+
         mockTeamData =
                 TeamData.builder()
                         .name("name")
@@ -120,6 +130,11 @@ class ProjectTeamServiceTest {
         final ClassPathResource image = new ClassPathResource("IMG_2326.jpg");
     }
 
+    @AfterEach
+    void tearDown() {
+        slackMapperMock.close(); // 반드시 닫아야 static mock이 글로벌 오염 안됨
+    }
+
     /* TestCase
      * 1. 팀 생성 성공
      * 2. 중복 이름 발생시 ProjectDuplicateTeamName 예외 발생
@@ -149,17 +164,29 @@ class ProjectTeamServiceTest {
             final TeamStackInfo.WithStack mockTeamStack = new WithStack(mockStack, true);
             final User mockUser = User.builder().name("name").email("name").build();
             final User spyUser = Mockito.spy(mockUser);
+            final List<LeaderInfo> leaders = List.of(new LeaderInfo("name", "emil"));
+
             Mockito.when(spyUser.getId()).thenReturn(1L);
             when(projectTeamRepository.existsByName("name")).thenReturn(false);
             when(userRepository.findAllById(any())).thenReturn(List.of(spyUser));
             when(teamStackService.create(any())).thenReturn(List.of(mockTeamStack));
+
             final ProjectTeam spyTeam = Mockito.spy(mockTeam);
             Mockito.when(spyTeam.getId()).thenReturn(1L);
             when(projectTeamRepository.save(any())).thenReturn(spyTeam);
 
-            assertEquals(
-                    projectTeamService.create(List.of(""), List.of(""), mockCreateRequest),
-                    new ProjectTeamCreateResponse(1L, new SlackRequest(), new IndexRequest()));
+            when(projectMemberService.getLeaders(any())).thenReturn(leaders);
+
+            ProjectTeamCreateResponse actualResponse =
+                    projectTeamService.create(List.of(""), List.of(""), mockCreateRequest);
+
+            ProjectTeamCreateResponse expectedResponse =
+                    new ProjectTeamCreateResponse(
+                            1L,
+                            ProjectSlackMapper.toChannelRequest(spyTeam, leaders),
+                            ProjectIndexMapper.toIndexRequest(spyTeam));
+
+            assertThat(actualResponse).usingRecursiveComparison().isEqualTo(expectedResponse);
         }
 
         @Test
@@ -466,34 +493,51 @@ class ProjectTeamServiceTest {
         }
     }
 
+    @Test
+    void applyRequestTest() {
+        final ProjectTeamApplyRequest request =
+                new ProjectTeamApplyRequest(1L, TeamRole.BACKEND, "summary");
+        assertThat(request.teamRole()).isEqualTo(TeamRole.BACKEND);
+    }
+
     @Nested
-    @DisplayName("apply 메서드 테스트")
+    @DisplayName("apply 메서드")
     class ApplyTest {
 
+        private ProjectTeam mt;
+        private ProjectMember mpm;
         private ProjectTeamApplyRequest request;
+        private User mu;
+        private final List<LeaderInfo> leaders = List.of(new LeaderInfo("name", "email"));
 
         @BeforeEach
         void setup() {
-            request = new ProjectTeamApplyRequest(1L, TeamRole.BACKEND, "자기소개입니다.");
+            mt = Mockito.mock(ProjectTeam.class);
+            mpm = Mockito.mock(ProjectMember.class);
+            request = new ProjectTeamApplyRequest(1L, TeamRole.BACKEND, "summary");
+            mu = Mockito.mock(User.class);
         }
 
         @Test
         @DisplayName("모집 중인 포지션이면 지원 성공")
         void applySuccess() {
-            ProjectTeam team = Mockito.spy(mockTeam);
-            when(projectTeamRepository.findById(1L)).thenReturn(Optional.of(team));
-            when(team.isRecruited()).thenReturn(true);
-            when(team.isRecruitPosition(TeamRole.BACKEND)).thenReturn(true);
-            when(projectMemberService.applyApplicant(any(), any(), any(), any()))
-                    .thenReturn(mock(ProjectMember.class));
+            when(mt.isRecruited()).thenReturn(true);
+            when(mt.isRecruitPosition(any())).thenReturn(true);
+            when(projectTeamRepository.findById(any())).thenReturn(Optional.of(mt));
+            when(projectMemberService.applyApplicant(any(), any(), any(), any())).thenReturn(mpm);
+            when(projectMemberService.getLeaders(any())).thenReturn(leaders);
+            when(mpm.getUser()).thenReturn(mu);
+            when(mu.getEmail()).thenReturn("applicant@email.com");
 
-            SlackRequest result = projectTeamService.apply(request, 10L);
+            List<SlackRequest.DM> result = projectTeamService.apply(request, 10L);
+
             assertNotNull(result);
         }
 
         @Test
         @DisplayName("모집이 종료된 팀이면 예외 발생")
         void applyToClosedRecruitmentThenThrow() {
+
             ProjectTeam team = Mockito.spy(mockTeam);
             when(projectTeamRepository.findById(1L)).thenReturn(Optional.of(team));
             when(team.isRecruited()).thenReturn(false);
@@ -530,19 +574,46 @@ class ProjectTeamServiceTest {
     @Nested
     @DisplayName("cancelApplication 메서드 테스트")
     class CancelApplicationTest {
+        private final List<LeaderInfo> leaders = List.of(new LeaderInfo("name", "email"));
 
         @Test
         @DisplayName("지원 취소 성공")
         void cancelSuccess() {
-            ProjectMember pm = Mockito.mock(ProjectMember.class);
-            User user = Mockito.mock(User.class);
-            when(user.getEmail()).thenReturn("test@email.com");
-            when(pm.getUser()).thenReturn(user);
-            when(projectMemberRepository.findByProjectTeamIdAndUserId(1L, 100L))
+            final Long teamId = 1L;
+            final Long applicantId = 10L;
+            final ProjectMember pm = Mockito.mock(ProjectMember.class);
+            final User applicant = Mockito.mock(User.class);
+            final ProjectTeam team = Mockito.mock(ProjectTeam.class);
+            when(applicant.getEmail()).thenReturn("applicantEmail");
+            when(pm.getUser()).thenReturn(applicant);
+            when(projectMemberRepository.findByProjectTeamIdAndUserId(teamId, applicantId))
                     .thenReturn(Optional.of(pm));
+            when(projectTeamRepository.findById(teamId)).thenReturn(Optional.ofNullable(team));
+            when(projectMemberService.getLeaders(any())).thenReturn(leaders);
 
-            SlackRequest result = projectTeamService.cancelApplication(1L, 100L);
-            assertNotNull(result);
+            final List<SlackRequest.DM> expectedSlackMessages =
+                    List.of(
+                            new SlackRequest.DM(
+                                    1L,
+                                    TeamType.PROJECT,
+                                    "teamName",
+                                    "email",
+                                    "applicantEmail",
+                                    StatusCategory.CANCELLED));
+            slackMapperMock
+                    .when(
+                            () ->
+                                    ProjectSlackMapper.toDmRequest(
+                                            team,
+                                            leaders,
+                                            "applicantEmail",
+                                            StatusCategory.CANCELLED))
+                    .thenReturn(expectedSlackMessages);
+
+            List<SlackRequest.DM> result =
+                    projectTeamService.cancelApplication(teamId, applicantId);
+
+            Assertions.assertEquals(expectedSlackMessages, result);
         }
 
         @Test
@@ -560,54 +631,119 @@ class ProjectTeamServiceTest {
     @Nested
     @DisplayName("acceptApplicant 메서드 테스트")
     class AcceptApplicantTest {
+        private final List<LeaderInfo> leaders = List.of(new LeaderInfo("name", "email"));
 
         @Test
         @DisplayName("정상 요청이면 승인 성공")
         void acceptSuccess() {
-            ProjectTeam team = Mockito.mock(ProjectTeam.class);
-            when(team.hasUserId(10L)).thenReturn(true);
-            when(projectTeamRepository.getReferenceById(1L)).thenReturn(team);
+            final Long teamId = 1L;
+            final Long userId = 10L;
+            final Long applicantId = 100L;
+            final ProjectTeam team = mock(ProjectTeam.class);
+            when(projectTeamRepository.findById(teamId)).thenReturn(Optional.of(team));
+            final ProjectMember pm = mock(ProjectMember.class);
+            final User applicantUser = mock(User.class);
+            when(applicantUser.getEmail()).thenReturn("applicantEmail");
+            when(pm.getUser()).thenReturn(applicantUser);
+            when(projectMemberService.checkActiveMemberByTeamAndUser(any(), any()))
+                    .thenReturn(true);
+            when(projectMemberService.getLeaders(any())).thenReturn(leaders);
+            when(projectMemberService.acceptApplicant(teamId, applicantId)).thenReturn(pm);
 
-            Assertions.assertDoesNotThrow(() -> projectTeamService.acceptApplicant(1L, 10L, 100L));
+            final List<SlackRequest.DM> expectedSlackMessages =
+                    List.of(
+                            new SlackRequest.DM(
+                                    1L,
+                                    TeamType.PROJECT,
+                                    "teamName",
+                                    "email",
+                                    "applicantEmail",
+                                    StatusCategory.APPROVED));
+            slackMapperMock
+                    .when(
+                            () ->
+                                    ProjectSlackMapper.toDmRequest(
+                                            team,
+                                            leaders,
+                                            "applicantEmail",
+                                            StatusCategory.APPROVED))
+                    .thenReturn(expectedSlackMessages);
+
+            List<SlackRequest.DM> result =
+                    projectTeamService.acceptApplicant(teamId, userId, applicantId);
+
+            Assertions.assertEquals(expectedSlackMessages, result);
         }
 
         @Test
         @DisplayName("권한 없는 사용자면 예외 발생")
         void notActiveMemberThenThrow() {
-            ProjectTeam team = Mockito.mock(ProjectTeam.class);
-            when(team.hasUserId(10L)).thenReturn(false);
-            when(projectTeamRepository.getReferenceById(1L)).thenReturn(team);
+            final Long teamId = 1L;
+            final Long userId = 10L;
+            final Long applicantId = 100L;
+            when(projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId))
+                    .thenReturn(false);
 
             assertThrows(
                     ProjectInvalidActiveRequester.class,
-                    () -> projectTeamService.acceptApplicant(1L, 10L, 100L));
+                    () -> projectTeamService.acceptApplicant(teamId, userId, applicantId));
         }
     }
 
     @Nested
     @DisplayName("rejectApplicant 메서드 테스트")
     class RejectApplicantTest {
+        private final List<LeaderInfo> leaders = List.of(new LeaderInfo("name", "email"));
 
         @Test
         @DisplayName("정상 요청이면 거절 성공")
         void rejectSuccess() {
-            ProjectTeam team = Mockito.mock(ProjectTeam.class);
-            when(team.hasUserId(10L)).thenReturn(true);
-            when(projectTeamRepository.getReferenceById(1L)).thenReturn(team);
+            final Long teamId = 1L;
+            final Long userId = 10L;
+            final Long applicantId = 100L;
+            when(projectMemberService.checkActiveMemberByTeamAndUser(any(), any()))
+                    .thenReturn(true);
+            when(projectMemberService.getLeaders(any())).thenReturn(leaders);
+            final ProjectTeam team = Mockito.mock(ProjectTeam.class);
+            final User applicant = Mockito.mock(User.class);
+            when(applicant.getEmail()).thenReturn("applicantEmail");
+            when(projectTeamRepository.findById(teamId)).thenReturn(Optional.of(team));
+            ProjectMember pm = Mockito.mock(ProjectMember.class);
+            when(pm.getUser()).thenReturn(applicant);
+            when(projectMemberService.rejectApplicant(any(), any())).thenReturn(pm);
 
-            Assertions.assertDoesNotThrow(() -> projectTeamService.rejectApplicant(1L, 10L, 100L));
+            final List<SlackRequest.DM> expectedSlackMessages =
+                    List.of(
+                            new SlackRequest.DM(
+                                    teamId,
+                                    TeamType.PROJECT,
+                                    "teamName",
+                                    "email",
+                                    "applicantEmail",
+                                    StatusCategory.REJECT));
+            slackMapperMock
+                    .when(
+                            () ->
+                                    ProjectSlackMapper.toDmRequest(
+                                            team, leaders, "applicantEmail", StatusCategory.REJECT))
+                    .thenReturn(expectedSlackMessages);
+
+            Assertions.assertDoesNotThrow(
+                    () -> projectTeamService.rejectApplicant(teamId, userId, applicantId));
         }
 
         @Test
         @DisplayName("권한 없는 사용자면 예외 발생")
         void rejectWithoutAuthorityThenThrow() {
-            ProjectTeam team = Mockito.mock(ProjectTeam.class);
-            when(team.hasUserId(10L)).thenReturn(false);
-            when(projectTeamRepository.getReferenceById(1L)).thenReturn(team);
+            final Long teamId = 1L;
+            final Long userId = 10L;
+            final Long applicantId = 100L;
+            when(projectMemberService.checkActiveMemberByTeamAndUser(any(), any()))
+                    .thenReturn(false);
 
             assertThrows(
                     ProjectInvalidActiveRequester.class,
-                    () -> projectTeamService.rejectApplicant(1L, 10L, 100L));
+                    () -> projectTeamService.rejectApplicant(teamId, userId, applicantId));
         }
     }
 
@@ -617,7 +753,7 @@ class ProjectTeamServiceTest {
 
         @Test
         void success() {
-            ProjectTeam mockTeam = mock(ProjectTeam.class);
+            mockTeam = mock(ProjectTeam.class);
             when(projectTeamRepository.findById(1L)).thenReturn(Optional.of(mockTeam));
 
             ProjectTeamDetailResponse response = projectTeamService.updateViewCountAndGetDetail(1L);

@@ -5,18 +5,14 @@ import org.junit.jupiter.api.Test;
 class ProjectTeamDslRepositoryImplTest {
 
     @Test
-    void sliceYoungTeam() {
-    }
+    void sliceYoungTeam() {}
 
     @Test
-    void findManyYoungTeamById() {
-    }
+    void findManyYoungTeamById() {}
 
     @Test
-    void findAlertDataForLeader() {
-    }
+    void findAlertDataForLeader() {}
 
     @Test
-    void findAllTeamsByUserId() {
-    }
+    void findAllTeamsByUserId() {}
 }

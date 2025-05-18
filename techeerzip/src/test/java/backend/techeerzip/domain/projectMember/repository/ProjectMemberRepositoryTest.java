@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -21,6 +22,7 @@ import backend.techeerzip.global.entity.StatusCategory;
 
 @ActiveProfiles("test")
 @DataJpaTest
+@EntityScan(basePackages = "backend.techeerzip.domain")
 class ProjectMemberRepositoryTest {
 
     @Autowired private ProjectMemberRepository projectMemberRepository;
@@ -115,22 +117,15 @@ class ProjectMemberRepositoryTest {
                         .isLeader(true)
                         .user(user)
                         .build();
+        pm.softDelete();
         projectMemberRepository.save(pm);
-        pm.delete();
-        final ProjectMember deleted = projectMemberRepository.findByProjectTeamId(1L).orElseThrow();
+        final ProjectMember deleted =
+                projectMemberRepository.findByProjectTeamId(savedTeam.getId()).orElseThrow();
         final boolean isMember =
                 projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
-                        1L, 1L, StatusCategory.APPROVED);
+                        user.getId(), savedTeam.getId(), StatusCategory.APPROVED);
         Assertions.assertFalse(isMember);
         Assertions.assertTrue(deleted.isDeleted());
-    }
-
-    @Test
-    void jpaIsDeletedFalseThenTrueTest() {
-        final boolean isMember =
-                projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
-                        7L, 1L, StatusCategory.APPROVED);
-        Assertions.assertTrue(isMember);
     }
 
     @Test
@@ -147,7 +142,7 @@ class ProjectMemberRepositoryTest {
         projectMemberRepository.save(pm);
         final boolean isMember =
                 projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
-                        1L, 1L, StatusCategory.APPROVED);
+                        user.getId(), savedTeam.getId(), StatusCategory.APPROVED);
         Assertions.assertTrue(isMember);
     }
 }

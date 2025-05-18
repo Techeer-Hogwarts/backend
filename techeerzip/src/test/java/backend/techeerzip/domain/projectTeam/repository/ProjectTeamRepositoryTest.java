@@ -51,12 +51,12 @@ class ProjectTeamRepositoryTest {
     @Test
     @Transactional
     void checkViewCountIncrease() {
-        final ProjectTeam pm = projectTeamRepository.findById(1L).orElseThrow();
+        final ProjectTeam pm = projectTeamRepository.findById(savedTeam.getId()).orElseThrow();
         pm.increaseViewCount();
         em.flush();
         em.clear();
 
-        Assertions.assertThat(projectTeamRepository.findById(1L)).isPresent();
+        Assertions.assertThat(projectTeamRepository.findById(savedTeam.getId())).isPresent();
     }
 
     @Nested
@@ -64,15 +64,30 @@ class ProjectTeamRepositoryTest {
 
         @Test
         void createProjectTeamEntity() {
-            Assertions.assertThat(savedTeam.getId()).isEqualTo(1L);
+            final ProjectTeam create =
+                    projectTeamRepository.save(
+                            ProjectTeam.builder()
+                                    .projectExplain("")
+                                    .name("create")
+                                    .recruitExplain("")
+                                    .notionLink("")
+                                    .isRecruited(true)
+                                    .githubLink("")
+                                    .fullStackNum(1)
+                                    .frontendNum(1)
+                                    .devopsNum(1)
+                                    .dataEngineerNum(1)
+                                    .backendNum(1)
+                                    .isFinished(false)
+                                    .build());
+            Assertions.assertThat(create).isNotNull();
         }
 
         @Test
         void findByIdProjectTeam() {
-            ProjectTeam saved = projectTeamRepository.save(savedTeam);
-            ProjectTeam find = projectTeamRepository.findById(1L).orElseThrow();
+            ProjectTeam find = projectTeamRepository.findById(savedTeam.getId()).orElseThrow();
 
-            Assertions.assertThat(saved.getId()).isEqualTo(find.getId());
+            Assertions.assertThat(savedTeam.getId()).isEqualTo(find.getId());
         }
     }
 }
