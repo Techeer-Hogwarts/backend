@@ -132,7 +132,7 @@ public class User {
     private boolean isAuth;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "roleId", nullable = false)
     private Role role;
 
     @Column(nullable = false, length = 100)
