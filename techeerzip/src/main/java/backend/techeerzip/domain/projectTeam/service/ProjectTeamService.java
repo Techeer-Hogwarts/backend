@@ -25,7 +25,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
@@ -672,7 +672,7 @@ public class ProjectTeamService {
      * @param userId 요청자(멤버) ID
      * @return 지원자 목록
      */
-    public List<ProjectMemberApplicantResponse> getApplicants(Long teamId, Long userId) {
+    public List<ProjectApplicantResponse> getApplicants(Long teamId, Long userId) {
         final boolean isActive =
                 projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
         if (!isActive) {

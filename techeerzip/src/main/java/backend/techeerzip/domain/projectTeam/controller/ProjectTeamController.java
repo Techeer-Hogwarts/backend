@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -20,7 +21,6 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
@@ -97,7 +97,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @GetMapping("/{projectTeamId}/applicants")
-    public ResponseEntity<List<ProjectMemberApplicantResponse>> getApplicants(
+    public ResponseEntity<List<ProjectApplicantResponse>> getApplicants(
             @PathVariable Long projectTeamId) {
         final Long userId = 10L;
         return projectTeamFacadeService.getApplicants(projectTeamId, userId);

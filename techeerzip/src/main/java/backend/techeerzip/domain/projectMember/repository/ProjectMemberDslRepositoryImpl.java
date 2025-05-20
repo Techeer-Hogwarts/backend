@@ -13,7 +13,7 @@ import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.entity.QProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import backend.techeerzip.global.entity.StatusCategory;
 
 @Repository
@@ -26,11 +26,11 @@ public class ProjectMemberDslRepositoryImpl extends AbstractQuerydslRepository
         super(ProjectMember.class, em, factory);
     }
 
-    public List<ProjectMemberApplicantResponse> findManyApplicants(Long teamId) {
+    public List<ProjectApplicantResponse> findManyApplicants(Long teamId) {
         return select(PM)
                 .select(
                         Projections.constructor(
-                                ProjectMemberApplicantResponse.class,
+                                ProjectApplicantResponse.class,
                                 PM.id,
                                 PM.teamRole,
                                 PM.summary,

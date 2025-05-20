@@ -10,7 +10,7 @@ import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundEx
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberDslRepository;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
@@ -57,7 +57,7 @@ public class ProjectMemberService {
         return projectMemberRepository.save(pm);
     }
 
-    public List<ProjectMemberApplicantResponse> getApplicants(Long teamId) {
+    public List<ProjectApplicantResponse> getApplicants(Long teamId) {
         return projectMemberDslRepository.findManyApplicants(teamId);
     }
 

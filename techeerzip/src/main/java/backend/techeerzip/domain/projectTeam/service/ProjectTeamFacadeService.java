@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,6 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
@@ -41,7 +41,7 @@ public interface ProjectTeamFacadeService {
 
     ResponseEntity<EmptyResponse> applyToProject(ProjectTeamApplyRequest request, Long userId);
 
-    ResponseEntity<List<ProjectMemberApplicantResponse>> getApplicants(Long teamId, Long userId);
+    ResponseEntity<List<ProjectApplicantResponse>> getApplicants(Long teamId, Long userId);
 
     ResponseEntity<EmptyResponse> cancelApplication(Long teamId, Long applicantId);
 

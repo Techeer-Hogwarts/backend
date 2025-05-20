@@ -12,7 +12,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
 import backend.techeerzip.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -151,7 +151,7 @@ public interface ProjectTeamSwagger {
             content =
                     @Content(
                             schema =
-                                    @Schema(implementation = ProjectMemberApplicantResponse.class)))
+                                    @Schema(implementation = ProjectApplicantResponse.class)))
     default void getApplicants() {}
 
     @Operation(summary = "프로젝트 지원 취소", description = "해당 프로젝트에 대한 자신의 지원을 취소합니다.")

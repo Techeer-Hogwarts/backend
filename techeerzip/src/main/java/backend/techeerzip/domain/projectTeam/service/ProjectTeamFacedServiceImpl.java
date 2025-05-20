@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -18,7 +19,6 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
@@ -216,9 +216,9 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
         return ResponseEntity.ok(new EmptyResponse());
     }
 
-    public ResponseEntity<List<ProjectMemberApplicantResponse>> getApplicants(
+    public ResponseEntity<List<ProjectApplicantResponse>> getApplicants(
             Long teamId, Long userId) {
-        final List<ProjectMemberApplicantResponse> applicants =
+        final List<ProjectApplicantResponse> applicants =
                 projectTeamService.getApplicants(teamId, userId);
         return ResponseEntity.ok(applicants);
     }
