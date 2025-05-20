@@ -66,7 +66,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ProjectTeamService {
 
     private final ProjectMemberService projectMemberService;
@@ -178,16 +177,17 @@ public class ProjectTeamService {
         // ProjectTeam
         final ProjectTeam teamEntity =
                 ProjectTeamMapper.toEntity(teamData, recruitCounts, isRecruited);
+        final ProjectTeam team = projectTeamRepository.save(teamEntity);
         // ProjectMember
         final List<ProjectMember> memberEntities =
-                mapToProjectMemberEntities(membersInfo, teamEntity, users);
+                mapToProjectMemberEntities(membersInfo, team, users);
         final ProjectMainImage mainImgEntity =
-                ProjectImageMapper.toMainEntity(mainImage.getFirst(), teamEntity);
+                ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
 
         final List<ProjectResultImage> resultImageEntities =
-                ProjectImageMapper.toResultEntities(resultImages, teamEntity);
+                ProjectImageMapper.toResultEntities(resultImages, team);
         final List<TeamStack> teamStackEntities =
-                teamStacks.stream().map(s -> TeamStackMapper.toEntity(s, teamEntity)).toList();
+                teamStacks.stream().map(s -> TeamStackMapper.toEntity(s, team)).toList();
         teamEntity.addProjectMembers(memberEntities);
         teamEntity.addProjectMainImages(List.of(mainImgEntity));
         if (!teamStackEntities.isEmpty()) {
@@ -196,7 +196,6 @@ public class ProjectTeamService {
         teamEntity.addTeamStacks(teamStackEntities);
         this.log.debug("CreateProjectTeam: 엔티티 맵핑 완료");
 
-        final ProjectTeam team = projectTeamRepository.save(teamEntity);
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
         this.log.debug("CreateProjectTeam: 프로젝트 팀 생성 완료");
 
@@ -298,8 +297,6 @@ public class ProjectTeamService {
         verifyUserIsActiveProjectMember(userId, projectTeamId);
         /* 2. TeamRole 검증 */
         validateLeaderExists(updateMembersInfo);
-        /* 3. 프로젝트 이름 중복 검증 */
-        checkUniqueProjectName(teamData.getName());
         /* 4. Recruit 준비 */
         final boolean wasRecruit = teamData.getIsRecruited();
         final boolean isRecruited = this.checkRecruit(recruitCounts, teamData.getIsRecruited());
@@ -307,8 +304,13 @@ public class ProjectTeamService {
                 projectTeamRepository
                         .findById(projectTeamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
+        /* 3. 프로젝트 이름 중복 검증 */
+        if (!teamData.getName().equals(team.getName())) {
+            checkUniqueProjectName(teamData.getName());
+        }
         /* 4. TeamStack 검증 */
         if (!request.getTeamStacks().isEmpty()) {
+            team.clearTeamStacks();
             teamStackService.update(teamStacksInfo, team);
         }
         if (!mainImage.isEmpty()) {
@@ -691,9 +693,8 @@ public class ProjectTeamService {
      */
     public List<SlackRequest.DM> acceptApplicant(Long teamId, Long userId, Long applicantId) {
         validateProjectActiveMember(teamId, userId);
-        final ProjectMember pm = projectMemberService.acceptApplicant(teamId, applicantId);
+        final String applicantEmail = projectMemberService.acceptApplicant(teamId, applicantId);
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
-        final String applicantEmail = pm.getUser().getEmail();
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
@@ -713,10 +714,8 @@ public class ProjectTeamService {
      */
     public List<SlackRequest.DM> rejectApplicant(Long teamId, Long userId, Long applicantId) {
         validateProjectActiveMember(teamId, userId);
-        final ProjectMember pm = projectMemberService.rejectApplicant(teamId, applicantId);
-
+        final String applicantEmail = projectMemberService.rejectApplicant(teamId, applicantId);
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
-        final String applicantEmail = pm.getUser().getEmail();
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)

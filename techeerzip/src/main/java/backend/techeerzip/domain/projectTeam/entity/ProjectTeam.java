@@ -163,8 +163,8 @@ public class ProjectTeam extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateTeamStacks(List<TeamStack> stacks) {
-        this.teamStacks = stacks;
+    public void clearTeamStacks() {
+        this.teamStacks.clear();
     }
 
     public void addTeamStacks(List<TeamStack> stacks) {
@@ -206,10 +206,6 @@ public class ProjectTeam extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
-    }
-
-    public boolean hasUserId(Long userId) {
-        return this.projectMembers.stream().anyMatch(m -> m.getUser().getId().equals(userId));
     }
 
     public boolean isRecruited() {

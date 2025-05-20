@@ -648,7 +648,8 @@ class ProjectTeamServiceTest {
             when(projectMemberService.checkActiveMemberByTeamAndUser(any(), any()))
                     .thenReturn(true);
             when(projectMemberService.getLeaders(any())).thenReturn(leaders);
-            when(projectMemberService.acceptApplicant(teamId, applicantId)).thenReturn(pm);
+            when(projectMemberService.acceptApplicant(teamId, applicantId))
+                    .thenReturn("applicantEmail");
 
             final List<SlackRequest.DM> expectedSlackMessages =
                     List.of(
@@ -710,7 +711,7 @@ class ProjectTeamServiceTest {
             when(projectTeamRepository.findById(teamId)).thenReturn(Optional.of(team));
             ProjectMember pm = Mockito.mock(ProjectMember.class);
             when(pm.getUser()).thenReturn(applicant);
-            when(projectMemberService.rejectApplicant(any(), any())).thenReturn(pm);
+            when(projectMemberService.rejectApplicant(any(), any())).thenReturn("applicantEmail");
 
             final List<SlackRequest.DM> expectedSlackMessages =
                     List.of(

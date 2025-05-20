@@ -51,7 +51,6 @@ public class TeamStackService {
      * @return Stack 엔티티와 isMain 정보를 포함한 WithStack DTO 리스트
      * @throws ProjectInvalidTeamStackException 존재하지 않는 스택 이름이 포함되어 있을 경우 (갯수 불일치)
      */
-    @Transactional
     public List<TeamStackInfo.WithStack> create(
             List<TeamStackInfo.WithName> updateTeamStacksRequest) {
         Map<String, Boolean> createInfo = mapToUpdateInfo(updateTeamStacksRequest);
@@ -90,7 +89,6 @@ public class TeamStackService {
         Map<String, Boolean> updateInfo = mapToUpdateInfo(updateTeamStacksRequest);
         List<Stack> stacks = getStacks(updateInfo);
         validateStacks(stacks, updateInfo);
-        projectTeamStackRepository.deleteAllByProjectTeam(projectTeam);
         List<TeamStack> teamStacks =
                 stacks.stream()
                         .map(

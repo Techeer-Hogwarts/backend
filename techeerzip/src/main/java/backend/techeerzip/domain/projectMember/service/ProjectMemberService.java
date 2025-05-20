@@ -62,25 +62,25 @@ public class ProjectMemberService {
     }
 
     @Transactional
-    public ProjectMember acceptApplicant(Long teamId, Long applicantId) {
+    public String acceptApplicant(Long teamId, Long applicantId) {
         final ProjectMember projectMember =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
                         .orElseThrow(ProjectMemberNotFoundException::new);
         projectMember.toActive();
-        return projectMember;
+        return projectMember.getUser().getEmail();
     }
 
     @Transactional
-    public ProjectMember rejectApplicant(Long teamId, Long applicantId) {
+    public String rejectApplicant(Long teamId, Long applicantId) {
         final ProjectMember projectMember =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
                         .orElseThrow(ProjectMemberNotFoundException::new);
         projectMember.toReject();
-        return projectMember;
+        return projectMember.getUser().getEmail();
     }
 
     public List<LeaderInfo> getLeaders(Long teamId) {
