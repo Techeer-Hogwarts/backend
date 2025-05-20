@@ -7,12 +7,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.ImageRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
 
@@ -20,7 +20,10 @@ public interface ProjectTeamFacadeService {
 
     ResponseEntity<ProjectTeamDetailResponse> getDetail(Long projectTeamId);
 
-    ResponseEntity<Long> create(ImageRequest imageRequest, ProjectTeamCreateRequest request);
+    ProjectTeamCreateResponse create(
+            MultipartFile mainImage,
+            List<MultipartFile> resultImages,
+            ProjectTeamCreateRequest request);
 
     ResponseEntity<Long> update(
             Long projectTeamId,

@@ -1,7 +1,5 @@
 package backend.techeerzip.domain.projectTeam.service;
 
-import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
-import backend.techeerzip.domain.projectTeam.mapper.TeamViewMapper;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -9,13 +7,12 @@ import java.util.stream.Stream;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
+import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.ImageRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
@@ -31,18 +28,19 @@ import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionSliceYoungInfo;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMainImageException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamResultImageException;
+import backend.techeerzip.domain.projectTeam.mapper.TeamViewMapper;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepository;
 import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
 import backend.techeerzip.domain.studyTeam.service.StudyTeamService;
+import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.index.IndexEvent;
 import backend.techeerzip.infra.s3.S3Service;
 import backend.techeerzip.infra.slack.SlackEvent;
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Component
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
 
     private final ProjectTeamService projectTeamService;
@@ -50,26 +48,31 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
     private final TeamUnionViewDslRepository teamUnionViewDslRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final S3Service s3Service;
+    private final CustomLogger log;
 
     // slack 은 애바?
     // index
 
-    private static void validateMainImage(MultipartFile mainImage, List<Long> deleteMainImages) {
-        if (mainImage == null && deleteMainImages.isEmpty()) {
-            return;
+    private static boolean validateMainImage(MultipartFile mainImage, List<Long> deleteMainImages) {
+        if ((mainImage == null || mainImage.isEmpty()) && deleteMainImages.isEmpty()) {
+            return false;
         }
         if (mainImage != null && deleteMainImages.size() == 1) {
-            return;
+            return true;
         }
         throw new ProjectTeamMainImageException();
     }
 
-    private static void validateResultImages(
+    private static boolean validateResultImages(
             List<MultipartFile> resultImages, List<Long> deleteResultImages) {
+        if (resultImages == null || resultImages.isEmpty()) {
+            return false;
+        }
         int count = resultImages.size() - deleteResultImages.size();
-        if (count > 10) {
+        if (count > 10 || count < 0) {
             throw new ProjectTeamResultImageException();
         }
+        return count != 0;
     }
 
     private static boolean isOnlyProject(List<PositionNumType> numTypes) {
@@ -92,25 +95,32 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
         return ResponseEntity.ok(projectTeamService.updateViewCountAndGetDetail(projectTeamId));
     }
 
-    public ResponseEntity<Long> create(
-            ImageRequest imageRequest, ProjectTeamCreateRequest request) {
+    public ProjectTeamCreateResponse create(
+            MultipartFile mainImage,
+            List<MultipartFile> resultImages,
+            ProjectTeamCreateRequest request) {
         // S3 upload
         // 롤백 구현 필요
-        final List<String> mainImagesUrl =
-                s3Service.upload(imageRequest.mainImage(), "project-teams/main", "project-team");
-        final List<String> resultImageUrls =
-                s3Service.uploadMany(
-                        imageRequest.resultImages(), "project-teams/result", "project-team");
-        // Transaction
-        final ProjectTeamCreateResponse response =
-                projectTeamService.create(mainImagesUrl, resultImageUrls, request);
-        // Slack Service
-        eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
-        // Index Service
-        eventPublisher.publishEvent(
-                new IndexEvent.Create<>(
-                        response.indexRequest().getName(), response.indexRequest()));
-        return ResponseEntity.ok(response.id());
+        final List<String> uploadedUrl = new ArrayList<>();
+
+        try {
+            final List<String> mainUrl =
+                    s3Service.upload(mainImage, "project-teams/main", "project-team");
+            uploadedUrl.addAll(mainUrl);
+            log.debug("ProjectTeam Create: s3 main 업로드 완료");
+
+            final List<String> resultUrls =
+                    s3Service.uploadMany(resultImages, "project-teams/result", "project-team");
+            uploadedUrl.addAll(resultUrls);
+            log.debug("ProjectTeam Create: s3 result 업로드 완료");
+
+            // Transaction
+            return projectTeamService.create(mainUrl, mainUrl, request);
+        } catch (Exception e) {
+            s3Service.deleteMany(uploadedUrl);
+            log.error("ProjectTeam Create: s3 롤백", uploadedUrl);
+            throw e;
+        }
     }
 
     public ResponseEntity<Long> update(
@@ -121,27 +131,41 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
             ProjectTeamUpdateRequest request) {
         // If S3 upload
         /* 5. MainImage 개수 검증 */
-        validateMainImage(mainImage, request.getDeleteMainImages());
+        final boolean isMain = validateMainImage(mainImage, request.getDeleteMainImages());
         /* 6. ResultImage 개수 검증 */
-        validateResultImages(resultImages, request.getDeleteResultImages());
+        final boolean isResult =
+                validateResultImages(resultImages, request.getDeleteResultImages());
         /* 8. S3 이미지 업로드 */
-        final List<String> mainImagesUrl =
-                s3Service.upload(mainImage, "project-teams/main", "project-team");
-        final List<String> resultImageUrls =
-                s3Service.uploadMany(resultImages, "project-teams/main", "project-team");
-        // Transaction
-        final ProjectTeamUpdateResponse response =
-                projectTeamService.update(
-                        projectTeamId, userId, mainImagesUrl, resultImageUrls, request);
-
-        if (response.slackRequest() != null) {
-            eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
+        final List<String> mainImagesUrl = new ArrayList<>();
+        final List<String> resultImageUrls = new ArrayList<>();
+        try {
+            if (isMain) {
+                final List<String> main =
+                        s3Service.upload(mainImage, "project-teams/main", "project-team");
+                mainImagesUrl.addAll(main);
+            }
+            if (isResult) {
+                final List<String> result =
+                        s3Service.uploadMany(resultImages, "project-teams/main", "project-team");
+                resultImageUrls.addAll(result);
+            }
+            final ProjectTeamUpdateResponse response =
+                    projectTeamService.update(
+                            projectTeamId, userId, mainImagesUrl, resultImageUrls, request);
+            if (response.slackRequest() != null) {
+                eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
+            }
+            eventPublisher.publishEvent(
+                    new IndexEvent.Create<>(
+                            response.indexRequest().getName(), response.indexRequest()));
+            return ResponseEntity.ok(response.id());
+        } catch (Exception e) {
+            if (!mainImagesUrl.isEmpty() || !resultImageUrls.isEmpty()) {
+                resultImageUrls.addAll(mainImagesUrl);
+                s3Service.deleteMany(resultImageUrls);
+            }
+            throw e;
         }
-        // Index Service
-        eventPublisher.publishEvent(
-                new IndexEvent.Create<>(
-                        response.indexRequest().getName(), response.indexRequest()));
-        return ResponseEntity.ok(response.id());
     }
 
     public ResponseEntity<List<TeamGetAllResponse>> getAllProjectAndStudyTeams(
