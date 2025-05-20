@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,6 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateReques
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
 import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
@@ -158,7 +158,7 @@ public class ProjectTeamService {
     public ProjectTeamCreateResponse create(
             List<String> mainImage, List<String> resultImages, ProjectTeamCreateRequest request) {
         this.log.debug("CreateProjectTeam: 시작");
-        final TeamData teamData = request.getTeamData();
+        final projectTeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> membersInfo = request.getProjectMember();
         final List<TeamStackInfo.WithName> teamStacksInfo = request.getTeamStacks();
@@ -287,7 +287,7 @@ public class ProjectTeamService {
             List<String> resultImages,
             ProjectTeamUpdateRequest request) {
         this.log.debug("UpdateProjectTeam: 시작");
-        final TeamData teamData = request.getTeamData();
+        final projectTeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> updateMembersInfo = request.getProjectMember();
         final List<TeamStackInfo.WithName> teamStacksInfo = request.getTeamStacks();

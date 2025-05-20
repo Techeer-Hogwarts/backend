@@ -11,7 +11,7 @@ import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.request.ImageRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
-import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
+import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse.MainImageInfo;
@@ -38,7 +38,7 @@ public class ProjectTeamMapper {
     }
 
     public static ProjectTeam toEntity(
-            TeamData teamData, RecruitCounts recruitCounts, Boolean isRecruited) {
+            projectTeamData teamData, RecruitCounts recruitCounts, Boolean isRecruited) {
         return ProjectTeam.builder()
                 .name(teamData.getName())
                 .githubLink(teamData.getGithubLink())

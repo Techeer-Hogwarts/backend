@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TeamData {
+public class projectTeamData {
 
     @NotBlank private String name;
     @NotBlank private String projectExplain;

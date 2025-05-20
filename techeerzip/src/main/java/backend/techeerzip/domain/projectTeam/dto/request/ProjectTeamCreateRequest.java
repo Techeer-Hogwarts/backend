@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProjectTeamCreateRequest {
 
-    @NotNull @Valid @JsonUnwrapped private TeamData teamData;
+    @NotNull @Valid @JsonUnwrapped private projectTeamData teamData;
 
     @NotNull @Valid @JsonUnwrapped private RecruitCounts recruitCounts;
 

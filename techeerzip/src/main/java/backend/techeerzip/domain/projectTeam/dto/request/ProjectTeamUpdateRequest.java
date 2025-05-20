@@ -26,6 +26,6 @@ public class ProjectTeamUpdateRequest {
     @Builder.Default private final List<Long> deleteMembers = List.of();
     @Builder.Default private final List<Long> deleteMainImages = List.of();
     @Builder.Default private final List<Long> deleteResultImages = List.of();
-    @NotNull @Valid @JsonUnwrapped private TeamData teamData;
+    @NotNull @Valid @JsonUnwrapped private projectTeamData teamData;
     @NotNull @Valid @JsonUnwrapped private RecruitCounts recruitCounts;
 }

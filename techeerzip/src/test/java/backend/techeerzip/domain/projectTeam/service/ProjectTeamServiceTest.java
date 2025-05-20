@@ -37,7 +37,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateReques
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
 import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
+import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo.WithStack;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
@@ -83,7 +83,7 @@ class ProjectTeamServiceTest {
     @InjectMocks private ProjectTeamService projectTeamService;
 
     private ProjectTeam mockTeam;
-    private TeamData mockTeamData;
+    private projectTeamData mockTeamData;
     private RecruitCounts mockRecruitCounts;
     private List<TeamStackInfo.WithName> mockTeamStacks;
     private List<ProjectMemberInfoRequest> projectMemberInfoRequests;
@@ -95,7 +95,7 @@ class ProjectTeamServiceTest {
         slackMapperMock = Mockito.mockStatic(ProjectSlackMapper.class);
 
         mockTeamData =
-                TeamData.builder()
+                projectTeamData.builder()
                         .name("name")
                         .githubLink("")
                         .projectExplain("")
