@@ -2,10 +2,10 @@ package backend.techeerzip.domain.projectTeam.dto.request;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import backend.techeerzip.domain.projectTeam.type.PositionType;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,5 +22,4 @@ public class GetTeamsQueryRequest {
     private List<PositionType> positions;
     private Boolean isRecruited;
     private Boolean isFinished;
-
 }

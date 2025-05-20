@@ -1,8 +1,9 @@
 package backend.techeerzip.domain.common.util;
 
+import java.util.function.Function;
+
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import java.util.function.Function;
 
 public class DslBooleanBuilder {
 

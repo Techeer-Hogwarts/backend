@@ -31,5 +31,4 @@ public enum TeamRole {
     public int getCount(ProjectTeam pt) {
         return this.extractor.apply(pt);
     }
-
 }
