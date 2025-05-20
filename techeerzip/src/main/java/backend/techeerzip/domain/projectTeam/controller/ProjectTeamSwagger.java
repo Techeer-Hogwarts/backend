@@ -1,16 +1,22 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
+import java.util.List;
+
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
 import backend.techeerzip.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -25,20 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "ProjectTeam", description = "프로젝트 팀 관련 API")
 public interface ProjectTeamSwagger {
 
-    @Operation(summary = "프로젝트 상세 조회", description = "프로젝트 팀 ID로 상세 정보를 조회합니다.")
-    @ApiResponse(
-            responseCode = "200",
-            description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = ProjectTeamDetailResponse.class)))
-    default void getDetail() {}
-
     @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트 팀을 생성합니다.")
-    @RequestBody(
-            required = true,
-            content =
-                    @Content(
-                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                            schema = @Schema(implementation = ProjectTeamCreateRequest.class)))
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "생성 성공"),
         @ApiResponse(
@@ -50,15 +43,39 @@ public interface ProjectTeamSwagger {
                 description = "중복된 팀 이름",
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    default void createProjectTeam() {}
+    default ResponseEntity<Long> createProjectTeam(
+            @Parameter(
+                            description = "메인 이미지 파일",
+                            content =
+                                    @Content(
+                                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                                            schema = @Schema(type = "string", format = "binary")))
+                    @RequestPart(value = "mainImages", required = false)
+                    MultipartFile mainImage,
+            @Parameter(
+                            description = "결과 이미지 파일 목록",
+                            content =
+                                    @Content(
+                                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                                            schema = @Schema(type = "string", format = "binary")))
+                    @RequestPart(value = "resultImages", required = false)
+                    List<MultipartFile> resultImages,
+            @Parameter(
+                            description = "프로젝트 생성 요청 DTO",
+                            content =
+                                    @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            schema =
+                                                    @Schema(
+                                                            implementation =
+                                                                    ProjectTeamCreateRequest
+                                                                            .class)))
+                    @RequestPart("createProjectTeamRequest")
+                    ProjectTeamCreateRequest request) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 
     @Operation(summary = "프로젝트 수정", description = "기존 프로젝트 팀의 정보를 수정합니다.")
-    @RequestBody(
-            required = true,
-            content =
-                    @Content(
-                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                            schema = @Schema(implementation = ProjectTeamUpdateRequest.class)))
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "수정 성공"),
         @ApiResponse(
@@ -66,7 +83,38 @@ public interface ProjectTeamSwagger {
                 description = "잘못된 요청",
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    default void updateProjectTeam() {}
+    default ResponseEntity<Long> updateProjectTeam(
+            @Parameter(description = "프로젝트 팀 ID") @PathVariable Long projectTeamId,
+            @Parameter(
+                            description = "메인 이미지 파일",
+                            content =
+                                    @Content(
+                                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                                            schema = @Schema(type = "string", format = "binary")))
+                    @RequestPart(value = "mainImages", required = false)
+                    MultipartFile mainImage,
+            @Parameter(
+                            description = "결과 이미지 파일 목록",
+                            content =
+                                    @Content(
+                                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                                            schema = @Schema(type = "string", format = "binary")))
+                    @RequestPart(value = "resultImages", required = false)
+                    List<MultipartFile> resultImages,
+            @Parameter(
+                            description = "프로젝트 수정 요청 DTO",
+                            content =
+                                    @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            schema =
+                                                    @Schema(
+                                                            implementation =
+                                                                    ProjectTeamUpdateRequest
+                                                                            .class)))
+                    @RequestPart("updateProjectTeamRequest")
+                    ProjectTeamUpdateRequest request) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 
     @Operation(summary = "모든 프로젝트/스터디 팀 조회", description = "조건에 따라 전체 팀 목록을 조회합니다.")
     @ApiResponse(

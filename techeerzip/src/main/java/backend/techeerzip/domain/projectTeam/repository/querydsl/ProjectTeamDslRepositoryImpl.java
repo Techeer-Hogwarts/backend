@@ -1,19 +1,18 @@
 package backend.techeerzip.domain.projectTeam.repository.querydsl;
 
-import backend.techeerzip.domain.common.util.DslBooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
 
 import org.springframework.stereotype.Repository;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
+import backend.techeerzip.domain.common.util.DslBooleanBuilder;
 import backend.techeerzip.domain.projectMember.entity.QProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectUserTeamsResponse;
@@ -37,13 +36,15 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         super(ProjectTeam.class, em, factory);
     }
 
-    private static BooleanExpression setBuilderWithPosition(Boolean isRecruited, Boolean isFinished, List<PositionNumType> numTypes) {
+    private static BooleanExpression setBuilderWithPosition(
+            Boolean isRecruited, Boolean isFinished, List<PositionNumType> numTypes) {
         return DslBooleanBuilder.builder()
                 .andIfNotNull(isRecruited, PT.isRecruited::eq)
                 .andIfNotNull(isFinished, PT.isFinished::eq)
                 .andIfNotNull(buildPositionFilter(numTypes))
                 .build();
     }
+
     private static BooleanExpression setBuilder(Boolean isRecruited, Boolean isFinished) {
         return DslBooleanBuilder.builder()
                 .andIfNotNull(isRecruited, PT.isRecruited::eq)
@@ -60,28 +61,30 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         return expression;
     }
 
-    private static BooleanExpression orCondition(BooleanExpression expression,
-            BooleanExpression condition) {
+    private static BooleanExpression orCondition(
+            BooleanExpression expression, BooleanExpression condition) {
         if (expression == null) {
             expression = condition;
-        }
-        else {
+        } else {
             expression = expression.or(condition);
         }
         return expression;
     }
-
-
 
     public List<ProjectTeamGetAllResponse> sliceYoungTeam(
             List<PositionNumType> positionNumTypes,
             Boolean isRecruited,
             Boolean isFinished,
             Long limit) {
-        final BooleanExpression condition = setBuilderWithPosition(isRecruited, isFinished, positionNumTypes);
+        final BooleanExpression condition =
+                setBuilderWithPosition(isRecruited, isFinished, positionNumTypes);
 
         final List<ProjectTeam> teams =
-                selectFrom(PT).where(condition).orderBy(PT.createdAt.desc()).limit(limit + 1).fetch();
+                selectFrom(PT)
+                        .where(condition)
+                        .orderBy(PT.createdAt.desc())
+                        .limit(limit + 1)
+                        .fetch();
         return teams.stream().map(ProjectTeamMapper::toGetAllResponse).toList();
     }
 
