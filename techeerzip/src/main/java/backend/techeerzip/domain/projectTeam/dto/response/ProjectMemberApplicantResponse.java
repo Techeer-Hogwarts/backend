@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.dto.response;
 
+import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import lombok.Getter;
 public class ProjectMemberApplicantResponse {
 
     private Long id;
-    private String teamRole;
+    private TeamRole teamRole;
     private String summary;
     private StatusCategory status;
 

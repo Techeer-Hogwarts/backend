@@ -1,18 +1,16 @@
 package backend.techeerzip.domain.studyTeam.repository.querydsl;
 
-import backend.techeerzip.domain.common.util.DslBooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import jakarta.annotation.Nullable;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
 
 import org.springframework.stereotype.Repository;
 
-import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
+import backend.techeerzip.domain.common.util.DslBooleanBuilder;
 import backend.techeerzip.domain.projectTeam.dto.response.StudyTeamGetAllResponse;
 import backend.techeerzip.domain.studyTeam.entity.QStudyTeam;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
@@ -41,11 +39,7 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final BooleanExpression expression = setBuilder(isRecruited, isFinished);
 
         List<StudyTeam> teams =
-                selectFrom(ST)
-                        .where(expression)
-                        .orderBy(ST.createdAt.desc())
-                        .limit(limit)
-                        .fetch();
+                selectFrom(ST).where(expression).orderBy(ST.createdAt.desc()).limit(limit).fetch();
         return teams.stream().map(StudyTeamMapper::toGetAllResponse).toList();
     }
 
