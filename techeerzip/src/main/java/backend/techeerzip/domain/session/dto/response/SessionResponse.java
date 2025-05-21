@@ -53,8 +53,10 @@ public record SessionResponse(
         UserInfo user
 ) {
     public static SessionResponse from(Session session) {
+        Long userId = null;
         UserInfo userInfo = null;
         if (session.getUser() != null) {
+            userId = session.getUser().getId();
             userInfo = new UserInfo(
                     session.getUser().getName(),
                     session.getUser().getNickname(),
@@ -64,7 +66,7 @@ public record SessionResponse(
 
         return new SessionResponse(
                 session.getId(),
-                session.getUser().getId(),
+                userId,
                 session.getThumbnail(),
                 session.getTitle(),
                 session.getPresenter(),
