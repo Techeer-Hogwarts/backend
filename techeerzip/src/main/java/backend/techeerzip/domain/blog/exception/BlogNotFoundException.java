@@ -8,4 +8,4 @@ public class BlogNotFoundException extends RuntimeException {
     public BlogNotFoundException() {
         super("블로그를 찾을 수 없습니다.");
     }
-} 
+}
