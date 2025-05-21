@@ -3,6 +3,8 @@ package backend.techeerzip.domain.session.controller;
 import backend.techeerzip.domain.session.dto.request.SessionCreateRequest;
 import backend.techeerzip.domain.session.dto.response.SessionResponse;
 import backend.techeerzip.domain.session.service.SessionService;
+import backend.techeerzip.global.common.CursorPageViewCountRequest;
+import backend.techeerzip.global.common.CursorPageViewCountResponse;
 import backend.techeerzip.global.common.CursorPageCreatedAtRequest;
 import backend.techeerzip.global.common.CursorPageCreatedAtResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,4 +72,11 @@ public class SessionController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "세션 인기 게시물 목록 조회", description = "세션 인기 게시물 목록을 커서 기반 페이지네이션으로 조회합니다.")
+    @GetMapping("/best")
+    public ResponseEntity<CursorPageViewCountResponse<SessionResponse>> getAllBestSessions(
+            @ParameterObject @Valid CursorPageViewCountRequest request
+    ) {
+        return ResponseEntity.ok(sessionService.getAllBestSessions(request));
+    }
 }

@@ -8,6 +8,8 @@ import backend.techeerzip.domain.session.exception.SessionUnauthorizedException;
 import backend.techeerzip.domain.session.repository.SessionRepository;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
+import backend.techeerzip.global.common.CursorPageViewCountRequest;
+import backend.techeerzip.global.common.CursorPageViewCountResponse;
 import backend.techeerzip.global.common.CursorPageCreatedAtRequest;
 import backend.techeerzip.global.common.CursorPageCreatedAtResponse;
 import backend.techeerzip.global.exception.ErrorCode;
@@ -110,5 +112,20 @@ public class SessionService {
 
     private void validateSessionAuthor(Long userId, Session session) {
         if (!userId.equals(session.getUser().getId())) throw new SessionUnauthorizedException();
+    }
+
+    @Transactional
+    public CursorPageViewCountResponse<SessionResponse> getAllBestSessions(CursorPageViewCountRequest request) {
+        CursorPageViewCountResponse<Session> page = sessionRepository.findAllBestSessionsByCursor(request);
+        List<SessionResponse> sessionResponses = page.content().stream()
+                .map(SessionResponse::from)
+                .toList();
+        return new CursorPageViewCountResponse<>(
+                sessionResponses,
+                page.nextCursor(),
+                page.nextCreatedAt(),
+                page.nextViewCount(),
+                page.hasNext()
+        );
     }
 }
