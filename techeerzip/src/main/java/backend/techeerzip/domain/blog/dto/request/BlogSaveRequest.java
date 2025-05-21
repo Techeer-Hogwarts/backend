@@ -1,10 +1,10 @@
 package backend.techeerzip.domain.blog.dto.request;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,17 +16,19 @@ public class BlogSaveRequest {
     private String author;
     private String authorImage;
     private String thumbnail;
-    private LocalDateTime date;
+    private String date;
     private List<String> tags;
+    private String category;
 
     public BlogSaveRequest(Object post) {
         Map<String, Object> postMap = (Map<String, Object>) post;
-        this.title = title;
+        this.title = (String) postMap.get("title");
         this.url = (String) postMap.get("url");
         this.author = (String) postMap.get("author");
         this.authorImage = (String) postMap.get("authorImage");
         this.thumbnail = (String) postMap.get("thumbnail");
-        this.date = (LocalDateTime) postMap.get("date");
+        this.date = (String) postMap.get("date");
+        this.category = (String) postMap.get("category");
 
         // 타입 안전한 tags 처리
         Object tagsObj = postMap.get("tags");

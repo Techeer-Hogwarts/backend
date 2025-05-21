@@ -1,11 +1,11 @@
 package backend.techeerzip.domain.blog.dto.response;
 
+import java.time.LocalDateTime;
+
 import backend.techeerzip.domain.blog.entity.Blog;
 import backend.techeerzip.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @Schema(name = "BlogResponse", description = "블로그 단건 조회 응답 DTO")
@@ -45,19 +45,19 @@ public class BlogResponse {
     private BlogAuthorResponse user;
 
     public BlogResponse(Blog blog) {
-        this.id         = blog.getId();
-        this.title      = blog.getTitle();
-        this.url        = blog.getUrl();
-        this.date       = blog.getDate();
-        this.category   = blog.getCategory();
-        this.createdAt  = blog.getCreatedAt();
-        this.likeCount  = blog.getLikeCount();
-        this.viewCount  = blog.getViewCount();
-        this.thumbnail  = blog.getThumbnail();
-        this.author     = new Author(blog.getAuthor(), blog.getAuthorImage());
+        this.id = blog.getId();
+        this.title = blog.getTitle();
+        this.url = blog.getUrl();
+        this.date = blog.getDate();
+        this.category = blog.getCategory();
+        this.createdAt = blog.getCreatedAt();
+        this.likeCount = blog.getLikeCount();
+        this.viewCount = blog.getViewCount();
+        this.thumbnail = blog.getThumbnail();
+        this.author = new Author(blog.getAuthor(), blog.getAuthorImage());
 
         User u = blog.getUser();
-        this.user       = (u != null) ? new BlogAuthorResponse(u) : null;
+        this.user = (u != null) ? new BlogAuthorResponse(u) : null;
     }
 
     @Data
@@ -70,7 +70,7 @@ public class BlogResponse {
         private final String authorImage;
 
         public Author(String authorName, String authorImage) {
-            this.authorName  = authorName;
+            this.authorName = authorName;
             this.authorImage = authorImage;
         }
     }

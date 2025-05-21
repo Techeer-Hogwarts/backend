@@ -1,9 +1,8 @@
 package backend.techeerzip.domain.blog.dto.request;
 
-
-import backend.techeerzip.domain.blog.entity.BlogCategory;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
@@ -12,8 +11,7 @@ public class BlogsQueryRequest {
     @Schema(
             description = "검색할 카테고리 (TECHEER: 테커인 블로그, SHARED: 외부 블로그)",
             example = "TECHEER",
-            allowableValues = {"TECHEER", "SHARED"}
-    )
+            allowableValues = {"TECHEER", "SHARED"})
     private String category;
 
     @Schema(description = "오프셋", example = "0")
