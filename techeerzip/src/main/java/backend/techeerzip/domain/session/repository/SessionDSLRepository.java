@@ -9,7 +9,7 @@ import backend.techeerzip.global.common.CursorPageCreatedAtResponse;
 public interface SessionDSLRepository {
     CursorPageCreatedAtResponse<Session> findAllByCursor(CursorPageCreatedAtRequest request);
 
-    CursorPageCreatedAtResponse<Session> getAllSessionsByUserId(Long userId, CursorPageCreatedAtRequest request);
+    CursorPageCreatedAtResponse<Session> findAllByUserIdCursor(Long userId, CursorPageCreatedAtRequest request);
 
     CursorPageViewCountResponse<Session> findAllBestSessionsByCursor(CursorPageViewCountRequest request);
 }

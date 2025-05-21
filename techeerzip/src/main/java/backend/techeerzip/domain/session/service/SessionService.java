@@ -85,7 +85,7 @@ public class SessionService {
     public CursorPageCreatedAtResponse<SessionResponse> getAllSessionsByUserId(Long userId, CursorPageCreatedAtRequest request) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-        CursorPageCreatedAtResponse<Session> page = sessionRepository.getAllSessionsByUserId(userId, request);
+        CursorPageCreatedAtResponse<Session> page = sessionRepository.findAllByUserIdCursor(userId, request);
         List<SessionResponse> sessionResponses = page.content().stream()
                 .map(SessionResponse::from)
                 .toList();

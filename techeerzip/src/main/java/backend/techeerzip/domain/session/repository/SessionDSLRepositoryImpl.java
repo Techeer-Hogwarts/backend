@@ -72,7 +72,7 @@ public class SessionDSLRepositoryImpl implements SessionDSLRepository {
      * - id 내림차순
      */
     @Override
-    public CursorPageCreatedAtResponse<Session> getAllSessionsByUserId(Long userId, CursorPageCreatedAtRequest request) {
+    public CursorPageCreatedAtResponse<Session> findAllByUserIdCursor(Long userId, CursorPageCreatedAtRequest request) {
         int size = request.size() != null ? request.size() : 10;
         // 유저 조건과 결합한 커서 조건 정의
         BooleanExpression cursorCondition = session.user.id.eq(userId);
