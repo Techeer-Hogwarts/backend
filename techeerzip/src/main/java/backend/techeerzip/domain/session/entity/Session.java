@@ -2,6 +2,7 @@ package backend.techeerzip.domain.session.entity;
 
 import java.time.LocalDateTime;
 
+import backend.techeerzip.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,12 +18,16 @@ import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Session")
-public class Session {
+@SQLDelete(sql = "UPDATE \"Session\" SET \"isDeleted\" = true WHERE id = ?")
+@SQLRestriction("\"isDeleted\" = false")
+public class Session extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,19 +52,19 @@ public class Session {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(name = "likeCount", nullable = false)
+    @Column(nullable = false)
     private int likeCount;
 
-    @Column(name = "viewCount", nullable = false)
+    @Column(nullable = false)
     private int viewCount;
 
     @Column(nullable = false, length = 3000)
     private String thumbnail;
 
-    @Column(name = "videoUrl", length = 3000)
+    @Column(length = 3000)
     private String videoUrl;
 
-    @Column(name = "fileUrl", length = 3000)
+    @Column(length = 3000)
     private String fileUrl;
 
     @Column(nullable = false, length = 50)
