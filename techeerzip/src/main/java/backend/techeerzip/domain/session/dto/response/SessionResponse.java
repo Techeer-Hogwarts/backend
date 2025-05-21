@@ -86,7 +86,7 @@ public record SessionResponse(
             @Schema(description = "사용자 이름", example = "김테커")
             String name,
 
-            @Schema(description = "사용자 닉네임", example = "Techer")
+            @Schema(description = "사용자 닉네임", example = "Techeer")
             String nickname,
 
             @Schema(description = "프로필 이미지 URL", example = "https://example.com/profile.jpg")

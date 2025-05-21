@@ -110,10 +110,6 @@ public class SessionService {
         sessionRepository.deleteById(sessionId);
     }
 
-    private void validateSessionAuthor(Long userId, Session session) {
-        if (!userId.equals(session.getUser().getId())) throw new SessionUnauthorizedException();
-    }
-
     @Transactional
     public CursorPageViewCountResponse<SessionResponse> getAllBestSessions(CursorPageViewCountRequest request) {
         CursorPageViewCountResponse<Session> page = sessionRepository.findAllBestSessionsByCursor(request);
@@ -127,5 +123,9 @@ public class SessionService {
                 page.nextViewCount(),
                 page.hasNext()
         );
+    }
+
+    private void validateSessionAuthor(Long userId, Session session) {
+        if (!userId.equals(session.getUser().getId())) throw new SessionUnauthorizedException();
     }
 }
