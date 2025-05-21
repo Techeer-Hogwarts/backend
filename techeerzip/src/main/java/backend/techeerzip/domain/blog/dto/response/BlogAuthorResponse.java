@@ -24,10 +24,10 @@ public class BlogAuthorResponse {
     private String profileImage;
 
     public BlogAuthorResponse(User user) {
-        this.id           = user.getId();
-        this.name         = user.getName();
-        this.nickname     = user.getNickname();
-        this.roleId       = user.getRole().getId();
+        this.id = user.getId();
+        this.name = user.getName();
+        this.nickname = user.getNickname();
+        this.roleId = user.getRole().getId();
         this.profileImage = user.getProfileImage();
     }
 }
