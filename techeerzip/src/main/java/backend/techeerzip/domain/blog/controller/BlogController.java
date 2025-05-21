@@ -1,11 +1,10 @@
 package backend.techeerzip.domain.blog.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import backend.techeerzip.domain.blog.dto.request.BlogsQueryRequest;
+import backend.techeerzip.domain.blog.dto.request.BlogQueryRequest;
+import backend.techeerzip.domain.blog.dto.response.BlogListResponse;
 import backend.techeerzip.domain.blog.dto.response.BlogResponse;
 import backend.techeerzip.domain.blog.service.BlogService;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -43,41 +42,44 @@ public class BlogController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "블로그 게시물의 인기글 목록 조회", description = "2주간의 글 중 (조회수 + 좋아요수*10)을 기준으로 인기글을 조회합니다.")
+    @Operation(
+            summary = "블로그 게시물의 인기글 목록 조회",
+            description = "2주간의 글 중 (조회수 + 좋아요수*10)을 기준으로 인기글을 조회합니다.")
     @GetMapping("/best")
-    public ResponseEntity<List<BlogResponse>> getBestBlogs(
-            @Parameter(description = "페이지네이션 정보") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size) {
-        logger.info("인기글 목록 조회 처리 중 - page: %d, size: %d" + page + size + CONTEXT);
-        List<BlogResponse> result = blogService.getBestBlogs(page, size);
-        logger.info("인기글 목록 조회 처리 완료" + CONTEXT);
+    public ResponseEntity<BlogListResponse> getBestBlogs(
+            @Parameter(description = "마지막으로 조회한 블로그의 ID") @RequestParam(required = false)
+                    Long cursorId,
+            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int limit) {
+        logger.info("인기글 목록 조회 처리 중 - cursorId: {}, limit: {}", cursorId, limit);
+        BlogListResponse result = blogService.getBestBlogs(cursorId, limit);
+        logger.info("인기글 목록 조회 처리 완료");
         return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "블로그 게시물 목록 조회 및 검색", description = "블로그 게시물을 조회하고 검색합니다.")
     @GetMapping
-    public ResponseEntity<List<BlogResponse>> getBlogList(
-            @Parameter(description = "검색 조건") BlogsQueryRequest query) {
-        logger.info("블로그 목록 조회 및 검색 처리 중 - query: %s" + query + CONTEXT);
-        List<BlogResponse> result = blogService.getBlogList(query);
-        logger.info("블로그 목록 조회 및 검색 처리 완료" + CONTEXT);
+    public ResponseEntity<BlogListResponse> getBlogList(
+            @Parameter(description = "검색 조건") BlogQueryRequest query) {
+        logger.info("블로그 목록 조회 및 검색 처리 중 - query: {}", query);
+        BlogListResponse result = blogService.getBlogList(query);
+        logger.info("블로그 목록 조회 및 검색 처리 완료");
         return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "유저 별 블로그 게시물 목록 조회", description = "지정된 유저의 블로그 게시물을 조회합니다.")
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<BlogResponse>> getBlogsByUser(
+    public ResponseEntity<BlogListResponse> getBlogsByUser(
             @PathVariable Long userId,
-            @Parameter(description = "페이지네이션 정보") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size) {
+            @Parameter(description = "마지막으로 조회한 블로그의 ID") @RequestParam(required = false)
+                    Long cursorId,
+            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int limit) {
         logger.info(
-                "유저 별 블로그 게시물 목록 조회 처리 중 - userId: %d, page: %d, size: %d"
-                        + userId
-                        + page
-                        + size
-                        + CONTEXT);
-        List<BlogResponse> result = blogService.getBlogsByUser(userId, page, size);
-        logger.info("유저 별 블로그 게시물 목록 조회 처리 완료" + CONTEXT);
+                "유저 별 블로그 게시물 목록 조회 처리 중 - userId: {}, cursorId: {}, limit: {}",
+                userId,
+                cursorId,
+                limit);
+        BlogListResponse result = blogService.getBlogsByUser(userId, cursorId, limit);
+        logger.info("유저 별 블로그 게시물 목록 조회 처리 완료");
         return ResponseEntity.ok(result);
     }
 
