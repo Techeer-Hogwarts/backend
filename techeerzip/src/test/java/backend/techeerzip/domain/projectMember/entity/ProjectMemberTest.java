@@ -1,13 +1,6 @@
 /*
 package backend.techeerzip.domain.projectMember.entity;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
-import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 
 @SpringBootTest
 class ProjectMemberTest {
