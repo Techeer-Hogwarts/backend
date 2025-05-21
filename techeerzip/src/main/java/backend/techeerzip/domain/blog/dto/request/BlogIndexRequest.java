@@ -1,12 +1,12 @@
 package backend.techeerzip.domain.blog.dto.request;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 import backend.techeerzip.domain.blog.entity.Blog;
 import backend.techeerzip.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Data
 @Schema(name = "BlogIndexRequest", description = "블로그 인덱싱 요청 DTO")
@@ -40,16 +40,16 @@ public class BlogIndexRequest {
     private String userProfileImage;
 
     public BlogIndexRequest(Blog blog) {
-        this.date               = blog.getDate().format(DateTimeFormatter.ISO_DATE_TIME);
-        this.id                 = blog.getId().toString();
-        this.stack              = blog.getTags();
-        this.thumbnail          = blog.getThumbnail();
-        this.title              = blog.getTitle();
-        this.url                = blog.getUrl();
+        this.date = blog.getDate().format(DateTimeFormatter.ISO_DATE_TIME);
+        this.id = blog.getId().toString();
+        this.stack = blog.getTags();
+        this.thumbnail = blog.getThumbnail();
+        this.title = blog.getTitle();
+        this.url = blog.getUrl();
 
-        User user               = blog.getUser();
-        this.userId             = user.getId().toString();
-        this.userName           = user.getName();
-        this.userProfileImage   = user.getProfileImage();
+        User user = blog.getUser();
+        this.userId = user.getId().toString();
+        this.userName = user.getName();
+        this.userProfileImage = user.getProfileImage();
     }
 }
