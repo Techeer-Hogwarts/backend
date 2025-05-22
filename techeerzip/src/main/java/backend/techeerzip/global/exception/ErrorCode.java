@@ -12,6 +12,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "Internal Server Error"),
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "Invalid Type Value"),
     HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "Access is Denied"),
+    EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "CT06", "결과 이미지는 10개까지만 등록 가능합니다."),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "User not found"),
@@ -53,7 +54,6 @@ public enum ErrorCode {
     PROJECT_TEAM_INVALID_TEAM_ROLE(HttpStatus.BAD_REQUEST, "PT011", "유효하지 않은 팀 역할입니다."),
     PROJECT_TEAM_INVALID_UPDATE_MEMBER(HttpStatus.BAD_REQUEST, "PT012", "업데이트 멤버가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_APPLICANT(HttpStatus.BAD_REQUEST, "PT013", "유효하지 않은 지원자입니다."),
-    PROJECT_TEAM_EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "PT014", "결과 이미지는 10개까지만 등록 가능합니다."),
     PROJECT_TEAM_ALREADY_APPROVED(HttpStatus.BAD_REQUEST, "PT015", "이미 승인된 프로젝트 멤버입니다."),
     PROJECT_TEAM_INVALID_DELETE_IMAGE(HttpStatus.BAD_REQUEST, "PT016", "삭제하는 결과이미지가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "PT017", "프로젝트 멤버가 유효하지 않습니다."),
