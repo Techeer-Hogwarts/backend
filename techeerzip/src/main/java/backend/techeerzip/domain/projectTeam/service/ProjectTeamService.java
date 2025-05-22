@@ -1,12 +1,13 @@
 package backend.techeerzip.domain.projectTeam.service;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import jakarta.validation.constraints.NotEmpty;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -140,7 +141,9 @@ public class ProjectTeamService {
      */
     @Transactional
     public ProjectTeamCreateResponse create(
-            @NotEmpty List<String> mainImage, List<String> resultImages, ProjectTeamCreateRequest request) {
+            @NotEmpty List<String> mainImage,
+            List<String> resultImages,
+            ProjectTeamCreateRequest request) {
         this.log.debug("CreateProjectTeam: 시작");
         final TeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();

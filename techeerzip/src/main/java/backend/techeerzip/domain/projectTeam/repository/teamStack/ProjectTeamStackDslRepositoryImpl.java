@@ -26,7 +26,8 @@ public class ProjectTeamStackDslRepositoryImpl extends AbstractQuerydslRepositor
 
     public List<TeamStack> findTeamStackByProjectTeamId(Long projectTeamId) {
         return selectFrom(teamStack)
-                .leftJoin(teamStack.stack, stack).fetchJoin()
+                .leftJoin(teamStack.stack, stack)
+                .fetchJoin()
                 .where(teamStack.projectTeam.id.eq(projectTeamId))
                 .fetch();
     }

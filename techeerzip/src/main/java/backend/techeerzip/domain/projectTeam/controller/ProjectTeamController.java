@@ -1,7 +1,5 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
-import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,9 +21,11 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
 import backend.techeerzip.domain.projectTeam.service.ProjectTeamFacadeService;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -51,7 +51,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Long> createProjectTeam(
             @RequestPart(value = "mainImage") MultipartFile mainImage,
-            @RequestPart(value = "resultImages",required = false) List<MultipartFile> resultImages,
+            @RequestPart(value = "resultImages", required = false) List<MultipartFile> resultImages,
             @RequestPart("createProjectTeamRequest") ProjectTeamCreateRequest request) {
         ProjectTeamCreateResponse response =
                 projectTeamFacadeService.create(mainImage, resultImages, request);
@@ -74,8 +74,9 @@ public class ProjectTeamController implements ProjectTeamSwagger {
             @RequestPart(value = "resultImages", required = false) List<MultipartFile> resultImages,
             @RequestPart("updateProjectTeamRequest") ProjectTeamUpdateRequest request) {
         final Long userId = 35L;
-        final ProjectTeamUpdateResponse response = projectTeamFacadeService.update(
-                projectTeamId, userId, mainImage, resultImages, request);
+        final ProjectTeamUpdateResponse response =
+                projectTeamFacadeService.update(
+                        projectTeamId, userId, mainImage, resultImages, request);
         if (response.slackRequest() != null) {
             eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
         }
@@ -114,16 +115,17 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     @PostMapping("/apply")
     public ResponseEntity<Void> applyToProject(ProjectTeamApplyRequest request) {
         final Long userId = 18L;
-        final List<SlackRequest.DM> slackRequest = projectTeamFacadeService.applyToProject(request, userId);
+        final List<SlackRequest.DM> slackRequest =
+                projectTeamFacadeService.applyToProject(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-
     @PatchMapping("/{projectTeamId}/cancel")
     public ResponseEntity<EmptyResponse> cancelApplication(@PathVariable Long projectTeamId) {
         final Long userId = 40L;
-        final List<SlackRequest.DM> slackRequest = projectTeamFacadeService.cancelApplication(projectTeamId, userId);
+        final List<SlackRequest.DM> slackRequest =
+                projectTeamFacadeService.cancelApplication(projectTeamId, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -131,7 +133,8 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     @PatchMapping("/accept")
     public ResponseEntity<EmptyResponse> acceptApplicant(ProjectApplicantRequest request) {
         final Long userId = 35L;
-        final List<SlackRequest.DM> slackRequest = projectTeamFacadeService.acceptApplicant(request, userId);
+        final List<SlackRequest.DM> slackRequest =
+                projectTeamFacadeService.acceptApplicant(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -139,7 +142,8 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     @PatchMapping("/reject")
     public ResponseEntity<EmptyResponse> rejectApplicant(ProjectApplicantRequest request) {
         final Long userId = 35L;
-        final List<SlackRequest.DM> slackRequest = projectTeamFacadeService.rejectApplicant(request, userId);
+        final List<SlackRequest.DM> slackRequest =
+                projectTeamFacadeService.rejectApplicant(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.status(HttpStatus.OK).build();
     }

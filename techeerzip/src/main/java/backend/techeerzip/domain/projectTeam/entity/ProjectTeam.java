@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.entity;
 
-import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +15,7 @@ import jakarta.persistence.Table;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;

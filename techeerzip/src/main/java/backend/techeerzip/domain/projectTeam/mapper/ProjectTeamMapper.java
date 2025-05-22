@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.mapper;
 
-import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
 import java.util.List;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
@@ -83,51 +82,64 @@ public class ProjectTeamMapper {
                 .build();
     }
 
-    private static List<ProjectTeamDetailResponse.ResultImageInfo> mapResultImages(ProjectTeam team) {
+    private static List<ProjectTeamDetailResponse.ResultImageInfo> mapResultImages(
+            ProjectTeam team) {
         return team.getResultImages().stream()
-                .map(i -> ProjectTeamDetailResponse.ResultImageInfo.builder()
-                        .id(i.getId())
-                        .isDeleted(i.isDeleted())
-                        .imageUrl(i.getImageUrl())
-                        .build())
+                .map(
+                        i ->
+                                ProjectTeamDetailResponse.ResultImageInfo.builder()
+                                        .id(i.getId())
+                                        .isDeleted(i.isDeleted())
+                                        .imageUrl(i.getImageUrl())
+                                        .build())
                 .toList();
     }
 
     private static List<ProjectTeamDetailResponse.MainImageInfo> mapMainImages(ProjectTeam team) {
         return team.getMainImages().stream()
-                .map(i -> ProjectTeamDetailResponse.MainImageInfo.builder()
-                        .id(i.getId())
-                        .isDeleted(i.isDeleted())
-                        .imageUrl(i.getImageUrl())
-                        .build())
+                .map(
+                        i ->
+                                ProjectTeamDetailResponse.MainImageInfo.builder()
+                                        .id(i.getId())
+                                        .isDeleted(i.isDeleted())
+                                        .imageUrl(i.getImageUrl())
+                                        .build())
                 .toList();
     }
 
     private static List<ProjectTeamDetailResponse.TeamStackDetail> mapTeamStacks(ProjectTeam team) {
         return team.getTeamStacks().stream()
-                .map(ts -> ProjectTeamDetailResponse.TeamStackDetail.builder()
-                        .id(ts.getId())
-                        .isDeleted(ts.isDeleted())
-                        .projectTeamId(team.getId())
-                        .isMain(ts.isMain())
-                        .stack(ProjectTeamDetailResponse.TeamStackDetail.StackInfo.builder()
-                                .name(ts.getStack().getName())
-                                .category(ts.getStack().getCategory().name())
-                                .build())
-                        .build())
+                .map(
+                        ts ->
+                                ProjectTeamDetailResponse.TeamStackDetail.builder()
+                                        .id(ts.getId())
+                                        .isDeleted(ts.isDeleted())
+                                        .projectTeamId(team.getId())
+                                        .isMain(ts.isMain())
+                                        .stack(
+                                                ProjectTeamDetailResponse.TeamStackDetail.StackInfo
+                                                        .builder()
+                                                        .name(ts.getStack().getName())
+                                                        .category(
+                                                                ts.getStack().getCategory().name())
+                                                        .build())
+                                        .build())
                 .toList();
     }
 
-    private static List<ProjectTeamDetailResponse.ProjectMemberInfo> mapProjectMembers(List<ProjectMember> members) {
+    private static List<ProjectTeamDetailResponse.ProjectMemberInfo> mapProjectMembers(
+            List<ProjectMember> members) {
         return members.stream()
-                .map(pm -> ProjectTeamDetailResponse.ProjectMemberInfo.builder()
-                        .id(pm.getId())
-                        .userId(pm.getUser().getId())
-                        .name(pm.getUser().getName())
-                        .isLeader(pm.isLeader())
-                        .teamRole(pm.getTeamRole().name())
-                        .profileImage(pm.getUser().getProfileImage())
-                        .build())
+                .map(
+                        pm ->
+                                ProjectTeamDetailResponse.ProjectMemberInfo.builder()
+                                        .id(pm.getId())
+                                        .userId(pm.getUser().getId())
+                                        .name(pm.getUser().getName())
+                                        .isLeader(pm.isLeader())
+                                        .teamRole(pm.getTeamRole().name())
+                                        .profileImage(pm.getUser().getProfileImage())
+                                        .build())
                 .toList();
     }
 
@@ -140,7 +152,8 @@ public class ProjectTeamMapper {
                 .build();
     }
 
-    public static ProjectTeamUpdateResponse toNoneSlackUpdateResponse(Long projectTeamId, ProjectTeam team) {
+    public static ProjectTeamUpdateResponse toNoneSlackUpdateResponse(
+            Long projectTeamId, ProjectTeam team) {
         return ProjectTeamUpdateResponse.builder()
                 .id(projectTeamId)
                 .indexRequest(ProjectIndexMapper.toIndexRequest(team))

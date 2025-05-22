@@ -1,12 +1,10 @@
 package backend.techeerzip.domain.projectTeam.service;
 
-import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest.DM;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +14,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest.DM;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
@@ -144,7 +143,7 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
                 resultImageUrls.addAll(result);
             }
             return projectTeamService.update(
-                            projectTeamId, userId, mainImagesUrl, resultImageUrls, request);
+                    projectTeamId, userId, mainImagesUrl, resultImageUrls, request);
         } catch (Exception e) {
             if (!mainImagesUrl.isEmpty() || !resultImageUrls.isEmpty()) {
                 resultImageUrls.addAll(mainImagesUrl);
@@ -154,8 +153,7 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         }
     }
 
-    public List<TeamGetAllResponse> getAllProjectAndStudyTeams(
-            GetTeamsQueryRequest request) {
+    public List<TeamGetAllResponse> getAllProjectAndStudyTeams(GetTeamsQueryRequest request) {
         final GetTeamsQuery query = TeamViewMapper.mapToQuery(request);
         final List<PositionNumType> numTypes = query.getPositionNumTypes();
         final List<TeamType> teamTypes = query.getTeamTypes();
@@ -164,12 +162,10 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         final Boolean isFinished = query.getIsFinished();
         if (isOnlyProject(numTypes)) {
             return new ArrayList<>(
-                            projectTeamService.getYoungTeams(
-                                    numTypes, isRecruited, isFinished, limit));
+                    projectTeamService.getYoungTeams(numTypes, isRecruited, isFinished, limit));
         }
         if (isOnlyStudy(teamTypes)) {
-            return new ArrayList<>(
-                            studyTeamService.getYoungTeams(isRecruited, isFinished, limit));
+            return new ArrayList<>(studyTeamService.getYoungTeams(isRecruited, isFinished, limit));
         }
         final TeamUnionSliceYoungInfo views =
                 teamUnionViewDslRepository.fetchSliceBeforeCreatedAtDescCursor(query);
@@ -191,30 +187,25 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         projectTeamService.softDelete(projectTeamId, userId);
     }
 
-    public List<ProjectMemberApplicantResponse> getApplicants(
-            Long teamId, Long userId) {
+    public List<ProjectMemberApplicantResponse> getApplicants(Long teamId, Long userId) {
         return projectTeamService.getApplicants(teamId, userId);
     }
 
-    public List<DM> applyToProject(
-            ProjectTeamApplyRequest request, Long userId) {
+    public List<DM> applyToProject(ProjectTeamApplyRequest request, Long userId) {
         return projectTeamService.apply(request, userId);
     }
-
 
     public List<DM> cancelApplication(Long teamId, Long applicantId) {
         return projectTeamService.cancelApplication(teamId, applicantId);
     }
 
-    public List<DM> acceptApplicant(
-            ProjectApplicantRequest request, Long userId) {
+    public List<DM> acceptApplicant(ProjectApplicantRequest request, Long userId) {
         final Long teamId = request.teamId();
         final Long applicantId = request.applicantId();
         return projectTeamService.acceptApplicant(teamId, userId, applicantId);
     }
 
-    public List<DM> rejectApplicant(
-            ProjectApplicantRequest request, Long userId) {
+    public List<DM> rejectApplicant(ProjectApplicantRequest request, Long userId) {
         final Long teamId = request.teamId();
         final Long applicantId = request.applicantId();
         return projectTeamService.rejectApplicant(teamId, userId, applicantId);

@@ -117,6 +117,7 @@ public class ProjectMember extends BaseEntity {
         this.status = StatusCategory.REJECT;
         this.updatedAt = LocalDateTime.now();
     }
+
     public boolean isPending() {
         return this.status == StatusCategory.PENDING;
     }

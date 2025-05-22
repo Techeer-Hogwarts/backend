@@ -1,9 +1,10 @@
 package backend.techeerzip.domain.projectTeam.mapper;
 
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import jakarta.validation.constraints.NotNull;
 
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
@@ -11,6 +12,7 @@ import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 
 public class TeamViewMapper {
     private static final long DEFAULT_LIMIT = 10L;
+
     private TeamViewMapper() {}
 
     public static GetTeamsQuery mapToQuery(@NotNull GetTeamsQueryRequest request) {

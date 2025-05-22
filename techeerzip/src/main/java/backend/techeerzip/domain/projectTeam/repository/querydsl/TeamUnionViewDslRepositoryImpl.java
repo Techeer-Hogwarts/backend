@@ -107,12 +107,9 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
     }
 
     private List<TeamUnionInfo> selectTeamUnionInfos(BooleanExpression condition, Long limit) {
-        return select(Projections.fields(
-                TeamUnionInfo.class,
-                TU.globalId,
-                TU.id,
-                TU.teamType,
-                TU.createdAt))
+        return select(
+                        Projections.fields(
+                                TeamUnionInfo.class, TU.globalId, TU.id, TU.teamType, TU.createdAt))
                 .from(TU)
                 .where(condition)
                 .orderBy(TU.createdAt.desc())
