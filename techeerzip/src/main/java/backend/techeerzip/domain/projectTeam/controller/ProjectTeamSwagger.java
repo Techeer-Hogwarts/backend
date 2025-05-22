@@ -148,10 +148,7 @@ public interface ProjectTeamSwagger {
     @ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content =
-                    @Content(
-                            schema =
-                                    @Schema(implementation = ProjectApplicantResponse.class)))
+            content = @Content(schema = @Schema(implementation = ProjectApplicantResponse.class)))
     default void getApplicants() {}
 
     @Operation(summary = "프로젝트 지원 취소", description = "해당 프로젝트에 대한 자신의 지원을 취소합니다.")
