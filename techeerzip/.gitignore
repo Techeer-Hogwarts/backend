@@ -82,7 +82,7 @@ gradle/
 !gradle/wrapper/gradle-wrapper.properties
 
 # Spring Boot
-application.properties
+application-*.properties
 !application.properties
 
 # Mac OS

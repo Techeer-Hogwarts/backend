@@ -4,4 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 
-public interface StudyTeamRepository extends JpaRepository<StudyTeam, Long> {}
+public interface StudyTeamRepository extends JpaRepository<StudyTeam, Long> {
+
+    boolean existsByName(String name);
+}
