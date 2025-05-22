@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.repository.querydsl;
 
+import jakarta.validation.constraints.Min;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;

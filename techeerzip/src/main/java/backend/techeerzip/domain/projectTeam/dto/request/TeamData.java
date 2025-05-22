@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.URL;
 
 @Getter
 @Builder
@@ -20,6 +21,10 @@ public class TeamData {
     @NotNull private Boolean isRecruited;
     @NotNull private Boolean isFinished;
     @Nullable private String recruitExplain;
-    @Nullable private String githubLink;
-    @Nullable private String notionLink;
+    @Nullable
+    @URL(message = "올바른 Github URL 형식이 아닙니다")
+    private String githubLink;
+    @Nullable
+    @URL(message = "올바른 Notion URL 형식이 아닙니다")
+    private String notionLink;
 }

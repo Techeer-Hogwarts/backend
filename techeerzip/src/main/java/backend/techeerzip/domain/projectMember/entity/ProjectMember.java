@@ -82,7 +82,7 @@ public class ProjectMember extends BaseEntity {
         this.user = user;
     }
 
-    public void update(TeamRole teamRole, StatusCategory status, Boolean isLeader) {
+    public void update(TeamRole teamRole, StatusCategory status, boolean isLeader) {
         this.teamRole = teamRole;
         this.status = status;
         this.isLeader = isLeader;
@@ -94,27 +94,42 @@ public class ProjectMember extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void toInactive() {
-        this.isDeleted = true;
-    }
-
     public void toActive(TeamRole teamRole, Boolean isLeader) {
         this.teamRole = teamRole;
         this.isLeader = isLeader;
         this.status = StatusCategory.APPROVED;
         this.isDeleted = false;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void toApplicant() {
         this.status = StatusCategory.PENDING;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void toActive() {
         this.status = StatusCategory.APPROVED;
         this.isDeleted = false;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void toReject() {
         this.status = StatusCategory.REJECT;
+        this.updatedAt = LocalDateTime.now();
+    }
+    public boolean isPending() {
+        return this.status == StatusCategory.PENDING;
+    }
+
+    public boolean isApproved() {
+        return this.status == StatusCategory.APPROVED && !this.isDeleted;
+    }
+
+    public boolean isRejected() {
+        return this.status == StatusCategory.REJECT;
+    }
+
+    public boolean isActive() {
+        return !this.isDeleted && this.status == StatusCategory.APPROVED;
     }
 }

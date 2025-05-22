@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,17 +52,13 @@ import backend.techeerzip.domain.projectTeam.mapper.TeamStackMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectMainImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
-import backend.techeerzip.domain.projectTeam.repository.ProjectTeamStackRepository;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
 import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
-import backend.techeerzip.domain.stack.repository.StackRepository;
-import backend.techeerzip.domain.studyTeam.service.StudyTeamService;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import backend.techeerzip.global.logger.CustomLogger;
-import backend.techeerzip.infra.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -70,17 +67,12 @@ public class ProjectTeamService {
 
     private final ProjectMemberService projectMemberService;
     private final TeamStackService teamStackService;
-    private final StudyTeamService studyTeamService;
     private final ProjectTeamRepository projectTeamRepository;
     private final ProjectTeamDslRepository projectTeamDslRepository;
-    private final S3Service s3Service;
-    private final TeamStackService projectTeamWriter;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
     private final ProjectMainImageRepository mainImgRepository;
     private final ProjectResultImageRepository resultImgRepository;
-    private final ProjectTeamStackRepository teamStackRepository;
-    private final StackRepository stackRepository;
     private final CustomLogger log;
 
     private static void ensureAllRequestedMembersExist(
@@ -99,14 +91,6 @@ public class ProjectTeamService {
     private static void validateLeaderExists(List<ProjectMemberInfoRequest> membersInfo) {
         if (membersInfo.stream().noneMatch(ProjectMemberInfoRequest::isLeader)) {
             throw new ProjectTeamMissingLeaderException();
-        }
-    }
-
-    private void validateProjectActiveMember(Long teamId, Long userId) {
-        final boolean isActive =
-                projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
-        if (!isActive) {
-            throw new ProjectInvalidActiveRequester();
         }
     }
 
@@ -156,7 +140,7 @@ public class ProjectTeamService {
      */
     @Transactional
     public ProjectTeamCreateResponse create(
-            List<String> mainImage, List<String> resultImages, ProjectTeamCreateRequest request) {
+            @NotEmpty List<String> mainImage, List<String> resultImages, ProjectTeamCreateRequest request) {
         this.log.debug("CreateProjectTeam: 시작");
         final TeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();
@@ -183,14 +167,14 @@ public class ProjectTeamService {
                 mapToProjectMemberEntities(membersInfo, team, users);
         final ProjectMainImage mainImgEntity =
                 ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
-
-        final List<ProjectResultImage> resultImageEntities =
-                ProjectImageMapper.toResultEntities(resultImages, team);
         final List<TeamStack> teamStackEntities =
                 teamStacks.stream().map(s -> TeamStackMapper.toEntity(s, team)).toList();
         teamEntity.addProjectMembers(memberEntities);
         teamEntity.addProjectMainImages(List.of(mainImgEntity));
-        if (!teamStackEntities.isEmpty()) {
+
+        if (!resultImages.isEmpty()) {
+            final List<ProjectResultImage> resultImageEntities =
+                    ProjectImageMapper.toResultEntities(resultImages, team);
             teamEntity.addProjectResultImages(resultImageEntities);
         }
         teamEntity.addTeamStacks(teamStackEntities);
@@ -239,14 +223,17 @@ public class ProjectTeamService {
     private boolean checkRecruit(RecruitCounts recruitCounts, Boolean isRecruit) {
         final int total =
                 recruitCounts.getBackendNum()
-                        + recruitCounts.getFrontedNum()
+                        + recruitCounts.getFrontendNum()
                         + recruitCounts.getFullStackNum()
                         + recruitCounts.getDevOpsNum()
                         + recruitCounts.getDataEngineerNum();
         if (total < 0) {
             throw new IllegalArgumentException();
         }
-        return !(total == 0 && isRecruit);
+        if (total == 0) {
+            return false;
+        }
+        return isRecruit;
     }
 
     /**
@@ -297,13 +284,13 @@ public class ProjectTeamService {
         verifyUserIsActiveProjectMember(userId, projectTeamId);
         /* 2. TeamRole 검증 */
         validateLeaderExists(updateMembersInfo);
-        /* 4. Recruit 준비 */
-        final boolean wasRecruit = teamData.getIsRecruited();
-        final boolean isRecruited = this.checkRecruit(recruitCounts, teamData.getIsRecruited());
         final ProjectTeam team =
                 projectTeamRepository
                         .findById(projectTeamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
+        /* 4. Recruit 준비 */
+        final boolean wasRecruit = team.isRecruited();
+        final boolean isRecruited = this.checkRecruit(recruitCounts, teamData.getIsRecruited());
         /* 3. 프로젝트 이름 중복 검증 */
         if (!teamData.getName().equals(team.getName())) {
             checkUniqueProjectName(teamData.getName());
@@ -340,11 +327,11 @@ public class ProjectTeamService {
         if (!wasRecruit && isRecruited) {
             // send Slack
             final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
-            return ProjectTeamMapper.toNonSlackUpdatedResponse(projectTeamId, team, leaders);
+            return ProjectTeamMapper.toUpdatedResponse(projectTeamId, team, leaders);
         }
 
         /* 13. 인덱스 업데이트 */
-        return ProjectTeamMapper.toUpdateResponse(projectTeamId, team);
+        return ProjectTeamMapper.toNoneSlackUpdateResponse(projectTeamId, team);
     }
 
     private void validateResultImageCount(
@@ -441,7 +428,7 @@ public class ProjectTeamService {
                 if (updateInfo != null) {
                     throw new ProjectTeamDuplicateDeleteUpdateException();
                 }
-                member.toInactive();
+                member.softDelete();
                 toInactive.add(member.getId().intValue());
                 continue;
             }
@@ -505,7 +492,7 @@ public class ProjectTeamService {
      * @return 프로젝트 팀 상세 정보
      * @throws java.util.NoSuchElementException 팀이 존재하지 않는 경우
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public ProjectTeamDetailResponse updateViewCountAndGetDetail(Long projectTeamId) {
         final ProjectTeam project = projectTeamRepository.findById(projectTeamId).orElseThrow();
         project.increaseViewCount();
@@ -552,10 +539,8 @@ public class ProjectTeamService {
      */
     @Transactional
     public void close(Long teamId, Long userId) {
-        boolean isExisted = projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
-        if (!isExisted) {
-            throw new ProjectInvalidActiveRequester();
-        }
+        projectMemberService.checkActive(teamId, userId);
+
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
@@ -573,10 +558,8 @@ public class ProjectTeamService {
      */
     @Transactional
     public void softDelete(Long teamId, Long userId) {
-        boolean isExisted = projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
-        if (!isExisted) {
-            throw new ProjectInvalidActiveRequester();
-        }
+        projectMemberService.checkActive(teamId, userId);
+
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
@@ -630,7 +613,7 @@ public class ProjectTeamService {
         }
         final ProjectMember pm =
                 projectMemberService.applyApplicant(pt, applicantId, teamRole, summary);
-        final List<LeaderInfo> leaders = projectMemberService.getLeaders(pm.getId());
+        final List<LeaderInfo> leaders = pt.getLeaders();
         final String applicantEmail = pm.getUser().getEmail();
 
         return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.PENDING);
@@ -658,7 +641,7 @@ public class ProjectTeamService {
                 projectTeamRepository
                         .findById(teamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
-        final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
+        final List<LeaderInfo> leaders = pt.getLeaders();
         return ProjectSlackMapper.toDmRequest(
                 pt, leaders, applicantEmail, StatusCategory.CANCELLED);
     }
@@ -673,9 +656,7 @@ public class ProjectTeamService {
      * @return 지원자 목록
      */
     public List<ProjectMemberApplicantResponse> getApplicants(Long teamId, Long userId) {
-        final boolean isActive =
-                projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
-        if (!isActive) {
+        if (!projectMemberService.isActive(teamId, userId)) {
             return List.of();
         }
         return projectMemberService.getApplicants(teamId);
@@ -692,13 +673,14 @@ public class ProjectTeamService {
      * @throws ProjectInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
     public List<SlackRequest.DM> acceptApplicant(Long teamId, Long userId, Long applicantId) {
-        validateProjectActiveMember(teamId, userId);
+        verifyUserIsActiveProjectMember(teamId, userId);
         final String applicantEmail = projectMemberService.acceptApplicant(teamId, applicantId);
-        final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
+        final List<LeaderInfo> leaders = pt.getLeaders();
+
         return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.APPROVED);
     }
 
@@ -713,13 +695,14 @@ public class ProjectTeamService {
      * @throws ProjectInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
     public List<SlackRequest.DM> rejectApplicant(Long teamId, Long userId, Long applicantId) {
-        validateProjectActiveMember(teamId, userId);
+        verifyUserIsActiveProjectMember(teamId, userId);
         final String applicantEmail = projectMemberService.rejectApplicant(teamId, applicantId);
-        final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
+        final List<LeaderInfo> leaders = pt.getLeaders();
+
         return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.REJECT);
     }
 }

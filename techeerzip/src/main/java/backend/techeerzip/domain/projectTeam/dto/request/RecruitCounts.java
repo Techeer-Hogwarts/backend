@@ -16,7 +16,7 @@ public class RecruitCounts {
 
     @NotNull
     @Min(0)
-    private Integer frontedNum;
+    private Integer frontendNum;
 
     @NotNull
     @Min(0)

@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.entity;
 
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class ProjectTeam extends BaseEntity {
     private final List<ProjectMainImage> mainImages = new ArrayList<>();
 
     @OneToMany(mappedBy = "projectTeam", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TeamStack> teamStacks = new ArrayList<>();
+    private final List<TeamStack> teamStacks = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -206,6 +207,16 @@ public class ProjectTeam extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public List<LeaderInfo> getLeaders() {
+        List<LeaderInfo> leaders = new ArrayList<>();
+        for (ProjectMember m : this.projectMembers) {
+            if (m.isLeader()) {
+                leaders.add(new LeaderInfo(m.getUser().getName(), m.getUser().getEmail()));
+            }
+        }
+        return leaders;
     }
 
     public boolean isRecruited() {

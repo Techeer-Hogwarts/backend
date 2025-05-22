@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectMember.service;
 
+import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -12,7 +13,6 @@ import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepositor
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
@@ -26,10 +26,19 @@ public class ProjectMemberService {
     private final ProjectMemberRepository projectMemberRepository;
     private final ProjectMemberDslRepository projectMemberDslRepository;
     private final UserRepository userRepository;
-    private final ProjectTeamRepository projectTeamRepository;
 
-    public boolean checkActiveMemberByTeamAndUser(Long projectTeamId, Long userId) {
-        return projectMemberRepository.existsByProjectTeamIdAndUserId(projectTeamId, userId);
+    public void checkActive(Long projectTeamId, Long userId) {
+        final boolean isMember =
+                projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
+                        userId, projectTeamId, StatusCategory.APPROVED);
+        if (!isMember) {
+            throw new ProjectInvalidActiveRequester();
+        }
+    }
+
+    public boolean isActive(Long projectTeamId, Long userId) {
+        return projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
+                        userId, projectTeamId, StatusCategory.APPROVED);
     }
 
     @Transactional
@@ -39,7 +48,9 @@ public class ProjectMemberService {
                 projectMemberRepository
                         .findByProjectTeamIdAndUserId(team.getId(), applicantId)
                         .orElse(createApplicant(team, applicantId, teamRole, summary));
-        pm.toApplicant();
+        if (pm.isPending()) {
+            pm.toApplicant();
+        }
         return pm;
     }
 
@@ -68,7 +79,9 @@ public class ProjectMemberService {
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
                         .orElseThrow(ProjectMemberNotFoundException::new);
-        projectMember.toActive();
+        if (!projectMember.isActive()) {
+            projectMember.toActive();
+        }
         return projectMember.getUser().getEmail();
     }
 
@@ -79,7 +92,9 @@ public class ProjectMemberService {
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
                         .orElseThrow(ProjectMemberNotFoundException::new);
-        projectMember.toReject();
+        if (!projectMember.isRejected()) {
+            projectMember.toReject();
+        }
         return projectMember.getUser().getEmail();
     }
 

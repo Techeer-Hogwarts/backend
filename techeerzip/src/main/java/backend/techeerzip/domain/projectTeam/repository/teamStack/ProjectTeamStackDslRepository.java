@@ -6,5 +6,5 @@ import backend.techeerzip.domain.projectTeam.entity.TeamStack;
 
 public interface ProjectTeamStackDslRepository {
 
-    List<TeamStack> findTeamStackByStackAndProjectTeamId(Long projectTeamId);
+    List<TeamStack> findTeamStackByProjectTeamId(Long projectTeamId);
 }

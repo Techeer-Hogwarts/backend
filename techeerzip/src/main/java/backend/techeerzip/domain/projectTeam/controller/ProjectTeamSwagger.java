@@ -50,7 +50,7 @@ public interface ProjectTeamSwagger {
                                     @Content(
                                             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                                             schema = @Schema(type = "string", format = "binary")))
-                    @RequestPart(value = "mainImages", required = false)
+                    @RequestPart(value = "mainImage", required = false)
                     MultipartFile mainImage,
             @Parameter(
                             description = "결과 이미지 파일 목록",
@@ -91,7 +91,7 @@ public interface ProjectTeamSwagger {
                                     @Content(
                                             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                                             schema = @Schema(type = "string", format = "binary")))
-                    @RequestPart(value = "mainImages", required = false)
+                    @RequestPart(value = "mainImage", required = false)
                     MultipartFile mainImage,
             @Parameter(
                             description = "결과 이미지 파일 목록",

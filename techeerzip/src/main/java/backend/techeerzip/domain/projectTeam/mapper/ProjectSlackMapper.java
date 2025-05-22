@@ -10,6 +10,7 @@ import backend.techeerzip.domain.projectTeam.type.TeamType;
 import backend.techeerzip.global.entity.StatusCategory;
 
 public class ProjectSlackMapper {
+    private static final String NO_APPLICANT = "Null";
 
     private ProjectSlackMapper() {}
 
@@ -50,7 +51,7 @@ public class ProjectSlackMapper {
 
         for (int i = 0; i < leaders.size(); i++) {
             final String leaderEmail = leaders.get(i).email();
-            final String first = (i == 0) ? applicantEmail : "Null";
+            final String first = (i == 0) ? applicantEmail : NO_APPLICANT;
 
             alerts.add(
                     new SlackRequest.DM(

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import backend.techeerzip.domain.projectTeam.dto.response.StudyTeamGetAllResponse;
-import backend.techeerzip.domain.studyTeam.repository.StudyTeamRepository;
 import backend.techeerzip.domain.studyTeam.repository.querydsl.StudyTeamDslRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -15,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class StudyTeamService {
 
-    private final StudyTeamRepository studyTeamRepository;
     private final StudyTeamDslRepository studyTeamDslRepository;
 
     public List<StudyTeamGetAllResponse> getYoungTeams(

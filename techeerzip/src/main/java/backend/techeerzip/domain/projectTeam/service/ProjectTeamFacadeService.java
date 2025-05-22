@@ -1,11 +1,11 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest.DM;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
@@ -18,34 +18,34 @@ import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
 
 public interface ProjectTeamFacadeService {
 
-    ResponseEntity<ProjectTeamDetailResponse> getDetail(Long projectTeamId);
+    ProjectTeamDetailResponse getDetail(Long projectTeamId);
 
     ProjectTeamCreateResponse create(
             MultipartFile mainImage,
             List<MultipartFile> resultImages,
             ProjectTeamCreateRequest request);
 
-    ResponseEntity<Long> update(
+    ProjectTeamUpdateResponse update(
             Long projectTeamId,
             Long userId,
             MultipartFile mainImage,
             List<MultipartFile> resultImages,
             ProjectTeamUpdateRequest request);
 
-    ResponseEntity<List<TeamGetAllResponse>> getAllProjectAndStudyTeams(
+    List<TeamGetAllResponse> getAllProjectAndStudyTeams(
             GetTeamsQueryRequest request);
 
-    ResponseEntity<EmptyResponse> closeRecruit(Long projectTeamId, Long userId);
+    void closeRecruit(Long projectTeamId, Long userId);
 
-    ResponseEntity<EmptyResponse> softDeleteTeam(Long projectTeamId, Long userId);
+    void softDeleteTeam(Long projectTeamId, Long userId);
 
-    ResponseEntity<EmptyResponse> applyToProject(ProjectTeamApplyRequest request, Long userId);
+    List<DM> applyToProject(ProjectTeamApplyRequest request, Long userId);
 
-    ResponseEntity<List<ProjectMemberApplicantResponse>> getApplicants(Long teamId, Long userId);
+    List<ProjectMemberApplicantResponse> getApplicants(Long teamId, Long userId);
 
-    ResponseEntity<EmptyResponse> cancelApplication(Long teamId, Long applicantId);
+    List<DM> cancelApplication(Long teamId, Long applicantId);
 
-    ResponseEntity<EmptyResponse> acceptApplicant(ProjectApplicantRequest request, Long userId);
+    List<DM> acceptApplicant(ProjectApplicantRequest request, Long userId);
 
-    ResponseEntity<EmptyResponse> rejectApplicant(ProjectApplicantRequest request, Long userId);
+    List<DM> rejectApplicant(ProjectApplicantRequest request, Long userId);
 }

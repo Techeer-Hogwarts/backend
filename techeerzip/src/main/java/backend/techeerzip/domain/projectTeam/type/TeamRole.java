@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.type;
 
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamInvalidTeamRoleException;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -25,7 +26,8 @@ public enum TeamRole {
     }
 
     public static TeamRole setType(String type) {
-        return Arrays.stream(values()).filter(t -> t.type.equals(type)).findFirst().orElseThrow();
+        return Arrays.stream(values()).filter(t -> t.type.equals(type)).findFirst()
+                .orElseThrow(ProjectTeamInvalidTeamRoleException::new);
     }
 
     public int getCount(ProjectTeam pt) {
