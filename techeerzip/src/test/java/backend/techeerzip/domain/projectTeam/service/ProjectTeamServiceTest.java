@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -106,7 +107,7 @@ class ProjectTeamServiceTest {
         mockRecruitCounts =
                 RecruitCounts.builder()
                         .backendNum(1)
-                        .frontedNum(1)
+                        .frontendNum(1)
                         .fullStackNum(1)
                         .devOpsNum(1)
                         .dataEngineerNum(1)
@@ -645,8 +646,6 @@ class ProjectTeamServiceTest {
             final User applicantUser = mock(User.class);
             when(applicantUser.getEmail()).thenReturn("applicantEmail");
             when(pm.getUser()).thenReturn(applicantUser);
-            when(projectMemberService.checkActiveMemberByTeamAndUser(any(), any()))
-                    .thenReturn(true);
             when(projectMemberService.getLeaders(any())).thenReturn(leaders);
             when(projectMemberService.acceptApplicant(teamId, applicantId))
                     .thenReturn("applicantEmail");
@@ -682,9 +681,10 @@ class ProjectTeamServiceTest {
             final Long teamId = 1L;
             final Long userId = 10L;
             final Long applicantId = 100L;
-            when(projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId))
-                    .thenReturn(false);
 
+            doThrow(new ProjectInvalidActiveRequester())
+                    .when(projectMemberService)
+                    .checkActive(teamId, userId);
             assertThrows(
                     ProjectInvalidActiveRequester.class,
                     () -> projectTeamService.acceptApplicant(teamId, userId, applicantId));
@@ -702,8 +702,6 @@ class ProjectTeamServiceTest {
             final Long teamId = 1L;
             final Long userId = 10L;
             final Long applicantId = 100L;
-            when(projectMemberService.checkActiveMemberByTeamAndUser(any(), any()))
-                    .thenReturn(true);
             when(projectMemberService.getLeaders(any())).thenReturn(leaders);
             final ProjectTeam team = Mockito.mock(ProjectTeam.class);
             final User applicant = Mockito.mock(User.class);
@@ -739,8 +737,10 @@ class ProjectTeamServiceTest {
             final Long teamId = 1L;
             final Long userId = 10L;
             final Long applicantId = 100L;
-            when(projectMemberService.checkActiveMemberByTeamAndUser(any(), any()))
-                    .thenReturn(false);
+
+            doThrow(new ProjectInvalidActiveRequester())
+                    .when(projectMemberService)
+                    .checkActive(teamId, userId);
 
             assertThrows(
                     ProjectInvalidActiveRequester.class,
@@ -805,7 +805,6 @@ class ProjectTeamServiceTest {
         @Test
         void success() {
             ProjectTeam team = mock(ProjectTeam.class);
-            when(projectMemberService.checkActiveMemberByTeamAndUser(1L, 10L)).thenReturn(true);
             when(projectTeamRepository.findById(1L)).thenReturn(Optional.of(team));
 
             projectTeamService.close(1L, 10L);
@@ -815,14 +814,15 @@ class ProjectTeamServiceTest {
 
         @Test
         void notMemberThenThrow() {
-            when(projectMemberService.checkActiveMemberByTeamAndUser(1L, 10L)).thenReturn(false);
+            doThrow(new ProjectInvalidActiveRequester())
+                    .when(projectMemberService)
+                    .checkActive(any(), any());
             assertThrows(
                     ProjectInvalidActiveRequester.class, () -> projectTeamService.close(1L, 10L));
         }
 
         @Test
         void notFoundThenThrow() {
-            when(projectMemberService.checkActiveMemberByTeamAndUser(1L, 10L)).thenReturn(true);
             when(projectTeamRepository.findById(1L)).thenReturn(Optional.empty());
             assertThrows(
                     ProjectTeamNotFoundException.class, () -> projectTeamService.close(1L, 10L));
@@ -836,7 +836,6 @@ class ProjectTeamServiceTest {
         @Test
         void success() {
             ProjectTeam team = mock(ProjectTeam.class);
-            when(projectMemberService.checkActiveMemberByTeamAndUser(1L, 10L)).thenReturn(true);
             when(projectTeamRepository.findById(1L)).thenReturn(Optional.of(team));
 
             projectTeamService.softDelete(1L, 10L);
@@ -846,7 +845,9 @@ class ProjectTeamServiceTest {
 
         @Test
         void notMemberThenThrow() {
-            when(projectMemberService.checkActiveMemberByTeamAndUser(1L, 10L)).thenReturn(false);
+            doThrow(new ProjectInvalidActiveRequester())
+                    .when(projectMemberService)
+                    .checkActive(any(), any());
             assertThrows(
                     ProjectInvalidActiveRequester.class,
                     () -> projectTeamService.softDelete(1L, 10L));
@@ -854,7 +855,6 @@ class ProjectTeamServiceTest {
 
         @Test
         void notFoundThenThrow() {
-            when(projectMemberService.checkActiveMemberByTeamAndUser(1L, 10L)).thenReturn(true);
             when(projectTeamRepository.findById(1L)).thenReturn(Optional.empty());
             assertThrows(
                     ProjectTeamNotFoundException.class,
