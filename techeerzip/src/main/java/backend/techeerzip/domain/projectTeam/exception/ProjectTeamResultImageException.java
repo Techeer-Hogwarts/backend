@@ -6,6 +6,6 @@ import backend.techeerzip.global.exception.ErrorCode;
 public class ProjectTeamResultImageException extends BusinessException {
 
     public ProjectTeamResultImageException() {
-        super(ErrorCode.PROJECT_TEAM_EXCEEDED_RESULT_IMAGE);
+        super(ErrorCode.EXCEEDED_RESULT_IMAGE);
     }
 }

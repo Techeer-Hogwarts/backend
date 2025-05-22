@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.service;
 
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,10 +14,11 @@ import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectSlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
@@ -63,7 +63,7 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
         throw new ProjectTeamMainImageException();
     }
 
-    private static boolean validateResultImages(
+    public static boolean validateResultImages(
             List<MultipartFile> resultImages, List<Long> deleteResultImages) {
         if (resultImages == null || resultImages.isEmpty()) {
             return false;
@@ -115,7 +115,7 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
             log.debug("ProjectTeam Create: s3 result 업로드 완료");
 
             // Transaction
-            return projectTeamService.create(mainUrl, mainUrl, request);
+            return projectTeamService.create(mainUrl, resultUrls, request);
         } catch (Exception e) {
             s3Service.deleteMany(uploadedUrl);
             log.error("ProjectTeam Create: s3 롤백", uploadedUrl);
@@ -210,21 +210,21 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
     }
 
     public ResponseEntity<EmptyResponse> applyToProject(
-            ProjectTeamApplyRequest request, Long userId) {
-        final List<SlackRequest.DM> slackRequest = projectTeamService.apply(request, userId);
+            ProjectTeamApplyRequest request, Long applicantId) {
+        final List<ProjectSlackRequest.DM> slackRequest =
+                projectTeamService.apply(request, applicantId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.ok(new EmptyResponse());
     }
 
-    public ResponseEntity<List<ProjectApplicantResponse>> getApplicants(
-            Long teamId, Long userId) {
+    public ResponseEntity<List<ProjectApplicantResponse>> getApplicants(Long teamId, Long userId) {
         final List<ProjectApplicantResponse> applicants =
                 projectTeamService.getApplicants(teamId, userId);
         return ResponseEntity.ok(applicants);
     }
 
     public ResponseEntity<EmptyResponse> cancelApplication(Long teamId, Long applicantId) {
-        final List<SlackRequest.DM> slackRequest =
+        final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamService.cancelApplication(teamId, applicantId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.ok(new EmptyResponse());
@@ -234,7 +234,7 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
             ProjectApplicantRequest request, Long userId) {
         final Long teamId = request.teamId();
         final Long applicantId = request.applicantId();
-        final List<SlackRequest.DM> slackRequest =
+        final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamService.acceptApplicant(teamId, userId, applicantId);
 
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
@@ -245,7 +245,7 @@ public class ProjectTeamFacedServiceImpl implements ProjectTeamFacadeService {
             ProjectApplicantRequest request, Long userId) {
         final Long teamId = request.teamId();
         final Long applicantId = request.applicantId();
-        final List<SlackRequest.DM> slackRequest =
+        final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamService.rejectApplicant(teamId, userId, applicantId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.ok(new EmptyResponse());

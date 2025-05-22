@@ -29,17 +29,17 @@ import org.springframework.core.io.ClassPathResource;
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
-import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
+import backend.techeerzip.domain.projectMember.exception.TeamMemberNotFoundException;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectMember.service.ProjectMemberService;
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectSlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
-import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo.WithStack;
+import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
@@ -49,12 +49,12 @@ import backend.techeerzip.domain.projectTeam.exception.ProjectDuplicateTeamName;
 import backend.techeerzip.domain.projectTeam.exception.ProjectExceededResultImageException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectInvalidProjectMemberException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingLeaderException;
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
-import backend.techeerzip.domain.projectTeam.mapper.ProjectIndexMapper;
+import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
+import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
@@ -95,7 +95,8 @@ class ProjectTeamServiceTest {
         slackMapperMock = Mockito.mockStatic(ProjectSlackMapper.class);
 
         mockTeamData =
-                projectTeamData.builder()
+                projectTeamData
+                        .builder()
                         .name("name")
                         .githubLink("")
                         .projectExplain("")
@@ -184,7 +185,7 @@ class ProjectTeamServiceTest {
                     new ProjectTeamCreateResponse(
                             1L,
                             ProjectSlackMapper.toChannelRequest(spyTeam, leaders),
-                            ProjectIndexMapper.toIndexRequest(spyTeam));
+                            TeamIndexMapper.toProjectRequest(spyTeam));
 
             assertThat(actualResponse).usingRecursiveComparison().isEqualTo(expectedResponse);
         }
@@ -414,7 +415,7 @@ class ProjectTeamServiceTest {
             when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
 
             assertThrows(
-                    ProjectMemberNotFoundException.class,
+                    TeamMemberNotFoundException.class,
                     () ->
                             projectTeamService.update(
                                     1L, 1L, List.of(), List.of(), mockUpdateRequest));
@@ -450,7 +451,7 @@ class ProjectTeamServiceTest {
             when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
 
             assertThrows(
-                    ProjectMemberNotFoundException.class,
+                    TeamMemberNotFoundException.class,
                     () ->
                             projectTeamService.update(
                                     1L, 1L, List.of(), List.of(), mockUpdateRequest));
@@ -486,7 +487,7 @@ class ProjectTeamServiceTest {
             when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
 
             assertThrows(
-                    ProjectTeamMissingUpdateMemberException.class,
+                    TeamMissingUpdateMemberException.class,
                     () ->
                             projectTeamService.update(
                                     1L, 1L, List.of(), List.of(), mockUpdateRequest));
@@ -529,7 +530,7 @@ class ProjectTeamServiceTest {
             when(mpm.getUser()).thenReturn(mu);
             when(mu.getEmail()).thenReturn("applicant@email.com");
 
-            List<SlackRequest.DM> result = projectTeamService.apply(request, 10L);
+            List<ProjectSlackRequest.DM> result = projectTeamService.apply(request, 10L);
 
             assertNotNull(result);
         }
@@ -591,9 +592,9 @@ class ProjectTeamServiceTest {
             when(projectTeamRepository.findById(teamId)).thenReturn(Optional.ofNullable(team));
             when(projectMemberService.getLeaders(any())).thenReturn(leaders);
 
-            final List<SlackRequest.DM> expectedSlackMessages =
+            final List<ProjectSlackRequest.DM> expectedSlackMessages =
                     List.of(
-                            new SlackRequest.DM(
+                            new ProjectSlackRequest.DM(
                                     1L,
                                     TeamType.PROJECT,
                                     "teamName",
@@ -610,7 +611,7 @@ class ProjectTeamServiceTest {
                                             StatusCategory.CANCELLED))
                     .thenReturn(expectedSlackMessages);
 
-            List<SlackRequest.DM> result =
+            List<ProjectSlackRequest.DM> result =
                     projectTeamService.cancelApplication(teamId, applicantId);
 
             Assertions.assertEquals(expectedSlackMessages, result);
@@ -623,7 +624,7 @@ class ProjectTeamServiceTest {
                     .thenReturn(Optional.empty());
 
             assertThrows(
-                    ProjectMemberNotFoundException.class,
+                    TeamMemberNotFoundException.class,
                     () -> projectTeamService.cancelApplication(1L, 100L));
         }
     }
@@ -651,9 +652,9 @@ class ProjectTeamServiceTest {
             when(projectMemberService.acceptApplicant(teamId, applicantId))
                     .thenReturn("applicantEmail");
 
-            final List<SlackRequest.DM> expectedSlackMessages =
+            final List<ProjectSlackRequest.DM> expectedSlackMessages =
                     List.of(
-                            new SlackRequest.DM(
+                            new ProjectSlackRequest.DM(
                                     1L,
                                     TeamType.PROJECT,
                                     "teamName",
@@ -670,7 +671,7 @@ class ProjectTeamServiceTest {
                                             StatusCategory.APPROVED))
                     .thenReturn(expectedSlackMessages);
 
-            List<SlackRequest.DM> result =
+            List<ProjectSlackRequest.DM> result =
                     projectTeamService.acceptApplicant(teamId, userId, applicantId);
 
             Assertions.assertEquals(expectedSlackMessages, result);
@@ -713,9 +714,9 @@ class ProjectTeamServiceTest {
             when(pm.getUser()).thenReturn(applicant);
             when(projectMemberService.rejectApplicant(any(), any())).thenReturn("applicantEmail");
 
-            final List<SlackRequest.DM> expectedSlackMessages =
+            final List<ProjectSlackRequest.DM> expectedSlackMessages =
                     List.of(
-                            new SlackRequest.DM(
+                            new ProjectSlackRequest.DM(
                                     teamId,
                                     TeamType.PROJECT,
                                     "teamName",

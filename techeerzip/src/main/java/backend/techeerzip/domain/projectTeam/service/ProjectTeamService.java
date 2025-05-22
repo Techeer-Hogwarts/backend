@@ -1,11 +1,11 @@
 package backend.techeerzip.domain.projectTeam.service;
 
-import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -14,16 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
-import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
+import backend.techeerzip.domain.projectMember.exception.TeamMemberNotFoundException;
 import backend.techeerzip.domain.projectMember.mapper.ProjectMemberMapper;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectMember.service.ProjectMemberService;
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectSlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
-import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
+import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
@@ -37,31 +38,27 @@ import backend.techeerzip.domain.projectTeam.entity.TeamStack;
 import backend.techeerzip.domain.projectTeam.exception.ProjectDuplicateTeamName;
 import backend.techeerzip.domain.projectTeam.exception.ProjectExceededResultImageException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectInvalidProjectMemberException;
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamDuplicateDeleteUpdateException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingLeaderException;
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
+import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
+import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectImageMapper;
-import backend.techeerzip.domain.projectTeam.mapper.ProjectIndexMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamMapper;
+import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
 import backend.techeerzip.domain.projectTeam.mapper.TeamStackMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectMainImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
-import backend.techeerzip.domain.projectTeam.repository.ProjectTeamStackRepository;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
 import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
-import backend.techeerzip.domain.stack.repository.StackRepository;
-import backend.techeerzip.domain.studyTeam.service.StudyTeamService;
 import backend.techeerzip.domain.user.entity.User;
-import backend.techeerzip.domain.user.repository.UserRepository;
+import backend.techeerzip.domain.user.service.UserService;
 import backend.techeerzip.global.entity.StatusCategory;
 import backend.techeerzip.global.logger.CustomLogger;
-import backend.techeerzip.infra.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -70,43 +67,17 @@ public class ProjectTeamService {
 
     private final ProjectMemberService projectMemberService;
     private final TeamStackService teamStackService;
-    private final StudyTeamService studyTeamService;
     private final ProjectTeamRepository projectTeamRepository;
     private final ProjectTeamDslRepository projectTeamDslRepository;
-    private final S3Service s3Service;
-    private final TeamStackService projectTeamWriter;
     private final ProjectMemberRepository projectMemberRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final ProjectMainImageRepository mainImgRepository;
     private final ProjectResultImageRepository resultImgRepository;
-    private final ProjectTeamStackRepository teamStackRepository;
-    private final StackRepository stackRepository;
     private final CustomLogger log;
 
-    private static void ensureAllRequestedMembersExist(
-            List<ProjectMemberInfoRequest> membersInfo, Map<Long, User> users) {
-        final Set<Long> notFound =
-                membersInfo.stream()
-                        .map(ProjectMemberInfoRequest::userId)
-                        .filter(id -> !users.containsKey(id))
-                        .collect(Collectors.toSet());
-
-        if (!notFound.isEmpty()) {
-            throw new ProjectInvalidProjectMemberException();
-        }
-    }
-
-    private static void validateLeaderExists(List<ProjectMemberInfoRequest> membersInfo) {
-        if (membersInfo.stream().noneMatch(ProjectMemberInfoRequest::isLeader)) {
+    public static <T> void validateLeaderExists(List<T> membersInfo, Predicate<T> t) {
+        if (membersInfo.stream().noneMatch(t)) {
             throw new ProjectTeamMissingLeaderException();
-        }
-    }
-
-    private void validateProjectActiveMember(Long teamId, Long userId) {
-        final boolean isActive =
-                projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
-        if (!isActive) {
-            throw new ProjectInvalidActiveRequester();
         }
     }
 
@@ -125,14 +96,12 @@ public class ProjectTeamService {
                 .toList();
     }
 
-    private static Map<Long, ProjectMemberInfoRequest> toUserIdAndMemberInfoRequest(
-            List<ProjectMemberInfoRequest> updateMember) {
+    public static <T> Map<Long, T> toUserIdAndMemberInfoRequest(
+            List<T> updateMember, Function<T, Long> function) {
         return updateMember.stream()
                 .collect(
                         Collectors.toMap(
-                                ProjectMemberInfoRequest::userId,
-                                Function.identity(),
-                                (oldVal, newVal) -> newVal));
+                                function, Function.identity(), (oldVal, newVal) -> newVal));
     }
 
     /**
@@ -166,11 +135,11 @@ public class ProjectTeamService {
         // 1. validate
         final boolean isRecruited = checkRecruit(recruitCounts, teamData.getIsRecruited());
         checkUniqueProjectName(teamData.getName());
+        validateLeaderExists(membersInfo, ProjectMemberInfoRequest::isLeader);
         this.log.debug("CreateProjectTeam: 이름 중복 검증 완료");
         List<TeamStackInfo.WithStack> teamStacks = teamStackService.create(teamStacksInfo);
         this.log.debug("CreateProjectTeam: 팀 스택 검증 완료");
 
-        final Map<Long, User> users = getIdAndUserMap(membersInfo);
         this.log.debug("CreateProjectTeam: 프로젝트 멤버 검증 완료");
 
         // 3. mapToEntities
@@ -178,25 +147,28 @@ public class ProjectTeamService {
         final ProjectTeam teamEntity =
                 ProjectTeamMapper.toEntity(teamData, recruitCounts, isRecruited);
         final ProjectTeam team = projectTeamRepository.save(teamEntity);
+        final Map<Long, User> users =
+                userService.getIdAndUserMap(membersInfo, ProjectMemberInfoRequest::userId);
+
         // ProjectMember
         final List<ProjectMember> memberEntities =
                 mapToProjectMemberEntities(membersInfo, team, users);
         final ProjectMainImage mainImgEntity =
                 ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
 
-        final List<ProjectResultImage> resultImageEntities =
-                ProjectImageMapper.toResultEntities(resultImages, team);
         final List<TeamStack> teamStackEntities =
                 teamStacks.stream().map(s -> TeamStackMapper.toEntity(s, team)).toList();
-        teamEntity.addProjectMembers(memberEntities);
-        teamEntity.addProjectMainImages(List.of(mainImgEntity));
-        if (!teamStackEntities.isEmpty()) {
-            teamEntity.addProjectResultImages(resultImageEntities);
+        team.addProjectMembers(memberEntities);
+        team.addProjectMainImages(List.of(mainImgEntity));
+        if (!resultImages.isEmpty()) {
+            final List<ProjectResultImage> resultImageEntities =
+                    ProjectImageMapper.toResultEntities(resultImages, team);
+            team.addProjectResultImages(resultImageEntities);
         }
-        teamEntity.addTeamStacks(teamStackEntities);
+        team.addTeamStacks(teamStackEntities);
         this.log.debug("CreateProjectTeam: 엔티티 맵핑 완료");
 
-        final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
+        final List<LeaderInfo> leaders = extractLeaders(memberEntities);
         this.log.debug("CreateProjectTeam: 프로젝트 팀 생성 완료");
 
         // indexService, slackService
@@ -204,26 +176,14 @@ public class ProjectTeamService {
         return new ProjectTeamCreateResponse(
                 team.getId(),
                 ProjectSlackMapper.toChannelRequest(team, leaders),
-                ProjectIndexMapper.toIndexRequest(team));
+                TeamIndexMapper.toProjectRequest(team));
     }
 
-    /**
-     * 요청된 프로젝트 멤버 ID 목록을 기반으로 User 엔티티를 조회하고, 존재하지 않는 유저가 있을 경우 예외를 던집니다.
-     *
-     * @param membersInfo 프로젝트 멤버 요청 정보 리스트
-     * @return userId → User 엔티티 맵
-     * @throws ProjectInvalidProjectMemberException 일부 유저가 존재하지 않을 경우
-     */
-    private Map<Long, User> getIdAndUserMap(List<ProjectMemberInfoRequest> membersInfo) {
-        final Map<Long, User> users =
-                getUsers(membersInfo).stream().collect(Collectors.toMap(User::getId, user -> user));
-        ensureAllRequestedMembersExist(membersInfo, users);
-        return users;
-    }
-
-    private List<User> getUsers(List<ProjectMemberInfoRequest> membersInfo) {
-        return userRepository.findAllById(
-                membersInfo.stream().map(ProjectMemberInfoRequest::userId).distinct().toList());
+    private static List<LeaderInfo> extractLeaders(List<ProjectMember> members) {
+        return members.stream()
+                .filter(ProjectMember::isLeader)
+                .map(m -> new LeaderInfo(m.getUser().getName(), m.getUser().getName()))
+                .toList();
     }
 
     /**
@@ -275,9 +235,9 @@ public class ProjectTeamService {
      * @throws ProjectTeamNotFoundException 수정하려는 팀이 존재하지 않는 경우
      * @throws ProjectExceededResultImageException 결과 이미지 개수가 10개를 초과한 경우
      * @throws ProjectInvalidProjectMemberException 업데이트/삭제 멤버 정보가 잘못된 경우
-     * @throws ProjectMemberNotFoundException 이미 삭제된 멤버를 다시 삭제하려는 경우
-     * @throws ProjectTeamDuplicateDeleteUpdateException 동일한 멤버가 삭제와 업데이트 요청에 동시에 존재하는 경우
-     * @throws ProjectTeamMissingUpdateMemberException 삭제/업데이트 대상 멤버가 실제와 불일치하는 경우
+     * @throws TeamMemberNotFoundException 이미 삭제된 멤버를 다시 삭제하려는 경우
+     * @throws TeamDuplicateDeleteUpdateException 동일한 멤버가 삭제와 업데이트 요청에 동시에 존재하는 경우
+     * @throws TeamMissingUpdateMemberException 삭제/업데이트 대상 멤버가 실제와 불일치하는 경우
      */
     @Transactional
     public ProjectTeamUpdateResponse update(
@@ -296,10 +256,12 @@ public class ProjectTeamService {
         /* 1. 수정 권한이 있는 멤버인지 검증 */
         verifyUserIsActiveProjectMember(userId, projectTeamId);
         /* 2. TeamRole 검증 */
-        validateLeaderExists(updateMembersInfo);
+        validateLeaderExists(updateMembersInfo, ProjectMemberInfoRequest::isLeader);
+        validateResultImageCount(projectTeamId, resultImages, request.getDeleteResultImages());
         /* 4. Recruit 준비 */
         final boolean wasRecruit = teamData.getIsRecruited();
         final boolean isRecruited = this.checkRecruit(recruitCounts, teamData.getIsRecruited());
+
         final ProjectTeam team =
                 projectTeamRepository
                         .findById(projectTeamId)
@@ -319,7 +281,6 @@ public class ProjectTeamService {
         if (!resultImages.isEmpty()) {
             resultImgRepository.saveAll(ProjectImageMapper.toResultEntities(resultImages, team));
         }
-        validateResultImageCount(projectTeamId, resultImages, request);
         final List<ProjectMember> existingMembers =
                 projectMemberRepository.findAllByProjectTeamId(projectTeamId);
 
@@ -331,7 +292,9 @@ public class ProjectTeamService {
         /* 10. 프로젝트 팀 업데이트 */
         team.update(teamData, isRecruited);
         if (!incomingMembersInfo.isEmpty()) {
-            final Map<Long, User> users = getIdAndUserMap(incomingMembersInfo);
+            final Map<Long, User> users =
+                    userService.getIdAndUserMap(
+                            incomingMembersInfo, ProjectMemberInfoRequest::userId);
             final List<ProjectMember> incomingMembers =
                     ProjectMemberMapper.toEntities(incomingMembersInfo, team, users);
             projectMemberRepository.saveAll(incomingMembers);
@@ -340,17 +303,17 @@ public class ProjectTeamService {
         if (!wasRecruit && isRecruited) {
             // send Slack
             final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
-            return ProjectTeamMapper.toNonSlackUpdatedResponse(projectTeamId, team, leaders);
+            return ProjectTeamMapper.toUpdatedResponse(projectTeamId, team, leaders);
         }
 
         /* 13. 인덱스 업데이트 */
-        return ProjectTeamMapper.toUpdateResponse(projectTeamId, team);
+        return ProjectTeamMapper.toIndexOnlyUpdateResponse(projectTeamId, team);
     }
 
     private void validateResultImageCount(
-            Long projectTeamId, List<String> resultImages, ProjectTeamUpdateRequest request) {
+            Long projectTeamId, List<String> resultImages, List<Long> deleteResultImage) {
         final int resultImageCount = resultImgRepository.countByProjectTeamId(projectTeamId);
-        if (resultImageCount - request.getDeleteResultImages().size() + resultImages.size() > 10) {
+        if (resultImageCount - deleteResultImage.size() + resultImages.size() > 10) {
             throw new ProjectExceededResultImageException();
         }
     }
@@ -365,9 +328,9 @@ public class ProjectTeamService {
      * @param deleteMemberIds 삭제 요청된 멤버 ID 리스트
      * @return 신규로 추가될 프로젝트 멤버 요청 정보 리스트
      * @throws ProjectInvalidProjectMemberException 중복된 업데이트/삭제 ID가 존재하거나 일관되지 않은 경우
-     * @throws ProjectMemberNotFoundException 이미 삭제된 멤버를 다시 삭제하려는 경우
-     * @throws ProjectTeamDuplicateDeleteUpdateException 동일한 멤버가 삭제/업데이트 요청에 동시에 존재하는 경우
-     * @throws ProjectTeamMissingUpdateMemberException 실제로 변경된 수와 요청 수가 불일치하는 경우
+     * @throws TeamMemberNotFoundException 이미 삭제된 멤버를 다시 삭제하려는 경우
+     * @throws TeamDuplicateDeleteUpdateException 동일한 멤버가 삭제/업데이트 요청에 동시에 존재하는 경우
+     * @throws TeamMissingUpdateMemberException 실제로 변경된 수와 요청 수가 불일치하는 경우
      */
     private List<ProjectMemberInfoRequest> updateExistMembersAndExtractIncomingMembers(
             List<ProjectMember> existingMembers,
@@ -375,7 +338,7 @@ public class ProjectTeamService {
             List<Long> deleteMemberIds) {
         // 요청 중 수정하려는 유저 ID → 요청 정보 Map
         final Map<Long, ProjectMemberInfoRequest> updateMap =
-                toUserIdAndMemberInfoRequest(updateMember);
+                toUserIdAndMemberInfoRequest(updateMember, ProjectMemberInfoRequest::userId);
         final Set<Long> deleteIdSet = new HashSet<>(deleteMemberIds);
         checkDuplicateUpdateMembers(updateMap, updateMember);
         checkDuplicateDeleteMembers(deleteIdSet, deleteMemberIds);
@@ -391,7 +354,8 @@ public class ProjectTeamService {
      * @param deleteMemberIds 원본 삭제 ID 리스트
      * @throws ProjectInvalidProjectMemberException 삭제 대상에 중복이 있을 경우
      */
-    private void checkDuplicateDeleteMembers(Set<Long> deleteIdSet, List<Long> deleteMemberIds) {
+    public static void checkDuplicateDeleteMembers(
+            Set<Long> deleteIdSet, List<Long> deleteMemberIds) {
         if (deleteIdSet.size() != deleteMemberIds.size()) {
             throw new ProjectInvalidProjectMemberException();
         }
@@ -404,9 +368,8 @@ public class ProjectTeamService {
      * @param updateMember 원본 업데이트 요청 리스트
      * @throws ProjectInvalidProjectMemberException userId 기준 중복이 있는 경우
      */
-    private void checkDuplicateUpdateMembers(
-            Map<Long, ProjectMemberInfoRequest> updateMap,
-            List<ProjectMemberInfoRequest> updateMember) {
+    public static <T> void checkDuplicateUpdateMembers(
+            Map<Long, T> updateMap, List<T> updateMember) {
         if (updateMap.size() != updateMember.size()) {
             throw new ProjectInvalidProjectMemberException();
         }
@@ -418,16 +381,16 @@ public class ProjectTeamService {
      * @param existingMembers 기존 멤버 엔티티 리스트
      * @param updateMap 업데이트 대상 userId → 요청 정보
      * @param deleteIdSet 삭제할 멤버 ID 집합
-     * @throws ProjectMemberNotFoundException 이미 삭제된 멤버를 다시 삭제하려는 경우
-     * @throws ProjectTeamDuplicateDeleteUpdateException 동일한 멤버가 삭제와 업데이트에 동시에 포함된 경우
-     * @throws ProjectTeamMissingUpdateMemberException 실제 처리 수와 요청 수가 불일치하는 경우
+     * @throws TeamMemberNotFoundException 이미 삭제된 멤버를 다시 삭제하려는 경우
+     * @throws TeamDuplicateDeleteUpdateException 동일한 멤버가 삭제와 업데이트에 동시에 포함된 경우
+     * @throws TeamMissingUpdateMemberException 실제 처리 수와 요청 수가 불일치하는 경우
      */
     private void applyMemberStateChanges(
             List<ProjectMember> existingMembers,
             Map<Long, ProjectMemberInfoRequest> updateMap,
             Set<Long> deleteIdSet) {
-        final Set<Integer> toActive = new HashSet<>();
-        final Set<Integer> toInactive = new HashSet<>();
+        final Set<Long> toActive = new HashSet<>();
+        final Set<Long> toInactive = new HashSet<>();
         final int updateCount = updateMap.size();
         for (ProjectMember member : existingMembers) {
             final Long userId = member.getUser().getId();
@@ -436,25 +399,25 @@ public class ProjectTeamService {
 
             if (markedForDelete) {
                 if (member.isDeleted()) {
-                    throw new ProjectMemberNotFoundException();
+                    throw new TeamMemberNotFoundException();
                 }
                 if (updateInfo != null) {
-                    throw new ProjectTeamDuplicateDeleteUpdateException();
+                    throw new TeamDuplicateDeleteUpdateException();
                 }
                 member.toInactive();
-                toInactive.add(member.getId().intValue());
+                toInactive.add(member.getId());
                 continue;
             }
 
             if (updateInfo != null) {
                 member.toActive(updateInfo.teamRole(), updateInfo.isLeader());
-                toActive.add(member.getId().intValue());
+                toActive.add(member.getId());
                 updateMap.remove(userId);
             }
         }
         if (deleteIdSet.size() != toInactive.size()
                 || toActive.size() + toInactive.size() != updateCount) {
-            throw new ProjectTeamMissingUpdateMemberException();
+            throw new TeamMissingUpdateMemberException();
         }
     }
 
@@ -464,8 +427,7 @@ public class ProjectTeamService {
      * @param remainingUpdateMap 기존 멤버에 없던 userId → 요청 정보
      * @return 신규 멤버 요청 리스트
      */
-    private List<ProjectMemberInfoRequest> extractIncomingMembers(
-            Map<Long, ProjectMemberInfoRequest> remainingUpdateMap) {
+    public static <T> List<T> extractIncomingMembers(Map<Long, T> remainingUpdateMap) {
         return List.copyOf(remainingUpdateMap.values());
     }
 
@@ -573,10 +535,7 @@ public class ProjectTeamService {
      */
     @Transactional
     public void softDelete(Long teamId, Long userId) {
-        boolean isExisted = projectMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
-        if (!isExisted) {
-            throw new ProjectInvalidActiveRequester();
-        }
+        verifyUserIsActiveProjectMember(teamId, userId);
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
@@ -613,7 +572,7 @@ public class ProjectTeamService {
      * @throws ProjectTeamPositionClosedException 해당 포지션의 모집이 종료된 경우
      */
     @Transactional
-    public List<SlackRequest.DM> apply(ProjectTeamApplyRequest request, Long applicantId) {
+    public List<ProjectSlackRequest.DM> apply(ProjectTeamApplyRequest request, Long applicantId) {
         final Long teamId = request.projectTeamId();
         final TeamRole teamRole = request.teamRole();
         final String summary = request.summary();
@@ -644,14 +603,14 @@ public class ProjectTeamService {
      * @param teamId 프로젝트 팀 ID
      * @param applicantId 지원자 ID
      * @return Slack 알림 요청 DTO
-     * @throws ProjectMemberNotFoundException 지원 정보가 존재하지 않는 경우
+     * @throws TeamMemberNotFoundException 지원 정보가 존재하지 않는 경우
      */
     @Transactional
-    public List<SlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
+    public List<ProjectSlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
         final ProjectMember pm =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserId(teamId, applicantId)
-                        .orElseThrow(ProjectMemberNotFoundException::new);
+                        .orElseThrow(TeamMemberNotFoundException::new);
         final String applicantEmail = pm.getUser().getEmail();
         projectMemberRepository.delete(pm);
         final ProjectTeam pt =
@@ -691,8 +650,9 @@ public class ProjectTeamService {
      * @param applicantId 승인할 지원자 ID
      * @throws ProjectInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
-    public List<SlackRequest.DM> acceptApplicant(Long teamId, Long userId, Long applicantId) {
-        validateProjectActiveMember(teamId, userId);
+    public List<ProjectSlackRequest.DM> acceptApplicant(
+            Long teamId, Long userId, Long applicantId) {
+        verifyUserIsActiveProjectMember(teamId, userId);
         final String applicantEmail = projectMemberService.acceptApplicant(teamId, applicantId);
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
         final ProjectTeam pt =
@@ -712,8 +672,9 @@ public class ProjectTeamService {
      * @param applicantId 거절할 지원자 ID
      * @throws ProjectInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
-    public List<SlackRequest.DM> rejectApplicant(Long teamId, Long userId, Long applicantId) {
-        validateProjectActiveMember(teamId, userId);
+    public List<ProjectSlackRequest.DM> rejectApplicant(
+            Long teamId, Long userId, Long applicantId) {
+        verifyUserIsActiveProjectMember(teamId, userId);
         final String applicantEmail = projectMemberService.rejectApplicant(teamId, applicantId);
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(teamId);
         final ProjectTeam pt =

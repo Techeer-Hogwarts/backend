@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,6 +20,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
@@ -47,7 +47,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Long> createProjectTeam(
             @RequestPart(value = "mainImage") MultipartFile mainImage,
-            @RequestPart(value = "resultImages") List<MultipartFile> resultImages,
+            @RequestPart(value = "resultImages", required = false) List<MultipartFile> resultImages,
             @RequestPart("createProjectTeamRequest") ProjectTeamCreateRequest request) {
         ProjectTeamCreateResponse response =
                 projectTeamFacadeService.create(mainImage, resultImages, request);

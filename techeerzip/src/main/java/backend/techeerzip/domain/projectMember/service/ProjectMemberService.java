@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
+import backend.techeerzip.domain.projectMember.exception.TeamMemberNotFoundException;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberDslRepository;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
@@ -38,8 +38,10 @@ public class ProjectMemberService {
         final ProjectMember pm =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserId(team.getId(), applicantId)
-                        .orElse(createApplicant(team, applicantId, teamRole, summary));
-        pm.toApplicant();
+                        .orElseGet(() -> createApplicant(team, applicantId, teamRole, summary));
+        if (pm.isPending()) {
+            pm.toApplicant();
+        }
         return pm;
     }
 
@@ -67,7 +69,7 @@ public class ProjectMemberService {
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(ProjectMemberNotFoundException::new);
+                        .orElseThrow(TeamMemberNotFoundException::new);
         projectMember.toActive();
         return projectMember.getUser().getEmail();
     }
@@ -78,7 +80,7 @@ public class ProjectMemberService {
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(ProjectMemberNotFoundException::new);
+                        .orElseThrow(TeamMemberNotFoundException::new);
         projectMember.toReject();
         return projectMember.getUser().getEmail();
     }

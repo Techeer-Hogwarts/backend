@@ -3,7 +3,7 @@ package backend.techeerzip.domain.projectTeam.mapper;
 import java.util.ArrayList;
 import java.util.List;
 
-import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectSlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
@@ -13,7 +13,7 @@ public class ProjectSlackMapper {
 
     private ProjectSlackMapper() {}
 
-    public static SlackRequest.Channel toChannelRequest(
+    public static ProjectSlackRequest.Channel toChannelRequest(
             ProjectTeam team, List<LeaderInfo> leaders) {
         final List<String> leaderNames = leaders.stream().map(LeaderInfo::name).toList();
 
@@ -24,7 +24,7 @@ public class ProjectSlackMapper {
                         .map(teamStack -> teamStack.getStack().getName())
                         .toList();
 
-        return new SlackRequest.Channel(
+        return new ProjectSlackRequest.Channel(
                 team.getId(),
                 TeamType.PROJECT,
                 team.getName(),
@@ -37,23 +37,24 @@ public class ProjectSlackMapper {
                 leaderNames,
                 leaderEmails,
                 team.getRecruitExplain(),
+                team.getGithubLink(),
                 team.getNotionLink(),
                 stackNames);
     }
 
-    public static List<SlackRequest.DM> toDmRequest(
+    public static List<ProjectSlackRequest.DM> toDmRequest(
             ProjectTeam team,
             List<LeaderInfo> leaders,
             String applicantEmail,
             StatusCategory status) {
-        final List<SlackRequest.DM> alerts = new ArrayList<>();
+        final List<ProjectSlackRequest.DM> alerts = new ArrayList<>();
 
         for (int i = 0; i < leaders.size(); i++) {
             final String leaderEmail = leaders.get(i).email();
             final String first = (i == 0) ? applicantEmail : "Null";
 
             alerts.add(
-                    new SlackRequest.DM(
+                    new ProjectSlackRequest.DM(
                             team.getId(),
                             TeamType.PROJECT,
                             team.getName(),

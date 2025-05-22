@@ -105,16 +105,20 @@ public class ProjectMember extends BaseEntity {
         this.isDeleted = false;
     }
 
-    public void toApplicant() {
-        this.status = StatusCategory.PENDING;
-    }
-
     public void toActive() {
         this.status = StatusCategory.APPROVED;
         this.isDeleted = false;
     }
 
+    public void toApplicant() {
+        this.status = StatusCategory.PENDING;
+    }
+
     public void toReject() {
         this.status = StatusCategory.REJECT;
+    }
+
+    public boolean isPending() {
+        return this.status.equals(StatusCategory.PENDING);
     }
 }
