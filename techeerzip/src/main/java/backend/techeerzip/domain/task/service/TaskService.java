@@ -30,8 +30,9 @@ public class TaskService {
     private final RedisService redisService;
     private final @Lazy BlogService blogService;
     private final CustomLogger logger;
-
-    @Autowired @Lazy private TaskService self;
+    @Autowired
+    @Lazy
+    private TaskService self;
 
     public TaskService(
             RabbitMqService rabbitMQService,
@@ -92,22 +93,20 @@ public class TaskService {
         logger.info(String.format("userBlogUrls: %s", userBlogUrls), CONTEXT);
 
         userBlogUrls.forEach(
-                user ->
-                        user.getBlogUrls()
-                                .forEach(
-                                        url -> {
-                                            if (url.trim().isEmpty()) {
-                                                logger.error("Cannot send an empty task.");
-                                                return;
-                                            }
-                                            String taskId =
-                                                    generateTaskId(
-                                                            "blogs_daily_update", user.getUserId());
-                                            rabbitMQService.sendToQueue(
-                                                    taskId, url, "blogs_daily_update");
-                                            logger.info("Sending task: {} - {}", taskId, url);
-                                            redisService.setTaskStatus(taskId, url);
-                                        }));
+                user -> user.getBlogUrls()
+                        .forEach(
+                                url -> {
+                                    if (url.trim().isEmpty()) {
+                                        logger.error("Cannot send an empty task.");
+                                        return;
+                                    }
+                                    String taskId = generateTaskId(
+                                            "blogs_daily_update", user.getUserId());
+                                    rabbitMQService.sendToQueue(
+                                            taskId, url, "blogs_daily_update");
+                                    logger.info("Sending task: {} - {}", taskId, url);
+                                    redisService.setTaskStatus(taskId, url);
+                                }));
     }
 
     /** 매일 새벽 3시 - 유저 최신 블로그 게시물 크롤링 응답 후 처리 */
@@ -140,16 +139,15 @@ public class TaskService {
         logger.info(
                 "Current time: {}, 24 hours ago: {} | context: {} " + now + start24hAgo, CONTEXT);
 
-        List<BlogSaveRequest> filtered =
-                posts.stream()
-                        .filter(
-                                post -> {
-                                    LocalDateTime postDate = LocalDateTime.parse(post.getDate());
-                                    logger.info("postDate: {} | context: {}" + postDate, CONTEXT);
-                                    return !postDate.isBefore(start24hAgo)
-                                            && !postDate.isAfter(now);
-                                })
-                        .collect(Collectors.toList());
+        List<BlogSaveRequest> filtered = posts.stream()
+                .filter(
+                        post -> {
+                            LocalDateTime postDate = LocalDateTime.parse(post.getDate());
+                            logger.info("postDate: {} | context: {}" + postDate, CONTEXT);
+                            return !postDate.isBefore(start24hAgo)
+                                    && !postDate.isAfter(now);
+                        })
+                .collect(Collectors.toList());
 
         logger.info(
                 "Filtered {} posts from last 24 hours | context: {}" + filtered.size(), CONTEXT);

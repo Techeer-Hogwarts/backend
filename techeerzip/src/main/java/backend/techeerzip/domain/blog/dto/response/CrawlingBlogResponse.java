@@ -35,16 +35,15 @@ public class CrawlingBlogResponse {
     }
 
     /** taskData(JSON)와 enum 타입 Category로 바로 생성할 수 있도록 오버로드 */
-
     public CrawlingBlogResponse(String taskData, BlogCategory category) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             var node = mapper.readTree(taskData);
             this.userId = node.get("userId").asLong();
             this.blogUrl = node.get("blogURL").asText();
-            this.posts = mapper.convertValue(
-                    node.get("posts"), new TypeReference<List<BlogSaveRequest>>() {
-                    });
+            this.posts =
+                    mapper.convertValue(
+                            node.get("posts"), new TypeReference<List<BlogSaveRequest>>() {});
             this.category = category;
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid taskData JSON: " + e.getMessage(), e);
@@ -52,7 +51,6 @@ public class CrawlingBlogResponse {
     }
 
     /** 필터링된 포스트 목록으로 대체할 때 사용 */
-
     public void updatePosts(List<BlogSaveRequest> filteredPosts) {
         this.posts = filteredPosts;
     }
