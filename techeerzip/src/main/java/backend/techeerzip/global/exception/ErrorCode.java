@@ -24,9 +24,10 @@ public enum ErrorCode {
     LOGIN_INPUT_INVALID(HttpStatus.BAD_REQUEST, "U003", "Login input is invalid"),
 
     // Blog
-    BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "Blog not found"),
-    BLOG_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "B002", "Blog already exists"),
-    BLOG_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "B003", "Unauthorized to access this blog"),
+    BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "블로그를 찾을 수 없습니다."),
+    BLOG_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "B002", "이미 존재하는 블로그입니다."),
+    BLOG_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "B003", "블로그에 접근할 권한이 없습니다."),
+    BLOG_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "B004", "블로그 요청이 유효하지 않습니다."),
 
     // Bookmark
     BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND, "BM001", "Bookmark not found"),

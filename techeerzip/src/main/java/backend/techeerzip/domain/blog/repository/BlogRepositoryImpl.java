@@ -29,9 +29,10 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
     @Override
     public List<Blog> findBlogsWithCursor(
             Long cursorId, String category, String sortBy, int limit) {
-        Blog cursorBlog = cursorId != null
-                ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
-                : null;
+        Blog cursorBlog =
+                cursorId != null
+                        ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
+                        : null;
 
         return queryFactory
                 .selectFrom(blog)
@@ -46,9 +47,10 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
 
     @Override
     public List<Blog> findUserBlogsWithCursor(Long userId, Long cursorId, int limit) {
-        Blog cursorBlog = cursorId != null
-                ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
-                : null;
+        Blog cursorBlog =
+                cursorId != null
+                        ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
+                        : null;
 
         return queryFactory
                 .selectFrom(blog)
@@ -63,9 +65,10 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
 
     @Override
     public List<Blog> findPopularBlogsWithCursor(Long cursorId, int limit) {
-        Blog cursorBlog = cursorId != null
-                ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
-                : null;
+        Blog cursorBlog =
+                cursorId != null
+                        ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
+                        : null;
 
         // 2주 전 날짜 계산
         LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
@@ -85,7 +88,7 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
                 .orderBy(
                         blog.viewCount.add(blog.likeCount.multiply(10)).desc(),
                         blog.createdAt.desc() // 인기도가 같을 경우 최신순으로 정렬
-                )
+                        )
                 .limit(limit + 1)
                 .fetch();
     }
@@ -93,9 +96,9 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
     private BooleanExpression getCursorCondition(Blog cursorBlog, String sortBy) {
         return switch (sortBy) {
             case "popular" ->
-                blog.viewCount
-                        .add(blog.likeCount.multiply(10))
-                        .lt(cursorBlog.getViewCount() + (cursorBlog.getLikeCount() * 10));
+                    blog.viewCount
+                            .add(blog.likeCount.multiply(10))
+                            .lt(cursorBlog.getViewCount() + (cursorBlog.getLikeCount() * 10));
             case "name" -> blog.title.gt(cursorBlog.getTitle());
             default -> blog.createdAt.lt(cursorBlog.getCreatedAt());
         };
@@ -104,12 +107,12 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
     private OrderSpecifier<?>[] getOrderSpecifiers(String sortBy) {
         return switch (sortBy) {
             case "popular" ->
-                new OrderSpecifier<?>[] {
+                    new OrderSpecifier<?>[] {
                         blog.viewCount.add(blog.likeCount.multiply(10)).desc(),
                         blog.createdAt.desc() // 인기도가 같을 경우 최신순으로 정렬
-                };
-            case "name" -> new OrderSpecifier<?>[] { blog.title.asc() };
-            default -> new OrderSpecifier<?>[] { blog.createdAt.desc() };
+                    };
+            case "name" -> new OrderSpecifier<?>[] {blog.title.asc()};
+            default -> new OrderSpecifier<?>[] {blog.createdAt.desc()};
         };
     }
 }

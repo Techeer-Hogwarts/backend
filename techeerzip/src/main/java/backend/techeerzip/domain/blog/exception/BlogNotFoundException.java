@@ -3,9 +3,12 @@ package backend.techeerzip.domain.blog.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import backend.techeerzip.global.exception.ErrorCode;
+import backend.techeerzip.global.exception.BusinessException;
+
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class BlogNotFoundException extends RuntimeException {
+public class BlogNotFoundException extends BusinessException {
     public BlogNotFoundException() {
-        super("블로그를 찾을 수 없습니다.");
+        super(ErrorCode.BLOG_NOT_FOUND);
     }
 }
