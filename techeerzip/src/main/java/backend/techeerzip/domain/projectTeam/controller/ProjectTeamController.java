@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +28,6 @@ import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicant
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
 import backend.techeerzip.domain.projectTeam.service.ProjectTeamFacadeService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.index.IndexEvent;
@@ -87,7 +88,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @GetMapping("/allTeams")
-    public ResponseEntity<List<TeamGetAllResponse>> getAllTeams(GetTeamsQueryRequest request) {
+    public ResponseEntity<GetAllTeamsResponse> getAllTeams(GetTeamsQueryRequest request) {
         return ResponseEntity.ok(projectTeamFacadeService.getAllProjectAndStudyTeams(request));
     }
 
@@ -113,7 +114,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PostMapping("/apply")
-    public ResponseEntity<Void> applyToProject(ProjectTeamApplyRequest request) {
+    public ResponseEntity<Void> applyToProject(@RequestBody ProjectTeamApplyRequest request) {
         final Long userId = 18L;
         final List<SlackRequest.DM> slackRequest =
                 projectTeamFacadeService.applyToProject(request, userId);
@@ -131,7 +132,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/accept")
-    public ResponseEntity<EmptyResponse> acceptApplicant(ProjectApplicantRequest request) {
+    public ResponseEntity<EmptyResponse> acceptApplicant(@RequestBody ProjectApplicantRequest request) {
         final Long userId = 35L;
         final List<SlackRequest.DM> slackRequest =
                 projectTeamFacadeService.acceptApplicant(request, userId);
@@ -140,7 +141,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/reject")
-    public ResponseEntity<EmptyResponse> rejectApplicant(ProjectApplicantRequest request) {
+    public ResponseEntity<EmptyResponse> rejectApplicant(@RequestBody ProjectApplicantRequest request) {
         final Long userId = 35L;
         final List<SlackRequest.DM> slackRequest =
                 projectTeamFacadeService.rejectApplicant(request, userId);

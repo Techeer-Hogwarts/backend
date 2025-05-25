@@ -13,7 +13,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
 import backend.techeerzip.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -120,7 +120,7 @@ public interface ProjectTeamSwagger {
     @ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = TeamGetAllResponse.class)))
+            content = @Content(schema = @Schema(implementation = SliceTeamsResponse.class)))
     default void getAllTeams() {}
 
     @Operation(summary = "프로젝트 모집 마감", description = "프로젝트 팀의 모집 상태를 마감합니다.")
