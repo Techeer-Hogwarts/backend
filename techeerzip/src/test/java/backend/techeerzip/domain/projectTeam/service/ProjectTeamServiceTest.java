@@ -10,6 +10,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +47,6 @@ import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo.WithStack
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.exception.ProjectDuplicateTeamName;
 import backend.techeerzip.domain.projectTeam.exception.ProjectExceededResultImageException;
@@ -776,8 +778,8 @@ class ProjectTeamServiceTest {
         @Test
         void success() {
             when(projectTeamDslRepository.findManyYoungTeamById(any(), any(), any()))
-                    .thenReturn(List.of(mock(ProjectTeamGetAllResponse.class)));
-            List<ProjectTeamGetAllResponse> result =
+                    .thenReturn(List.of(mock(ProjectSliceTeamsResponse.class)));
+            List<ProjectSliceTeamsResponse> result =
                     projectTeamService.getYoungTeamsById(List.of(1L), true, false);
             assertEquals(1, result.size());
         }
@@ -789,12 +791,11 @@ class ProjectTeamServiceTest {
 
         @Test
         void success() {
-            when(projectTeamDslRepository.sliceYoungTeam(any(), any(), any(), any()))
-                    .thenReturn(List.of(mock(ProjectTeamGetAllResponse.class)));
-            List<ProjectTeamGetAllResponse> result =
+            when(projectTeamDslRepository.sliceYoungTeams(any()))
+                    .thenReturn(List.of(mock(ProjectTeam.class)));
+            GetAllTeamsResponse result =
                     projectTeamService.getYoungTeams(
-                            List.of(PositionNumType.BACKEND), true, false, 10L);
-            assertEquals(1, result.size());
+                            mock(GetProjectTeamsQuery.class));
         }
     }
 

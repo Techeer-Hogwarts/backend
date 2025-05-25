@@ -1,14 +1,17 @@
 package backend.techeerzip.domain.studyTeam.repository.querydsl;
 
+import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
+import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import java.util.List;
 
-import backend.techeerzip.domain.projectTeam.dto.response.StudyTeamGetAllResponse;
+import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
 
 public interface StudyTeamDslRepository {
-
-    List<StudyTeamGetAllResponse> sliceYoungTeam(
-            Boolean isRecruited, Boolean isFinished, Long limit);
-
-    List<StudyTeamGetAllResponse> findManyYoungTeamById(
+    List<StudySliceTeamsResponse> findManyYoungTeamById(
             List<Long> keys, Boolean isRecruited, Boolean isFinished);
+
+    List<StudyTeam> sliceYoungTeamByCount(GetStudyTeamsQuery query);
+
+    List<StudyTeam> sliceYoungTeamByDate(GetStudyTeamsQuery query);
+    List<StudyTeam> sliceYoungTeam(GetStudyTeamsQuery query);
 }
