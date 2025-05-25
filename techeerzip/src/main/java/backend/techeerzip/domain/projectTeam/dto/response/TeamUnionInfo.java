@@ -18,5 +18,6 @@ public class TeamUnionInfo {
     private UUID globalId;
     private Long id;
     private TeamType teamType;
-    private LocalDateTime createdAt;
+    private LocalDateTime dateCursor;
+    private Integer countCursor;
 }

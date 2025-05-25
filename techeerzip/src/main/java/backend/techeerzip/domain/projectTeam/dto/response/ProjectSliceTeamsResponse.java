@@ -10,7 +10,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ProjectTeamGetAllResponse implements TeamGetAllResponse {
+public class ProjectSliceTeamsResponse implements SliceTeamsResponse {
 
     private final Long id;
     private final String name;
@@ -26,5 +26,6 @@ public class ProjectTeamGetAllResponse implements TeamGetAllResponse {
     private final List<String> mainImages;
     private final List<TeamStackInfo.WithName> teamStacks;
     private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
     private final TeamType type = TeamType.PROJECT;
 }

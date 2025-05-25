@@ -1,15 +1,8 @@
 package backend.techeerzip.domain.projectTeam.dto.request;
 
 import backend.techeerzip.domain.projectTeam.type.SortType;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
-import backend.techeerzip.domain.projectTeam.type.PositionNumType;
-import backend.techeerzip.domain.projectTeam.type.TeamType;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,15 +10,14 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class GetTeamsQuery {
-    private final UUID globalId;
+public class GetStudyTeamsQuery {
+    private final Long idCursor;
     private final LocalDateTime dateCursor;
     private final Integer countCursor;
 
     @Min(1)
     private final int limit;
 
-    @NotNull private final List<TeamType> teamTypes;
     private final SortType sortType;
     private final Boolean isRecruited;
     private final Boolean isFinished;
