@@ -2,8 +2,6 @@ package backend.techeerzip.domain.projectTeam.type;
 
 import java.util.List;
 
-import org.springframework.cglib.core.internal.Function;
-
 import com.querydsl.core.types.dsl.NumberExpression;
 
 import backend.techeerzip.domain.projectTeam.entity.QProjectTeam;
