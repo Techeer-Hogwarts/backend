@@ -1,5 +1,18 @@
 package backend.techeerzip.domain.auth.jwt;
 
+import java.security.Key;
+import java.util.Date;
+import java.util.List;
+
+import jakarta.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
+
 import backend.techeerzip.domain.auth.dto.token.TokenPair;
 import backend.techeerzip.domain.auth.exception.InvalidJwtTokenException;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -11,17 +24,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import java.security.Key;
-import java.util.Date;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +35,7 @@ public class JwtTokenProvider {
 
     private final CustomLogger logger;
 
-    @Value("${spring.jwt.secret}")
+    @Value("${jwt.secret}")
     private String secretKey;
 
     private Key key;
