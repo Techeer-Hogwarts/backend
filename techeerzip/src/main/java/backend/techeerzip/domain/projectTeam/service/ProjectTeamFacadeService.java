@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +15,6 @@ import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicant
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
 
 public interface ProjectTeamFacadeService {
 
@@ -32,7 +32,7 @@ public interface ProjectTeamFacadeService {
             List<MultipartFile> resultImages,
             ProjectTeamUpdateRequest request);
 
-    List<TeamGetAllResponse> getAllProjectAndStudyTeams(GetTeamsQueryRequest request);
+    GetAllTeamsResponse getAllProjectAndStudyTeams(GetTeamsQueryRequest request);
 
     void closeRecruit(Long projectTeamId, Long userId);
 

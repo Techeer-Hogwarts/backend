@@ -1,5 +1,14 @@
 package backend.techeerzip.domain.projectTeam.service;
 
+import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
+import static backend.techeerzip.domain.studyTeam.service.StudyTeamService.getNextInfo;
+import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceNextInfo;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
+import backend.techeerzip.domain.projectTeam.type.SortType;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +39,7 @@ import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
@@ -54,7 +63,6 @@ import backend.techeerzip.domain.projectTeam.repository.ProjectMainImageReposito
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
-import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
@@ -512,24 +520,56 @@ public class ProjectTeamService {
      * @return 프로젝트 팀 목록
      */
     @Transactional(readOnly = true)
-    public List<ProjectTeamGetAllResponse> getYoungTeamsById(
+    public List<ProjectSliceTeamsResponse> getYoungTeamsById(
             List<Long> keys, Boolean isRecruited, Boolean isFinished) {
         return projectTeamDslRepository.findManyYoungTeamById(keys, isRecruited, isFinished);
     }
 
-    /**
-     * 필터 조건에 맞는 영팀(Young Team) 목록을 페이징 형식으로 조회합니다.
-     *
-     * @param numTypes 포지션 필터 (백엔드, 프론트엔드 등)
-     * @param isRecruited 모집 여부 필터
-     * @param isFinished 종료 여부 필터
-     * @param limit 최대 반환 개수
-     * @return 조건에 맞는 프로젝트 팀 목록
-     */
+
     @Transactional(readOnly = true)
-    public List<ProjectTeamGetAllResponse> getYoungTeams(
-            List<PositionNumType> numTypes, Boolean isRecruited, Boolean isFinished, Long limit) {
-        return projectTeamDslRepository.sliceYoungTeam(numTypes, isRecruited, isFinished, limit);
+    public GetAllTeamsResponse getYoungTeams(GetProjectTeamsQuery query) {
+        final int limit = query.getLimit();
+        final SortType sortType = query.getSortType();
+        final List<ProjectTeam> teams = projectTeamDslRepository.sliceYoungTeams(query);
+        final SliceNextInfo next = setNextInfo(teams, limit, sortType);
+        final List<ProjectTeam> fitTeams = ensureMaxSize(teams, limit);
+        final List<SliceTeamsResponse> responses = new ArrayList<>(
+                fitTeams.stream().map(ProjectTeamMapper::toGetAllResponse).toList());
+
+        return new GetAllTeamsResponse(responses, next);
+    }
+
+    private static SliceNextInfo setNextInfo(List<ProjectTeam> sortedTeams, Integer limit, SortType sortType) {
+        if (sortedTeams.size() <= limit) {
+            return SliceNextInfo.builder().hasNext(false).build();
+        }
+        final ProjectTeam last = sortedTeams.getLast();
+        return getNextInfo(sortType, last.getId(), last.getUpdatedAt(), last.getViewCount(),
+                last.getLikeCount());
+    }
+
+    public static SliceNextInfo getNextInfo(SortType sortType, Long id, LocalDateTime updatedAt,
+            Integer viewCount, Integer likeCount) {
+        return switch (sortType) {
+            case SortType.UPDATE_AT_DESC -> SliceNextInfo.builder()
+                    .hasNext(true)
+                    .id(id)
+                    .dateCursor(updatedAt)
+                    .sortType(sortType)
+                    .build();
+            case SortType.VIEW_COUNT_DESC -> SliceNextInfo.builder()
+                    .hasNext(true)
+                    .id(id)
+                    .countCursor(viewCount)
+                    .sortType(sortType)
+                    .build();
+            case SortType.LIKE_COUNT_DESC -> SliceNextInfo.builder()
+                    .hasNext(true)
+                    .id(id)
+                    .countCursor(likeCount)
+                    .sortType(sortType)
+                    .build();
+        };
     }
 
     /**
@@ -676,7 +716,7 @@ public class ProjectTeamService {
      * @throws ProjectInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
     public List<SlackRequest.DM> acceptApplicant(Long teamId, Long userId, Long applicantId) {
-        verifyUserIsActiveProjectMember(teamId, userId);
+        verifyUserIsActiveProjectMember(userId, teamId);
         final String applicantEmail = projectMemberService.acceptApplicant(teamId, applicantId);
         final ProjectTeam pt =
                 projectTeamRepository
@@ -698,7 +738,7 @@ public class ProjectTeamService {
      * @throws ProjectInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
     public List<SlackRequest.DM> rejectApplicant(Long teamId, Long userId, Long applicantId) {
-        verifyUserIsActiveProjectMember(teamId, userId);
+        verifyUserIsActiveProjectMember(userId, teamId);
         final String applicantEmail = projectMemberService.rejectApplicant(teamId, applicantId);
         final ProjectTeam pt =
                 projectTeamRepository
