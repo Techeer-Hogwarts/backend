@@ -10,18 +10,14 @@ public class IndexEvent {
     @Getter
     @AllArgsConstructor
     public static class Create<T> {
-        @NotNull
-        private String index;
-        @NotNull
-        private T payload;
+        @NotNull private String index;
+        @NotNull private T payload;
     }
 
     @Getter
     @AllArgsConstructor
     public static class Delete {
-        @NotNull
-        private String index;
-        @NotNull
-        private Long id;
+        @NotNull private String index;
+        @NotNull private Long id;
     }
 }

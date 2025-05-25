@@ -46,24 +46,6 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
     }
 
     @Override
-    public List<Blog> findUserBlogsWithCursor(Long userId, Long cursorId, int limit) {
-        Blog cursorBlog =
-                cursorId != null
-                        ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
-                        : null;
-
-        return queryFactory
-                .selectFrom(blog)
-                .where(
-                        blog.isDeleted.eq(false),
-                        blog.user.id.eq(userId),
-                        cursorBlog != null ? blog.createdAt.lt(cursorBlog.getCreatedAt()) : null)
-                .orderBy(blog.createdAt.desc())
-                .limit(limit + 1)
-                .fetch();
-    }
-
-    @Override
     public List<Blog> findPopularBlogsWithCursor(Long cursorId, int limit) {
         Blog cursorBlog =
                 cursorId != null
@@ -95,10 +77,7 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
 
     private BooleanExpression getCursorCondition(Blog cursorBlog, String sortBy) {
         return switch (sortBy) {
-            case "popular" ->
-                    blog.viewCount
-                            .add(blog.likeCount.multiply(10))
-                            .lt(cursorBlog.getViewCount() + (cursorBlog.getLikeCount() * 10));
+            case "viewCount" -> blog.viewCount.lt(cursorBlog.getViewCount());
             case "name" -> blog.title.gt(cursorBlog.getTitle());
             default -> blog.createdAt.lt(cursorBlog.getCreatedAt());
         };
@@ -106,10 +85,9 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
 
     private OrderSpecifier<?>[] getOrderSpecifiers(String sortBy) {
         return switch (sortBy) {
-            case "popular" ->
+            case "viewCount" ->
                     new OrderSpecifier<?>[] {
-                        blog.viewCount.add(blog.likeCount.multiply(10)).desc(),
-                        blog.createdAt.desc() // 인기도가 같을 경우 최신순으로 정렬
+                        blog.viewCount.desc(), blog.createdAt.desc() // 조회수가 같을 경우 최신순으로 정렬
                     };
             case "name" -> new OrderSpecifier<?>[] {blog.title.asc()};
             default -> new OrderSpecifier<?>[] {blog.createdAt.desc()};

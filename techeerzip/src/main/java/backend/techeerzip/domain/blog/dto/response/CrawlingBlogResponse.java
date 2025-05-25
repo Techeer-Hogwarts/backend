@@ -55,9 +55,9 @@ public class CrawlingBlogResponse {
 
             this.userId = userIdNode.asLong();
             this.blogUrl = blogUrlNode.asText();
-            this.posts = mapper.convertValue(
-                    node.get("posts"), new TypeReference<List<BlogSaveRequest>>() {
-                    });
+            this.posts =
+                    mapper.convertValue(
+                            node.get("posts"), new TypeReference<List<BlogSaveRequest>>() {});
             this.category = category;
         } catch (BlogCrawlingException e) {
             throw e;

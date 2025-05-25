@@ -12,15 +12,16 @@ import org.springframework.data.repository.query.Param;
 import backend.techeerzip.domain.blog.entity.Blog;
 
 public interface BlogRepository extends JpaRepository<Blog, Long>, BlogRepositoryCustom {
-        Page<Blog> findByIsDeletedFalseAndCategoryOrderByCreatedAtDesc(
-                        String category, Pageable pageable);
+    Page<Blog> findByIsDeletedFalseAndCategoryOrderByCreatedAtDesc(
+            String category, Pageable pageable);
 
-        Page<Blog> findByIsDeletedFalseAndUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+    Page<Blog> findByIsDeletedFalseAndUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-        @Query("SELECT b FROM Blog b WHERE b.isDeleted = false AND b.createdAt >= :twoWeeksAgo ORDER BY b.likeCount DESC")
-        Page<Blog> findBestBlogs(@Param("twoWeeksAgo") LocalDateTime twoWeeksAgo, Pageable pageable);
+    @Query(
+            "SELECT b FROM Blog b WHERE b.isDeleted = false AND b.createdAt >= :twoWeeksAgo ORDER BY b.likeCount DESC")
+    Page<Blog> findBestBlogs(@Param("twoWeeksAgo") LocalDateTime twoWeeksAgo, Pageable pageable);
 
-        Optional<Blog> findByIdAndIsDeletedFalse(Long id);
+    Optional<Blog> findByIdAndIsDeletedFalse(Long id);
 
-        boolean existsByUrl(String url);
+    boolean existsByUrl(String url);
 }

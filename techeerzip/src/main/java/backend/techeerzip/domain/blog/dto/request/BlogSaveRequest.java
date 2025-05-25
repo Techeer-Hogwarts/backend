@@ -27,8 +27,8 @@ public class BlogSaveRequest {
     public BlogSaveRequest(Object post) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> postMap = mapper.convertValue(post, new TypeReference<Map<String, Object>>() {
-            });
+            Map<String, Object> postMap =
+                    mapper.convertValue(post, new TypeReference<Map<String, Object>>() {});
 
             this.title = (String) postMap.get("title");
             this.url = (String) postMap.get("url");

@@ -1,7 +1,8 @@
 package backend.techeerzip.global.exception;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
+
+import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
@@ -58,7 +59,8 @@ public enum ErrorCode {
 
     // Redis
     REDIS_CONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "R001", "Redis connection error"),
-    REDIS_MESSAGE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "R002", "Redis message processing error"),
+    REDIS_MESSAGE_PROCESSING_ERROR(
+            HttpStatus.INTERNAL_SERVER_ERROR, "R002", "Redis message processing error"),
     REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found");
 
     private final HttpStatus status;

@@ -79,7 +79,6 @@ public class BlogResponse {
     @Schema(name = "Author", description = "블로그 작성자 정보")
     public record Author(
             @Schema(description = "작성자 이름", example = "홍길동") String authorName,
-
-            @Schema(description = "작성자 이미지 URL", example = "https://techeer.io/img/user.png") String authorImage) {
-    }
+            @Schema(description = "작성자 이미지 URL", example = "https://techeer.io/img/user.png")
+                    String authorImage) {}
 }

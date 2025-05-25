@@ -1,11 +1,5 @@
 package backend.techeerzip.global.config;
 
-import backend.techeerzip.domain.auth.jwt.JwtAuthenticationFilter;
-import backend.techeerzip.domain.auth.jwt.JwtTokenProvider;
-import backend.techeerzip.domain.auth.jwt.handler.CustomAccessDeniedHandler;
-import backend.techeerzip.domain.auth.jwt.handler.CustomAuthenticationEntryPoint;
-import backend.techeerzip.global.logger.CustomLogger;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -17,6 +11,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import backend.techeerzip.domain.auth.jwt.JwtAuthenticationFilter;
+import backend.techeerzip.domain.auth.jwt.JwtTokenProvider;
+import backend.techeerzip.domain.auth.jwt.handler.CustomAccessDeniedHandler;
+import backend.techeerzip.domain.auth.jwt.handler.CustomAuthenticationEntryPoint;
+import backend.techeerzip.global.logger.CustomLogger;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -31,8 +32,7 @@ public class SecurityConfig {
     @Bean
     @Order(1)
     public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .securityMatcher(
+        return http.securityMatcher(
                         "api/v3/api-docs/**",
                         "/api/v3/docs/**",
                         "/api/v3/docs",
@@ -51,19 +51,24 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // jwt 인증 필요 없는 엔드 포인트
-                        .requestMatchers("api/v3/auth/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        .accessDeniedHandler(customAccessDeniedHandler)
-                )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, logger), UsernamePasswordAuthenticationFilter.class)
+        return http.csrf(csrf -> csrf.disable())
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(
+                        auth ->
+                                auth
+                                        // jwt 인증 필요 없는 엔드 포인트
+                                        .requestMatchers("api/v3/auth/**")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .authenticated())
+                .exceptionHandling(
+                        ex ->
+                                ex.authenticationEntryPoint(customAuthenticationEntryPoint)
+                                        .accessDeniedHandler(customAccessDeniedHandler))
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtTokenProvider, logger),
+                        UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -73,7 +78,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
         return config.getAuthenticationManager();
     }
 }

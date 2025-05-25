@@ -27,8 +27,7 @@ public class RedisService {
         try {
             // Redis 연결 테스트
             if (redisTemplate == null || redisTemplate.getConnectionFactory() == null) {
-                throw new IllegalStateException(
-                        "Redis 연결 팩토리가 올바르게 초기화되지 않았습니다.");
+                throw new IllegalStateException("Redis 연결 팩토리가 올바르게 초기화되지 않았습니다.");
             }
             redisTemplate.getConnectionFactory().getConnection().ping();
             logger.info("Redis 연결 성공", CONTEXT);
@@ -52,8 +51,7 @@ public class RedisService {
             redisTemplate.expire(taskId, 3600, TimeUnit.SECONDS); // expire 1시간 = 3600초
             logger.info("작업 상태 설정 완료 - taskId: {}", taskId, CONTEXT);
         } catch (Exception e) {
-            logger.error(
-                    "작업 상태 설정 실패 - taskId: {}, 오류: {}", taskId, e.getMessage());
+            logger.error("작업 상태 설정 실패 - taskId: {}, 오류: {}", taskId, e.getMessage());
             throw e;
         }
     }
@@ -65,8 +63,7 @@ public class RedisService {
             logger.info("작업 상세 정보 조회 완료 - taskId: {}", taskId, CONTEXT);
             return details;
         } catch (Exception e) {
-            logger.error(
-                    "작업 상세 정보 조회 실패 - taskId: {}, 오류: {}", taskId, e.getMessage());
+            logger.error("작업 상세 정보 조회 실패 - taskId: {}, 오류: {}", taskId, e.getMessage());
             throw e;
         }
     }
@@ -84,8 +81,7 @@ public class RedisService {
                         } catch (Exception e) {
                             logger.error("채널 {}의 메시지 처리 중 오류 발생: {}", channel, e.getMessage(), e);
                             throw new RedisMessageProcessingException(
-                                    String.format("채널 %s의 메시지 처리 실패: %s", channel,
-                                            e.getMessage()));
+                                    String.format("채널 %s의 메시지 처리 실패: %s", channel, e.getMessage()));
                         }
                     },
                     topic);
