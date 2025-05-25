@@ -1,7 +1,7 @@
 package backend.techeerzip.domain.blog.dto.request;
 
 import jakarta.validation.constraints.Min;
-
+import jakarta.validation.constraints.Pattern;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -10,6 +10,7 @@ import lombok.Data;
 public class BlogQueryRequest {
         @Schema(description = "검색할 카테고리 (TECHEER: 테커인 블로그, SHARED: 외부 블로그)", example = "TECHEER", allowableValues = {
                         "TECHEER", "SHARED" })
+        @Pattern(regexp = "^(TECHEER|SHARED)$", message = "카테고리는 TECHEER 또는 SHARED만 허용됩니다.")
         private String category;
 
         @Schema(description = "오프셋", example = "0")

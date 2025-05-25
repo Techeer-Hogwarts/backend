@@ -1,8 +1,11 @@
 package backend.techeerzip.domain.task.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
@@ -17,6 +20,9 @@ import backend.techeerzip.domain.blog.dto.request.BlogSaveRequest;
 import backend.techeerzip.domain.blog.dto.response.BlogUrlsResponse;
 import backend.techeerzip.domain.blog.dto.response.CrawlingBlogResponse;
 import backend.techeerzip.domain.blog.entity.BlogCategory;
+import backend.techeerzip.domain.blog.exception.BlogEmptyDateException;
+import backend.techeerzip.domain.blog.exception.BlogEmptyPostsException;
+import backend.techeerzip.domain.blog.exception.BlogInvalidDateFormatException;
 import backend.techeerzip.domain.blog.service.BlogService;
 import backend.techeerzip.domain.task.entity.TaskType;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -30,9 +36,10 @@ public class TaskService {
     private final RedisService redisService;
     private final @Lazy BlogService blogService;
     private final CustomLogger logger;
+
     @Autowired
     @Lazy
-    private TaskService self;
+    private TaskService self; // 순환 참조 해결을 위한 자기 주입
 
     public TaskService(
             RabbitMqService rabbitMQService,
@@ -96,7 +103,7 @@ public class TaskService {
                 user -> user.getBlogUrls()
                         .forEach(
                                 url -> {
-                                    if (url.trim().isEmpty()) {
+                                    if (url == null || url.trim().isEmpty()) {
                                         logger.error("Cannot send an empty task.");
                                         return;
                                     }
@@ -112,7 +119,7 @@ public class TaskService {
     /** 매일 새벽 3시 - 유저 최신 블로그 게시물 크롤링 응답 후 처리 */
     @Transactional
     public void processDailyUpdate(String taskId, String taskData) {
-        logger.info("Performing daily update for task {}: {}" + taskId + taskData, CONTEXT);
+        logger.info("Performing daily update for task {}: {}", taskId, taskData, CONTEXT);
         try {
             // taskData(JSON) → DTO, 카테고리는 고정 예시로 TECHEER 지정
             CrawlingBlogResponse blogs = new CrawlingBlogResponse(taskData, BlogCategory.TECHEER);
@@ -121,7 +128,7 @@ public class TaskService {
             List<BlogSaveRequest> filtered = filterPosts(blogs.getPosts());
             blogs.updatePosts(filtered);
 
-            logger.info("필터링한 블로그 생성 요청 중 - posts: {}" + blogs.getPosts(), CONTEXT);
+            logger.info("필터링한 블로그 생성 요청 중 - posts: {}", blogs.getPosts(), CONTEXT);
             blogService.createBlog(blogs);
         } catch (Exception e) {
             handleTaskError(taskId, "blogs_daily_update", e);
@@ -133,24 +140,37 @@ public class TaskService {
 
     // 현재 시간 기준 24시간 동안의 글 필터링
     private List<BlogSaveRequest> filterPosts(List<BlogSaveRequest> posts) {
+        if (posts == null) {
+            logger.warn("Posts list is null");
+            throw new BlogEmptyPostsException();
+        }
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime start24hAgo = now.minusHours(24);
 
-        logger.info(
-                "Current time: {}, 24 hours ago: {} | context: {} " + now + start24hAgo, CONTEXT);
+        logger.info("Current time: {}, 24 hours ago: {}", now, start24hAgo);
 
         List<BlogSaveRequest> filtered = posts.stream()
-                .filter(
-                        post -> {
-                            LocalDateTime postDate = LocalDateTime.parse(post.getDate());
-                            logger.info("postDate: {} | context: {}" + postDate, CONTEXT);
-                            return !postDate.isBefore(start24hAgo)
-                                    && !postDate.isAfter(now);
-                        })
+                .filter(Objects::nonNull)
+                .filter(post -> {
+                    String dateStr = post.getDate();
+                    if (dateStr == null || dateStr.trim().isEmpty()) {
+                        logger.warn("Post date is null or empty for post: {}", post.getTitle());
+                        throw new BlogEmptyDateException(post.getTitle());
+                    }
+
+                    try {
+                        LocalDateTime postDate = LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
+                        logger.debug("Post date: {} | context: {}", postDate, CONTEXT);
+                        return !postDate.isBefore(start24hAgo) && !postDate.isAfter(now);
+                    } catch (DateTimeParseException e) {
+                        logger.warn("Invalid date format for post '{}': {}", post.getTitle(), dateStr);
+                        throw new BlogInvalidDateFormatException(post.getTitle(), dateStr);
+                    }
+                })
                 .collect(Collectors.toList());
 
-        logger.info(
-                "Filtered {} posts from last 24 hours | context: {}" + filtered.size(), CONTEXT);
+        logger.info("Filtered {} posts from last 24 hours | context: {}", filtered.size(), CONTEXT);
         return filtered;
     }
 
@@ -219,7 +239,8 @@ public class TaskService {
         return String.format("task-%s-%d-%d", type, System.currentTimeMillis(), userId);
     }
 
-    private void processTask(String taskId, String taskData, TaskType type) {
+    @Transactional
+    public void processTask(String taskId, String taskData, TaskType type) {
         switch (type) {
             case SIGNUP_BLOG_FETCH -> processSignUpBlogFetch(taskId, taskData);
             case DAILY_UPDATE -> processDailyUpdate(taskId, taskData);
