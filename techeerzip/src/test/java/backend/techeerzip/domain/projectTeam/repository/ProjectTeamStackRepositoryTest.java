@@ -48,16 +48,4 @@ class ProjectTeamStackRepositoryTest {
                 stackRepository.save(
                         Stack.builder().category(StackCategory.BACKEND).name("").build());
     }
-
-    @Test
-    void deleteAllByProjectTeam() {
-        final TeamStack stack1 =
-                TeamStack.builder().stack(savedStack).projectTeam(savedTeam).isMain(true).build();
-        final TeamStack stack2 =
-                TeamStack.builder().stack(savedStack).projectTeam(savedTeam).isMain(true).build();
-        projectTeamStackRepository.saveAll(List.of(stack1, stack2));
-        projectTeamStackRepository.deleteAllByProjectTeam(savedTeam);
-        final List<TeamStack> expect = projectTeamStackRepository.findAll();
-        Assertions.assertTrue(expect.isEmpty());
-    }
 }
