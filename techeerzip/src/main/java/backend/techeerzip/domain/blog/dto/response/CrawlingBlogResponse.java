@@ -3,10 +3,12 @@ package backend.techeerzip.domain.blog.dto.response;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import backend.techeerzip.domain.blog.dto.request.BlogSaveRequest;
 import backend.techeerzip.domain.blog.entity.BlogCategory;
+import backend.techeerzip.domain.blog.exception.BlogCrawlingException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -38,15 +40,29 @@ public class CrawlingBlogResponse {
     public CrawlingBlogResponse(String taskData, BlogCategory category) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            var node = mapper.readTree(taskData);
-            this.userId = node.get("userId").asLong();
-            this.blogUrl = node.get("blogURL").asText();
-            this.posts =
-                    mapper.convertValue(
-                            node.get("posts"), new TypeReference<List<BlogSaveRequest>>() {});
+            JsonNode node = mapper.readTree(taskData);
+
+            // 필수 필드 검증
+            JsonNode userIdNode = node.get("userId");
+            JsonNode blogUrlNode = node.get("blogURL");
+
+            if (userIdNode == null || userIdNode.isNull()) {
+                throw new BlogCrawlingException("userId는 필수 필드입니다");
+            }
+            if (blogUrlNode == null || blogUrlNode.isNull()) {
+                throw new BlogCrawlingException("blogURL은 필수 필드입니다");
+            }
+
+            this.userId = userIdNode.asLong();
+            this.blogUrl = blogUrlNode.asText();
+            this.posts = mapper.convertValue(
+                    node.get("posts"), new TypeReference<List<BlogSaveRequest>>() {
+                    });
             this.category = category;
+        } catch (BlogCrawlingException e) {
+            throw e;
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid taskData JSON: " + e.getMessage(), e);
+            throw new BlogCrawlingException("크롤링 데이터 처리 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 

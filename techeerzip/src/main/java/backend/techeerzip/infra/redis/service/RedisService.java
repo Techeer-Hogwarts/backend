@@ -11,6 +11,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 import backend.techeerzip.global.logger.CustomLogger;
+import backend.techeerzip.infra.redis.exception.RedisMessageProcessingException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,13 +28,13 @@ public class RedisService {
             // Redis 연결 테스트
             if (redisTemplate == null || redisTemplate.getConnectionFactory() == null) {
                 throw new IllegalStateException(
-                        "Redis connection factory is not properly initialized");
+                        "Redis 연결 팩토리가 올바르게 초기화되지 않았습니다.");
             }
             redisTemplate.getConnectionFactory().getConnection().ping();
-            logger.info("Redis connection successful");
+            logger.info("Redis 연결 성공", CONTEXT);
         } catch (Exception e) {
-            logger.error("Redis connection failed: {}", e.getMessage());
-            throw new RuntimeException("Failed to initialize Redis connection", e);
+            logger.error("Redis 연결 실패: {}", e.getMessage());
+            throw new RuntimeException("Redis 연결 초기화 실패", e);
         }
     }
 
@@ -49,10 +50,10 @@ public class RedisService {
                                     "result", "pending",
                                     "processed", "false"));
             redisTemplate.expire(taskId, 3600, TimeUnit.SECONDS); // expire 1시간 = 3600초
-            logger.info(String.format("Task status set for taskId: %s", taskId), CONTEXT);
+            logger.info("작업 상태 설정 완료 - taskId: {}", taskId, CONTEXT);
         } catch (Exception e) {
             logger.error(
-                    "Failed to set task status for taskId: %s, error: %s", taskId, e.getMessage());
+                    "작업 상태 설정 실패 - taskId: {}, 오류: {}", taskId, e.getMessage());
             throw e;
         }
     }
@@ -61,11 +62,11 @@ public class RedisService {
     public Map<Object, Object> getTaskDetails(String taskId) {
         try {
             Map<Object, Object> details = redisTemplate.opsForHash().entries(taskId);
-            logger.info(String.format("Retrieved task details for taskId: %s", taskId), CONTEXT);
+            logger.info("작업 상세 정보 조회 완료 - taskId: {}", taskId, CONTEXT);
             return details;
         } catch (Exception e) {
             logger.error(
-                    "Failed to get task details for taskId: %s, error: %s", taskId, e.getMessage());
+                    "작업 상세 정보 조회 실패 - taskId: {}, 오류: {}", taskId, e.getMessage());
             throw e;
         }
     }
@@ -74,15 +75,25 @@ public class RedisService {
     public void subscribeToChannel(String channel, MessageListener messageListener) {
         try {
             ChannelTopic topic = new ChannelTopic(channel);
-            redisMessageListenerContainer.addMessageListener((message, pattern) -> {
-                String messageContent = new String(message.getBody());
-                logger.info(String.format("Message received on channel %s: %s", channel, messageContent), CONTEXT);
-                messageListener.onMessage(messageContent);
-            }, topic);
-            logger.info(String.format("Subscribed to channel: %s", channel), CONTEXT);
+            redisMessageListenerContainer.addMessageListener(
+                    (message, pattern) -> {
+                        try {
+                            String messageContent = new String(message.getBody());
+                            logger.info("채널 {}에서 메시지 수신: {}", channel, messageContent);
+                            messageListener.onMessage(messageContent);
+                        } catch (Exception e) {
+                            logger.error("채널 {}의 메시지 처리 중 오류 발생: {}", channel, e.getMessage(), e);
+                            throw new RedisMessageProcessingException(
+                                    String.format("채널 %s의 메시지 처리 실패: %s", channel,
+                                            e.getMessage()));
+                        }
+                    },
+                    topic);
+            logger.info("채널 구독 성공: {}", channel);
         } catch (Exception e) {
-            logger.error("Failed to subscribe to channel: {}, error: {}", channel, e.getMessage());
-            throw e;
+            logger.error("채널 구독 실패: {}, 오류: {}", channel, e.getMessage());
+            throw new RedisMessageProcessingException(
+                    String.format("채널 %s 구독 실패: %s", channel, e.getMessage()));
         }
     }
 
@@ -91,12 +102,12 @@ public class RedisService {
         try {
             Boolean deleted = redisTemplate.delete(taskId);
             if (Boolean.FALSE.equals(deleted)) {
-                logger.error("Failed to delete task: %s, task not found", taskId, CONTEXT);
+                logger.error("작업 삭제 실패 - taskId: {}, 작업을 찾을 수 없음", taskId, CONTEXT);
             } else {
-                logger.info(String.format("Successfully deleted task: %s", taskId), CONTEXT);
+                logger.info("작업 삭제 성공 - taskId: {}", taskId, CONTEXT);
             }
         } catch (Exception e) {
-            logger.error("Failed to delete task: %s, error: %s", taskId, CONTEXT);
+            logger.error("작업 삭제 실패 - taskId: {}, 오류: {}", taskId, e.getMessage(), CONTEXT);
             throw e;
         }
     }

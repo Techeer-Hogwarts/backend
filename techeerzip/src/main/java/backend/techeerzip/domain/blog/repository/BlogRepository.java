@@ -1,7 +1,6 @@
 package backend.techeerzip.domain.blog.repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -19,7 +18,7 @@ public interface BlogRepository extends JpaRepository<Blog, Long>, BlogRepositor
         Page<Blog> findByIsDeletedFalseAndUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
         @Query("SELECT b FROM Blog b WHERE b.isDeleted = false AND b.createdAt >= :twoWeeksAgo ORDER BY b.likeCount DESC")
-        List<Blog> findBestBlogs(@Param("twoWeeksAgo") LocalDateTime twoWeeksAgo, Pageable pageable);
+        Page<Blog> findBestBlogs(@Param("twoWeeksAgo") LocalDateTime twoWeeksAgo, Pageable pageable);
 
         Optional<Blog> findByIdAndIsDeletedFalse(Long id);
 

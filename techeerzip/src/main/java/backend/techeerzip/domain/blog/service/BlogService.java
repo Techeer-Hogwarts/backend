@@ -3,10 +3,9 @@ package backend.techeerzip.domain.blog.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,7 @@ import backend.techeerzip.domain.blog.exception.BlogAlreadyExistsException;
 import backend.techeerzip.domain.blog.exception.BlogInvalidRequestException;
 import backend.techeerzip.domain.blog.exception.BlogNotFoundException;
 import backend.techeerzip.domain.blog.exception.BlogUnauthorizedException;
+import backend.techeerzip.domain.blog.exception.BlogUserNotFoundException;
 import backend.techeerzip.domain.blog.repository.BlogRepository;
 import backend.techeerzip.domain.task.service.TaskService;
 import backend.techeerzip.domain.user.entity.User;
@@ -52,27 +52,27 @@ public class BlogService {
 
         public BlogListResponse getBlogList(BlogQueryRequest query) {
                 logger.info("블로그 목록 조회 - cursorId: {}, category: {}, sortBy: {}, limit: {}",
-                                query.getCursorId(), query.getCategory(), query.getSortBy(), query.getLimit());
+                                query.getCursorId(), query.getCategory(), query.getSortBy(), query.getLimit(), CONTEXT);
                 List<Blog> blogs = blogRepository.findBlogsWithCursor(
                                 query.getCursorId(), query.getCategory(), query.getSortBy(), query.getLimit());
                 List<BlogResponse> blogResponses = blogs.stream().map(BlogResponse::new).collect(Collectors.toList());
-                logger.info("블로그 목록 조회 성공 - size: {}", blogResponses.size());
+                logger.info("블로그 목록 조회 성공 - size: {}", blogResponses.size(), CONTEXT);
                 return new BlogListResponse(blogResponses, query.getLimit());
         }
 
         public BlogListResponse getBlogsByUser(Long userId, Long cursorId, int limit) {
-                logger.info("유저별 블로그 목록 조회 - userId: {}, cursorId: {}, limit: {}", userId, cursorId, limit);
+                logger.info("유저별 블로그 목록 조회 - userId: {}, cursorId: {}, limit: {}", userId, cursorId, limit, CONTEXT);
                 List<Blog> blogs = blogRepository.findUserBlogsWithCursor(userId, cursorId, limit);
                 List<BlogResponse> blogResponses = blogs.stream().map(BlogResponse::new).collect(Collectors.toList());
-                logger.info("유저별 블로그 목록 조회 성공 - size: {}", blogResponses.size());
+                logger.info("유저별 블로그 목록 조회 성공 - size: {}", blogResponses.size(), CONTEXT);
                 return new BlogListResponse(blogResponses, limit);
         }
 
         public BlogListResponse getBestBlogs(Long cursorId, int limit) {
-                logger.info("인기 블로그 목록 조회 - cursorId: {}, limit: {}", cursorId, limit);
+                logger.info("인기 블로그 목록 조회 - cursorId: {}, limit: {}", cursorId, limit, CONTEXT);
                 List<Blog> blogs = blogRepository.findPopularBlogsWithCursor(cursorId, limit);
                 List<BlogResponse> blogResponses = blogs.stream().map(BlogResponse::new).collect(Collectors.toList());
-                logger.info("인기 블로그 목록 조회 성공 - size: {}", blogResponses.size());
+                logger.info("인기 블로그 목록 조회 성공 - size: {}", blogResponses.size(), CONTEXT);
                 return new BlogListResponse(blogResponses, limit);
         }
 
@@ -143,7 +143,7 @@ public class BlogService {
 
         @Transactional
         public void createBlog(CrawlingBlogResponse dto) {
-                logger.info("블로그 데이터 저장 시작 - userId: {}, posts: {}", dto.getUserId(), dto.getPosts());
+                logger.info("블로그 데이터 저장 시작 - userId: {}, posts: {}", dto.getUserId(), dto.getPosts(), CONTEXT);
 
                 // 유효성 검사
                 validateBlogRequest(dto);
@@ -152,40 +152,61 @@ public class BlogService {
                                 .orElseThrow(() -> {
                                         logger.warn(String.format("블로그 생성 실패 - 존재하지 않는 userId: %d", dto.getUserId()),
                                                         CONTEXT);
-                                        return new EntityNotFoundException("User not found: " + dto.getUserId());
+                                        return new BlogUserNotFoundException();
                                 });
 
                 logger.info("블로그 작성자 정보 조회 성공 - userId: {}", author.getId());
-                dto.getPosts().forEach(post -> saveBlogPost(post, author, dto.getCategory()));
+
+                List<BlogSaveRequest> failedPosts = new ArrayList<>();
+                for (BlogSaveRequest post : dto.getPosts()) {
+                        try {
+                                saveBlogPost(post, author, dto.getCategory());
+                        } catch (BlogAlreadyExistsException e) {
+                                logger.warn("블로그 저장 실패 (중복 URL) - title: {}, url: {}", post.getTitle(), post.getUrl(),
+                                                CONTEXT);
+                                failedPosts.add(post);
+                        } catch (Exception e) {
+                                logger.error("블로그 저장 실패 - title: {}, url: {}, error: {}",
+                                                post.getTitle(), post.getUrl(), e.getMessage(), e, CONTEXT);
+                                failedPosts.add(post);
+                        }
+                }
+
+                if (!failedPosts.isEmpty()) {
+                        logger.warn("총 {}개 포스트 저장 실패 - userId: {}", failedPosts.size(), dto.getUserId(), CONTEXT);
+                        // 실패한 포스트들의 상세 정보 로깅
+                        failedPosts.forEach(post -> logger.warn("실패한 포스트 - title: {}, url: {}", post.getTitle(),
+                                        post.getUrl(), CONTEXT));
+                }
         }
 
         private void validateBlogRequest(CrawlingBlogResponse dto) {
                 if (dto == null || dto.getUserId() == null || dto.getPosts() == null || dto.getPosts().isEmpty()) {
-                        logger.warn("블로그 생성 요청 유효성 검사 실패 - dto: {}", dto);
+                        logger.warn("블로그 생성 요청 유효성 검사 실패 - dto: {}", dto, CONTEXT);
                         throw new BlogInvalidRequestException();
                 }
         }
 
         private void saveBlogPost(BlogSaveRequest post, User author, BlogCategory category) {
                 try {
-                        logger.info("블로그 저장 시도 - title: {}, url: {}", post.getTitle(), post.getUrl());
+                        logger.info("블로그 저장 시도 - title: {}, url: {}", post.getTitle(), post.getUrl(), CONTEXT);
 
                         // URL 중복 체크
                         if (blogRepository.existsByUrl(post.getUrl())) {
-                                logger.warn("블로그 저장 실패 - 중복된 URL: {}", post.getUrl());
+                                logger.warn("블로그 저장 실패 - 중복된 URL: {}", post.getUrl(), CONTEXT);
                                 throw new BlogAlreadyExistsException();
                         }
 
                         LocalDateTime postDate = parsePostDate(post.getDate());
                         Blog blog = createBlogEntity(post, author, category, postDate);
                         blogRepository.save(blog);
-                        logger.info("블로그 저장 성공 - id: {}, title: {}", blog.getId(), blog.getTitle());
+                        logger.info("블로그 저장 성공 - id: {}, title: {}", blog.getId(), blog.getTitle(), CONTEXT);
                         eventPublisher.publishEvent(new IndexEvent.Create<>("blog", blog));
                 } catch (BlogAlreadyExistsException e) {
                         throw e;
                 } catch (Exception e) {
                         logger.error("블로그 저장 실패 - title: {}, url: {}, error: {}",
-                                        post.getTitle(), post.getUrl(), e.getMessage(), e);
+                                        post.getTitle(), post.getUrl(), e.getMessage(), e, CONTEXT);
                         throw new BlogInvalidRequestException();
                 }
         }
@@ -194,7 +215,7 @@ public class BlogService {
                 try {
                         return LocalDateTime.parse(date, ISO_DATE_TIME);
                 } catch (DateTimeParseException e) {
-                        logger.warn("날짜 파싱 실패, 현재 시간으로 대체 - date: {}, error: {}", date, e.getMessage());
+                        logger.warn("날짜 파싱 실패, 현재 시간으로 대체 - date: {}, error: {}", date, e.getMessage(), CONTEXT);
                         return LocalDateTime.now();
                 }
         }

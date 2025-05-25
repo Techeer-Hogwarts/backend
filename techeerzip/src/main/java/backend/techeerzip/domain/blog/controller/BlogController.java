@@ -36,23 +36,20 @@ public class BlogController {
     @Operation(summary = "블로그 조회수 증가", description = "블로그 조회수 증가시킵니다.")
     @PutMapping("/{blogId}")
     public ResponseEntity<Void> increaseBlogViewCount(@PathVariable Long blogId) {
-        logger.info("블로그 조회수 증가 처리 중" + CONTEXT);
+        logger.info("블로그 조회수 증가 처리 중 - blogId: {} ", blogId, CONTEXT);
         blogService.increaseBlogViewCount(blogId);
-        logger.info("블로그 조회수 증가 처리 완료" + CONTEXT);
+        logger.info("블로그 조회수 증가 처리 완료 - blogId: {} ", blogId, CONTEXT);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(
-            summary = "블로그 게시물의 인기글 목록 조회",
-            description = "2주간의 글 중 (조회수 + 좋아요수*10)을 기준으로 인기글을 조회합니다.")
+    @Operation(summary = "블로그 게시물의 인기글 목록 조회", description = "2주간의 글 중 (조회수 + 좋아요수*10)을 기준으로 인기글을 조회합니다.")
     @GetMapping("/best")
     public ResponseEntity<BlogListResponse> getBestBlogs(
-            @Parameter(description = "마지막으로 조회한 블로그의 ID") @RequestParam(required = false)
-                    Long cursorId,
+            @Parameter(description = "마지막으로 조회한 블로그의 ID") @RequestParam(required = false) Long cursorId,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int limit) {
-        logger.info("인기글 목록 조회 처리 중 - cursorId: {}, limit: {}", cursorId, limit);
+        logger.info("인기글 목록 조회 처리 중 - cursorId: {}, limit: {} ", cursorId, limit);
         BlogListResponse result = blogService.getBestBlogs(cursorId, limit);
-        logger.info("인기글 목록 조회 처리 완료");
+        logger.info("인기글 목록 조회 처리 완료 - cursorId: {}, limit: {} ", cursorId, limit, CONTEXT);
         return ResponseEntity.ok(result);
     }
 
@@ -60,9 +57,9 @@ public class BlogController {
     @GetMapping
     public ResponseEntity<BlogListResponse> getBlogList(
             @Parameter(description = "검색 조건") BlogQueryRequest query) {
-        logger.info("블로그 목록 조회 및 검색 처리 중 - query: {}", query);
+        logger.info("블로그 목록 조회 및 검색 처리 중 - query: {} ", query, CONTEXT);
         BlogListResponse result = blogService.getBlogList(query);
-        logger.info("블로그 목록 조회 및 검색 처리 완료");
+        logger.info("블로그 목록 조회 및 검색 처리 완료 - query: {} ", query, CONTEXT);
         return ResponseEntity.ok(result);
     }
 
@@ -70,34 +67,38 @@ public class BlogController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<BlogListResponse> getBlogsByUser(
             @PathVariable Long userId,
-            @Parameter(description = "마지막으로 조회한 블로그의 ID") @RequestParam(required = false)
-                    Long cursorId,
+            @Parameter(description = "마지막으로 조회한 블로그의 ID") @RequestParam(required = false) Long cursorId,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int limit) {
         logger.info(
-                "유저 별 블로그 게시물 목록 조회 처리 중 - userId: {}, cursorId: {}, limit: {}",
+                "유저 별 블로그 게시물 목록 조회 처리 중 - userId: {}, cursorId: {}, limit: {} ",
                 userId,
                 cursorId,
-                limit);
+                limit,
+                CONTEXT);
         BlogListResponse result = blogService.getBlogsByUser(userId, cursorId, limit);
-        logger.info("유저 별 블로그 게시물 목록 조회 처리 완료");
+        logger.info("유저 별 블로그 게시물 목록 조회 처리 완료 - userId: {}, cursorId: {}, limit: {} ",
+                userId,
+                cursorId,
+                limit,
+                CONTEXT);
         return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "블로그 단일 조회", description = "블로그 ID를 기반으로 단일 블로그 게시물을 조회합니다.")
     @GetMapping("/{blogId}")
     public ResponseEntity<BlogResponse> getBlog(@PathVariable Long blogId) {
-        logger.info("단일 블로그 게시물 조회 처리 중 - blogId: %d" + blogId + CONTEXT);
+        logger.info("단일 블로그 게시물 조회 처리 중 - blogId: {} ", blogId, CONTEXT);
         BlogResponse result = blogService.getBlog(blogId);
-        logger.info("단일 블로그 게시물 조회 처리 완료" + CONTEXT);
+        logger.info("단일 블로그 게시물 조회 처리 완료 - blogId: {} ", blogId, CONTEXT);
         return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "블로그 삭제", description = "블로그 ID를 기반으로 단일 블로그 게시물을 삭제합니다.")
     @DeleteMapping("/{blogId}")
-    public ResponseEntity<BlogResponse> deleteBlog(@PathVariable Long blogId) {
-        logger.info("블로그 게시물 삭제 처리 중 - blogId: %d" + blogId + CONTEXT);
-        BlogResponse result = blogService.deleteBlog(blogId);
-        logger.info("블로그 게시물 삭제 처리 완료" + CONTEXT);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<BlogResponse> deleteBlog(@PathVariable Long blogId, @RequestParam Long userId) {
+        logger.info("블로그 게시물 삭제 처리 중 - blogId: {}, userId: {} ", blogId, userId, CONTEXT);
+        blogService.deleteBlog(blogId, userId);
+        logger.info("블로그 게시물 삭제 처리 완료 - blogId: {}, userId: {} ", blogId, userId, CONTEXT);
+        return ResponseEntity.noContent().build();
     }
 }
