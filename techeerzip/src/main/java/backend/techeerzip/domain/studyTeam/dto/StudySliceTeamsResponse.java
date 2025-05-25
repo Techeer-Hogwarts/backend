@@ -1,5 +1,6 @@
-package backend.techeerzip.domain.projectTeam.dto.response;
+package backend.techeerzip.domain.studyTeam.dto;
 
+import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
 import java.time.LocalDateTime;
 
 import backend.techeerzip.domain.projectTeam.type.TeamType;
@@ -8,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class StudyTeamGetAllResponse implements TeamGetAllResponse {
+public class StudySliceTeamsResponse implements SliceTeamsResponse {
 
     private final Long id;
     private final String name;
