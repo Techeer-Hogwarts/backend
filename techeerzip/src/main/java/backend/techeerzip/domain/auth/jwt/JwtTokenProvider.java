@@ -1,5 +1,18 @@
 package backend.techeerzip.domain.auth.jwt;
 
+import java.security.Key;
+import java.util.Date;
+import java.util.List;
+
+import jakarta.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
+
 import backend.techeerzip.domain.auth.dto.token.TokenPair;
 import backend.techeerzip.domain.auth.exception.InvalidJwtTokenException;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -11,17 +24,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import java.security.Key;
-import java.util.Date;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -53,23 +56,25 @@ public class JwtTokenProvider {
 
         long now = new Date().getTime();
 
-        String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim("userId", userId)
-                .claim(AUTHORITIES_KEY, authority)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRE_TIME))
-                .signWith(SignatureAlgorithm.HS512, key)
-                .compact();
+        String accessToken =
+                Jwts.builder()
+                        .setSubject(authentication.getName())
+                        .claim("userId", userId)
+                        .claim(AUTHORITIES_KEY, authority)
+                        .setIssuedAt(new Date())
+                        .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRE_TIME))
+                        .signWith(key, SignatureAlgorithm.HS512)
+                        .compact();
 
-        String refreshToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim("userId", userId)
-                .claim(AUTHORITIES_KEY, authority)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
-                .signWith(SignatureAlgorithm.HS512, key)
-                .compact();
+        String refreshToken =
+                Jwts.builder()
+                        .setSubject(authentication.getName())
+                        .claim("userId", userId)
+                        .claim(AUTHORITIES_KEY, authority)
+                        .setIssuedAt(new Date())
+                        .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
+                        .signWith(key, SignatureAlgorithm.HS512)
+                        .compact();
 
         logger.info(String.format("토큰 생성 완료 - email: %s", authentication.getName()));
         return new TokenPair(accessToken, refreshToken);
@@ -85,12 +90,8 @@ public class JwtTokenProvider {
         GrantedAuthority authority = new SimpleGrantedAuthority(role);
         List<GrantedAuthority> authorities = List.of(authority);
 
-        CustomUserPrincipal principal = new CustomUserPrincipal(
-                userId,
-                email,
-                "",
-                authorities
-        );
+        CustomUserPrincipal principal = new CustomUserPrincipal(userId, email, "", authorities);
+
         logger.info(String.format("사용자 권한 인증 완료 - email: %s", email));
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
