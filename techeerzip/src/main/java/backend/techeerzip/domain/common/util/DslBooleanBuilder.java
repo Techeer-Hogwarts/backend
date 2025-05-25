@@ -14,7 +14,6 @@ public class DslBooleanBuilder {
     }
 
     public DslBooleanBuilder and(BooleanExpression other) {
-        expr = expr.and(other);
         if (other != null) {
             expr = expr.and(other);
         }
