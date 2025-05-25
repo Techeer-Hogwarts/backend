@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectTeam.mapper;
 
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import java.util.List;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
@@ -7,7 +8,6 @@ import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
@@ -34,8 +34,8 @@ public class ProjectTeamMapper {
                 .build();
     }
 
-    public static ProjectTeamGetAllResponse toGetAllResponse(ProjectTeam projectTeam) {
-        return ProjectTeamGetAllResponse.builder()
+    public static ProjectSliceTeamsResponse toGetAllResponse(ProjectTeam projectTeam) {
+        return ProjectSliceTeamsResponse.builder()
                 .id(projectTeam.getId())
                 .name(projectTeam.getName())
                 .projectExplain(projectTeam.getProjectExplain())
@@ -54,6 +54,7 @@ public class ProjectTeamMapper {
                 .teamStacks(
                         projectTeam.getTeamStacks().stream().map(TeamStackMapper::toDto).toList())
                 .createdAt(projectTeam.getCreatedAt())
+                .updatedAt(projectTeam.getUpdatedAt())
                 .build();
     }
 
