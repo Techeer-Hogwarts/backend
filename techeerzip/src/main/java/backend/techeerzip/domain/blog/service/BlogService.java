@@ -158,20 +158,20 @@ public class BlogService {
                 userRepository.findByIsDeletedFalse().stream()
                         .map(
                                 user -> {
-                                    List<String> validUrls =
-                                            List.of(
-                                                            user.getTistoryUrl(),
-                                                            user.getMediumUrl(),
-                                                            user.getVelogUrl())
-                                                    .stream()
-                                                    .filter(
-                                                            url ->
-                                                                    url != null
-                                                                            && !url.trim()
-                                                                                    .isEmpty())
-                                                    .collect(Collectors.toList());
-
-                                    return new BlogUrlsResponse(user.getId(), validUrls);
+                                    List<String> urls = new ArrayList<>();
+                                    if (user.getTistoryUrl() != null
+                                            && !user.getTistoryUrl().trim().isEmpty()) {
+                                        urls.add(user.getTistoryUrl());
+                                    }
+                                    if (user.getMediumUrl() != null
+                                            && !user.getMediumUrl().trim().isEmpty()) {
+                                        urls.add(user.getMediumUrl());
+                                    }
+                                    if (user.getVelogUrl() != null
+                                            && !user.getVelogUrl().trim().isEmpty()) {
+                                        urls.add(user.getVelogUrl());
+                                    }
+                                    return new BlogUrlsResponse(user.getId(), urls);
                                 })
                         .collect(Collectors.toList());
         logger.info("모든 유저의 블로그 url 조회 성공", CONTEXT);

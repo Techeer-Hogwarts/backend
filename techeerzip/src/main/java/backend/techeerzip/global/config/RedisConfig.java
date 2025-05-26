@@ -1,5 +1,6 @@
 package backend.techeerzip.global.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -14,14 +15,14 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    // @Value("${spring.data.redis.host}")
-    private String redisHost = "localhost"; // Docker 컨테이너 외부에서 테스트할 때는 localhost
+    @Value("${spring.data.redis.host}")
+    private String redisHost;
 
-    // @Value("${spring.data.redis.port}")
-    private int redisPort = 6379;
+    @Value("${spring.data.redis.port}")
+    private int redisPort;
 
-    // @Value("${spring.data.redis.password}")
-    private String redisPassword = "1234";
+    @Value("${spring.data.redis.password}")
+    private String redisPassword;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -72,7 +73,7 @@ public class RedisConfig {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
 
-        // // 스레드 풀 설정
+        // // 스레드 풀 설정 (추후 수정 예정)
         // ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         // executor.setCorePoolSize(2);
         // executor.setMaxPoolSize(4);
