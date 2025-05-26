@@ -10,6 +10,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+// import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
 @Configuration
 public class RedisConfig {
 
@@ -24,12 +26,28 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-        redisConfig.setHostName(redisHost);
-        redisConfig.setPort(redisPort);
-        redisConfig.setPassword(redisPassword);
+        try {
+            RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
+            redisConfig.setHostName(redisHost);
+            redisConfig.setPort(redisPort);
+            redisConfig.setPassword(redisPassword);
 
-        return new LettuceConnectionFactory(redisConfig);
+            LettuceConnectionFactory factory = new LettuceConnectionFactory(redisConfig);
+            factory.setValidateConnection(true);
+            factory.setShareNativeConnection(false);
+
+            // 연결 테스트 로그 추가
+            System.out.println(
+                    "Redis connection attempt - host: " + redisHost + ", port: " + redisPort);
+
+            factory.afterPropertiesSet();
+            return factory;
+        } catch (Exception e) {
+            System.err.println(
+                    "Redis connection failed - host: " + redisHost + ", port: " + redisPort);
+            e.printStackTrace();
+            throw new RuntimeException("Failed to create Redis connection", e);
+        }
     }
 
     @Bean
@@ -37,13 +55,15 @@ public class RedisConfig {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
 
-        // Key와 Value의 직렬화 방식 설정
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        // Hash Key와 Value의 직렬화 방식 설정
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
+        // 직렬화 설정
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();
+        redisTemplate.setKeySerializer(stringSerializer);
+        redisTemplate.setValueSerializer(stringSerializer);
+        redisTemplate.setHashKeySerializer(stringSerializer);
+        redisTemplate.setHashValueSerializer(stringSerializer);
 
+        // 연결 테스트
+        redisTemplate.afterPropertiesSet();
         return redisTemplate;
     }
 
@@ -52,6 +72,16 @@ public class RedisConfig {
             RedisConnectionFactory connectionFactory) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
+
+        // // 스레드 풀 설정 (추후 수정 예정)
+        // ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        // executor.setCorePoolSize(2);
+        // executor.setMaxPoolSize(4);
+        // executor.setQueueCapacity(100);
+        // executor.setThreadNamePrefix("redis-listener-");
+        // executor.initialize();
+
+        // container.setTaskExecutor(executor);
         return container;
     }
 }

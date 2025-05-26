@@ -11,4 +11,8 @@ public class ErrorResponse {
         this.code = code;
         this.message = message;
     }
+
+    public static ErrorResponse of(ErrorCode errorCode) {
+        return new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
+    }
 }
