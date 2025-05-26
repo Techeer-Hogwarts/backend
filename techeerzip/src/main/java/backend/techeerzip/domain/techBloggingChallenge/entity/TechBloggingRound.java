@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+import backend.techeerzip.domain.techBloggingChallenge.exception.TechBloggingRoundInvalidDateRangeException;
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -56,6 +57,9 @@ public class TechBloggingRound extends BaseEntity {
     private List<TechBloggingAttendance> techBloggingAttendances = new ArrayList<>();
 
     public void updateDates(LocalDate startDate, LocalDate endDate) {
+        if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
+            throw new TechBloggingRoundInvalidDateRangeException();
+        }
         this.startDate = startDate;
         this.endDate = endDate;
     }

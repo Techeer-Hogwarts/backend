@@ -106,7 +106,9 @@ public enum ErrorCode {
     // TechBloggingRound
     ROUND_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "TBR001", "이미 해당 연도/반기의 챌린지 회차가 존재합니다."),
     ROUND_PERIOD_TOO_SHORT(HttpStatus.BAD_REQUEST, "TBR002", "회차 기간은 최소 2주(14일) 이상이어야 합니다."),
-    ROUND_NOT_FOUND(HttpStatus.NOT_FOUND, "TBR003", "존재하지 않는 챌린지 회차입니다.");
+    ROUND_NOT_FOUND(HttpStatus.NOT_FOUND, "TBR003", "존재하지 않는 챌린지 회차입니다."),
+    ROUND_PAST_DATE(HttpStatus.BAD_REQUEST, "TBR004", "과거의 회차는 생성할 수 없습니다."),
+    ROUND_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "TBR005", "종료 날짜는 시작 날짜보다 이후여야 합니다.");
 
     private final HttpStatus status;
     private final String code;

@@ -1,5 +1,7 @@
 package backend.techeerzip.domain.techBloggingChallenge.controller;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,44 +16,56 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v3/tech-blogging")
 @RequiredArgsConstructor
-public class TechBloggingChallengeController {
+public class TechBloggingChallengeController implements TechBloggingChallengeSwagger {
     private final TechBloggingChallengeService challengeService;
 
-    @PostMapping("/rounds/batch")
-    public ResponseEntity<Void> createRounds(@RequestBody CreateRoundRequest request) {
+    // 추후 관리자용 인증에 대해 고려할 예정
+
+    @PostMapping("/rounds/batch") // 관리자용
+    @Override
+    public ResponseEntity<Void> createRounds(@Valid @RequestBody CreateRoundRequest request) {
         challengeService.createRounds(request);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/rounds")
-    public ResponseEntity<Void> createSingleRound(@RequestBody CreateSingleRoundRequest request) {
+    @PostMapping("/rounds") // 관리자용
+    @Override
+    public ResponseEntity<Void> createSingleRound(
+            @Valid @RequestBody CreateSingleRoundRequest request) {
         challengeService.createSingleRound(request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/rounds") // 관리자용
-    public ResponseEntity<Void> updateRound(@RequestBody UpdateRoundRequest request) {
+    @Override
+    public ResponseEntity<Void> updateRound(@Valid @RequestBody UpdateRoundRequest request) {
         challengeService.updateRound(request);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/rounds/{roundId}") // 관리자용
+    @Override
     public ResponseEntity<Void> deleteRound(@PathVariable Long roundId) {
         challengeService.deleteRound(roundId);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/rounds") // 관리자용
-    public ResponseEntity<Void> deleteAllRounds(@RequestBody DeleteAllRoundsRequest request) {
+    @Override
+    public ResponseEntity<Void> deleteAllRounds(
+            @Valid @RequestBody DeleteAllRoundsRequest request) {
         challengeService.deleteAllRounds(request.getYear(), request.isFirstHalf());
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/rounds")
+    @GetMapping("/rounds") // 관리자용
+    @Override
     public ResponseEntity<RoundListResponse> getRoundList() {
         RoundListResponse response = challengeService.getRoundList();
         return ResponseEntity.ok(response);
     }
+
+    // 일반 유저 API
 
     // 관리자용 챌린지 회차 조회
 
