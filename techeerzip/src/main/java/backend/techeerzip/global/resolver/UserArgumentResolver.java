@@ -1,8 +1,5 @@
 package backend.techeerzip.global.resolver;
 
-import backend.techeerzip.domain.auth.exception.InvalidJwtTokenException;
-import backend.techeerzip.domain.auth.exception.MissingJwtTokenException;
-import backend.techeerzip.domain.auth.jwt.CustomUserPrincipal;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,6 +7,10 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+
+import backend.techeerzip.domain.auth.exception.InvalidJwtTokenException;
+import backend.techeerzip.domain.auth.exception.MissingJwtTokenException;
+import backend.techeerzip.domain.auth.jwt.CustomUserPrincipal;
 
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 

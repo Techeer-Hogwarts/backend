@@ -1,14 +1,18 @@
 package backend.techeerzip.domain.auth.jwt.handler;
 
-import backend.techeerzip.global.exception.ErrorCode;
-import backend.techeerzip.global.exception.ErrorResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import backend.techeerzip.global.exception.ErrorCode;
+import backend.techeerzip.global.exception.ErrorResponse;
 
 // 401 처리
 @Component
@@ -17,9 +21,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void commence(HttpServletRequest request,
-                         HttpServletResponse response,
-                         AuthenticationException authException) throws IOException {
+    public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException)
+            throws IOException {
 
         ErrorCode errorCode = ErrorCode.AUTH_INVALID_TOKEN;
 
