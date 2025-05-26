@@ -65,9 +65,7 @@ public class TechBloggingChallengeController implements TechBloggingChallengeSwa
         return ResponseEntity.ok(response);
     }
 
-    // 일반 유저 API
-
-    // 관리자용 챌린지 회차 조회
+    // 일반 유저용 API
 
     // 테크 블로깅 챌린지 지원 : 미래에 진행예정이나 현재 진행중인 챌린지에만 지원할 수 있음, 지원 취소는 없음
 

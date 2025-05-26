@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import backend.techeerzip.domain.techBloggingChallenge.validator.ValidYear;
 
 @Getter
 @AllArgsConstructor
@@ -16,12 +17,12 @@ import lombok.NoArgsConstructor;
 @Schema(name = "CreateRoundRequest", description = "챌린지 회차 생성 요청")
 public class CreateRoundRequest {
     @Schema(description = "챌린지 연도(현재 연도 이후만 가능)", example = "2025")
+    @ValidYear
     @Positive(message = "연도는 양수여야 합니다")
     @NotNull(message = "연도는 필수입니다")
     private int year;
 
     @Schema(description = "상반기 여부 (true: 상반기, false: 하반기)", example = "true")
-    @NotNull(message = "상반기 여부는 필수입니다")
     @JsonProperty("isFirstHalf")
     private boolean firstHalf;
 
