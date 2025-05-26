@@ -7,7 +7,9 @@ import backend.techeerzip.domain.session.dto.request.CursorPageViewCountRequest;
 import backend.techeerzip.domain.session.dto.response.CursorPageViewCountResponse;
 import backend.techeerzip.domain.session.dto.request.CursorPageCreatedAtRequest;
 import backend.techeerzip.domain.session.dto.response.CursorPageCreatedAtResponse;
+import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
@@ -24,19 +26,21 @@ public class SessionController {
     private final SessionService sessionService;
 
     @Operation(summary = "세션 게시물 게시", description = "세션 게시물을 게시합니다.")
-    @PostMapping("/{userId}") // Todo: 경로에서 userId 제거 - JWT 검증 흐름에서 받아옴
+    @PostMapping
     public ResponseEntity<Long> createSession(
             @RequestBody @Valid SessionCreateRequest request,
-            @PathVariable Long userId) {
+            @Parameter(hidden = true) @UserId Long userId
+    ) {
         return ResponseEntity.ok(sessionService.createSession(request, userId));
     }
 
     @Operation(summary = "세션 게시물 수정", description = "세션 게시물을 수정합니다.")
-    @PutMapping("/{sessionId}/{userId}") // Todo: 경로에서 userId 제거 - JWT 검증 흐름에서 받아옴
+    @PutMapping("/{sessionId}")
     public ResponseEntity<Void> updateSession(
             @RequestBody @Valid SessionCreateRequest request,
             @PathVariable Long sessionId,
-            @PathVariable Long userId) {
+            @Parameter(hidden = true) @UserId Long userId
+    ) {
         sessionService.updateSession(request, sessionId, userId);
         return ResponseEntity.ok().build();
     }
@@ -65,9 +69,11 @@ public class SessionController {
     }
 
     @Operation(summary = "세션 게시물 삭제", description = "세션 게시물을 삭제합니다.")
-    @DeleteMapping("/{sessionId}/{userId}") // Todo: 경로에서 userId 제거 - JWT 검증 흐름에서 받아옴
-    public ResponseEntity<Void> deleteSession(@PathVariable Long sessionId,
-                                               @PathVariable Long userId) {
+    @DeleteMapping("/{sessionId}")
+    public ResponseEntity<Void> deleteSession(
+            @PathVariable Long sessionId,
+            @Parameter(hidden = true) @UserId Long userId
+    ) {
         sessionService.deleteSession(sessionId, userId);
         return ResponseEntity.ok().build();
     }
