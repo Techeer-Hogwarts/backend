@@ -4,14 +4,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import backend.techeerzip.domain.auth.dto.request.LoginRequest;
-import backend.techeerzip.domain.auth.dto.request.ResetPasswordRequest;
 import backend.techeerzip.domain.auth.dto.request.SendEmailRequest;
 import backend.techeerzip.domain.auth.dto.request.VerifyCodeRequest;
 import backend.techeerzip.domain.auth.service.AuthService;
@@ -72,16 +70,6 @@ public class AuthController {
     public ResponseEntity<Void> logout(@UserId Long userId, HttpServletResponse response) {
         logger.info("로그아웃 요청 처리 중 - userId: {}", userId, CONTEXT);
         logger.info("로그아웃 처리 완료 - userId: {}", userId, CONTEXT);
-        return ResponseEntity.ok().build();
-    }
-
-    @Operation(summary = "비밀번호 재설정", description = "이메일 인증 후 비밀번호를 재설정합니다.")
-    @PatchMapping("/findPwd")
-    public ResponseEntity<Void> resetPassword(
-            @Valid @RequestBody ResetPasswordRequest resetPasswordRequest,
-            HttpServletResponse response) {
-        logger.info("비밀번호 재설정 요청 처리 중 - email: {}", resetPasswordRequest.getEmail(), CONTEXT);
-        logger.info("비밀번호 재설정 요청 처리 완료 - email: {}", resetPasswordRequest.getEmail(), CONTEXT);
         return ResponseEntity.ok().build();
     }
 }
