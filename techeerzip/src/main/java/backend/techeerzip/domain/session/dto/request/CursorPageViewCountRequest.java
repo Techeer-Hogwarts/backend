@@ -1,4 +1,4 @@
-package backend.techeerzip.global.common;
+package backend.techeerzip.domain.session.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

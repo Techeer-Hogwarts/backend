@@ -2,10 +2,10 @@ package backend.techeerzip.domain.session.repository;
 
 import backend.techeerzip.domain.session.entity.QSession;
 import backend.techeerzip.domain.session.entity.Session;
-import backend.techeerzip.global.common.CursorPageViewCountRequest;
-import backend.techeerzip.global.common.CursorPageViewCountResponse;
-import backend.techeerzip.global.common.CursorPageCreatedAtRequest;
-import backend.techeerzip.global.common.CursorPageCreatedAtResponse;
+import backend.techeerzip.domain.session.dto.request.CursorPageViewCountRequest;
+import backend.techeerzip.domain.session.dto.response.CursorPageViewCountResponse;
+import backend.techeerzip.domain.session.dto.request.CursorPageCreatedAtRequest;
+import backend.techeerzip.domain.session.dto.response.CursorPageCreatedAtResponse;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
