@@ -32,11 +32,10 @@ public class TechBloggingChallengeService {
 
     private LocalDate[] calculatePeriodDates(int year, boolean firstHalf) {
         LocalDate start = firstHalf ? LocalDate.of(year, 3, 1) : LocalDate.of(year, 9, 1);
-        LocalDate end =
-                firstHalf
-                        ? LocalDate.of(year, 7, 31)
-                        : LocalDate.of(year + 1, 2, YearMonth.of(year + 1, 2).lengthOfMonth());
-        return new LocalDate[] {start, end};
+        LocalDate end = firstHalf
+                ? LocalDate.of(year, 7, 31)
+                : LocalDate.of(year + 1, 2, YearMonth.of(year + 1, 2).lengthOfMonth());
+        return new LocalDate[] { start, end };
     }
 
     // 챌린지 회차 생성 (2주 단위 자동 분할) 동일한 회차 생성 불가(예외처리 필요)
@@ -67,15 +66,14 @@ public class TechBloggingChallengeService {
             start = moveToNextWeekday(start);
             LocalDate roundEnd = start.plusWeeks(interval).minusDays(1);
             boolean isLastRound = false;
-            // 마지막 회차는 end를 넘어가도 2주를 채움
+            // 마지막 회차 확인
             if (roundEnd.isAfter(end)) {
-                roundEnd = start.plusWeeks(interval).minusDays(1);
                 isLastRound = true;
             }
-            TechBloggingRound round =
-                    TechBloggingRound.create(start, roundEnd, sequence++, firstHalf, baseYear);
+            TechBloggingRound round = TechBloggingRound.create(start, roundEnd, sequence++, firstHalf, baseYear);
             roundRepository.save(round);
-            if (isLastRound) break;
+            if (isLastRound)
+                break;
             start = roundEnd.plusDays(1);
         }
     }
@@ -95,10 +93,9 @@ public class TechBloggingChallengeService {
     }
 
     private void validateNoDuplicateRound(boolean firstHalf, LocalDate start, LocalDate end) {
-        boolean exists =
-                roundRepository
-                        .existsByFirstHalfAndIsDeletedFalseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                                firstHalf, end, start);
+        boolean exists = roundRepository
+                .existsByFirstHalfAndIsDeletedFalseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        firstHalf, end, start);
         if (exists) {
             throw new TechBloggingRoundAlreadyExistsException();
         }
@@ -107,12 +104,10 @@ public class TechBloggingChallengeService {
     // 챌린지 회차 수정
     @Transactional
     public void updateRound(UpdateRoundRequest request) {
-        TechBloggingRound round =
-                roundRepository
-                        .findById(request.getRoundId())
-                        .orElseThrow(() -> new TechBloggingRoundNotFoundException());
-        long days =
-                ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate().plusDays(1));
+        TechBloggingRound round = roundRepository
+                .findById(request.getRoundId())
+                .orElseThrow(() -> new TechBloggingRoundNotFoundException());
+        long days = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate().plusDays(1));
         if (days < MINIMUM_ROUND_DURATION_DAYS) { // 14일 미만
             throw new TechBloggingRoundPeriodTooShortException();
         }
@@ -122,20 +117,18 @@ public class TechBloggingChallengeService {
     // 챌린지 회차 삭제 (soft delete)
     @Transactional
     public void deleteRound(Long roundId) {
-        TechBloggingRound round =
-                roundRepository
-                        .findById(roundId)
-                        .orElseThrow(() -> new TechBloggingRoundNotFoundException());
+        TechBloggingRound round = roundRepository
+                .findById(roundId)
+                .orElseThrow(() -> new TechBloggingRoundNotFoundException());
         round.softDelete();
     }
 
     // 챌린지 회차 상세 조회
     @Transactional(readOnly = true)
     public RoundDetailResponse getRoundDetail(Long roundId) {
-        TechBloggingRound round =
-                roundRepository
-                        .findById(roundId)
-                        .orElseThrow(() -> new TechBloggingRoundNotFoundException());
+        TechBloggingRound round = roundRepository
+                .findById(roundId)
+                .orElseThrow(() -> new TechBloggingRoundNotFoundException());
 
         String year = String.valueOf(round.getBaseYear());
         String half = round.isFirstHalf() ? "상반기" : "하반기";
@@ -153,10 +146,9 @@ public class TechBloggingChallengeService {
     // 5. 챌린지 회차 목록 조회
     @Transactional(readOnly = true)
     public RoundListResponse getRoundList() {
-        List<RoundDetailResponse> roundDetails =
-                roundRepository.findByIsDeletedFalse().stream()
-                        .map(this::convertToRoundDetailResponse)
-                        .collect(Collectors.toList());
+        List<RoundDetailResponse> roundDetails = roundRepository.findByIsDeletedFalse().stream()
+                .map(this::convertToRoundDetailResponse)
+                .collect(Collectors.toList());
 
         return new RoundListResponse(roundDetails);
     }
@@ -182,8 +174,7 @@ public class TechBloggingChallengeService {
         LocalDate start = periodDates[0];
         LocalDate end = periodDates[1];
 
-        List<TechBloggingRound> rounds =
-                roundRepository.findByFirstHalfAndStartDateBetween(firstHalf, start, end);
+        List<TechBloggingRound> rounds = roundRepository.findByFirstHalfAndStartDateBetween(firstHalf, start, end);
         rounds.forEach(TechBloggingRound::softDelete);
     }
 
@@ -224,13 +215,12 @@ public class TechBloggingChallengeService {
 
         // 회차 생성
         int baseYear = request.getStartDate().getYear();
-        TechBloggingRound round =
-                TechBloggingRound.create(
-                        request.getStartDate(),
-                        request.getEndDate(),
-                        request.getSequence(),
-                        request.isFirstHalf(),
-                        baseYear);
+        TechBloggingRound round = TechBloggingRound.create(
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getSequence(),
+                request.isFirstHalf(),
+                baseYear);
         roundRepository.save(round);
     }
 }
