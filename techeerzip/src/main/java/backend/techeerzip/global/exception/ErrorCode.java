@@ -68,7 +68,8 @@ public enum ErrorCode {
     ROUND_PERIOD_TOO_SHORT(HttpStatus.BAD_REQUEST, "TBR002", "회차 기간은 최소 2주(14일) 이상이어야 합니다."),
     ROUND_NOT_FOUND(HttpStatus.NOT_FOUND, "TBR003", "존재하지 않는 챌린지 회차입니다."),
     ROUND_PAST_DATE(HttpStatus.BAD_REQUEST, "TBR004", "과거의 회차는 생성할 수 없습니다."),
-    ROUND_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "TBR005", "종료 날짜는 시작 날짜보다 이후여야 합니다.");
+    ROUND_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "TBR005", "종료 날짜는 시작 날짜보다 이후여야 합니다."),
+    ROUND_INFINITE_LOOP(HttpStatus.BAD_REQUEST, "TBR006", "라운드 생성 중 무한 루프가 감지되었습니다. 입력값을 확인하세요.");
 
     private final HttpStatus status;
     private final String code;

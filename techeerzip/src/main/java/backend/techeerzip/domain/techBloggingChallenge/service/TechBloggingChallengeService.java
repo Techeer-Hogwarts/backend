@@ -2,6 +2,7 @@ package backend.techeerzip.domain.techBloggingChallenge.service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ import backend.techeerzip.domain.techBloggingChallenge.dto.response.RoundDetailR
 import backend.techeerzip.domain.techBloggingChallenge.dto.response.RoundListResponse;
 import backend.techeerzip.domain.techBloggingChallenge.entity.TechBloggingRound;
 import backend.techeerzip.domain.techBloggingChallenge.exception.TechBloggingRoundAlreadyExistsException;
+import backend.techeerzip.domain.techBloggingChallenge.exception.TechBloggingRoundInfiniteLoopException;
 import backend.techeerzip.domain.techBloggingChallenge.exception.TechBloggingRoundNotFoundException;
 import backend.techeerzip.domain.techBloggingChallenge.exception.TechBloggingRoundPastDateException;
 import backend.techeerzip.domain.techBloggingChallenge.exception.TechBloggingRoundPeriodTooShortException;
@@ -28,6 +30,15 @@ public class TechBloggingChallengeService {
     private static final int MINIMUM_ROUND_DURATION_DAYS = 13; // 최소 2주(14일) 미만 체크
     private final TechBloggingRoundRepository roundRepository;
 
+    private LocalDate[] calculatePeriodDates(int year, boolean isFirstHalf) {
+        LocalDate start = isFirstHalf ? LocalDate.of(year, 3, 1) : LocalDate.of(year, 9, 1);
+        LocalDate end =
+                isFirstHalf
+                        ? LocalDate.of(year, 7, 31)
+                        : LocalDate.of(year + 1, 2, YearMonth.of(year + 1, 2).lengthOfMonth());
+        return new LocalDate[] {start, end};
+    }
+
     // 챌린지 회차 생성 (2주 단위 자동 분할) 동일한 회차 생성 불가(예외처리 필요)
     @Transactional
     public void createRounds(CreateRoundRequest request) {
@@ -35,20 +46,23 @@ public class TechBloggingChallengeService {
         boolean isFirstHalf = request.isFirstHalf();
         int interval = request.getIntervalWeeks();
 
-        LocalDate start = isFirstHalf ? LocalDate.of(year, 3, 1) : LocalDate.of(year, 9, 1);
-        LocalDate end =
-                isFirstHalf
-                        ? LocalDate.of(year, 7, 31)
-                        : LocalDate.of(year + 1, 2, YearMonth.of(year + 1, 2).lengthOfMonth());
+        LocalDate[] periodDates = calculatePeriodDates(year, isFirstHalf);
+        LocalDate start = periodDates[0];
+        LocalDate end = periodDates[1];
 
         validateNotPastDate(start);
-        validateNoDuplicateRound(isFirstHalf, start, end);
+        validateNoDuplicateRound(isFirstHalf, start, end); // 동일 기간에 중복된 회차가 있는지 체크
         generateRounds(start, end, interval, isFirstHalf);
     }
 
     private void generateRounds(LocalDate start, LocalDate end, int interval, boolean isFirstHalf) {
         int sequence = 1;
+        int maxIterations = 100; // 무한루프 방지 안전장치
+        int iterations = 0;
         while (!start.isAfter(end)) {
+            if (++iterations > maxIterations) {
+                throw new TechBloggingRoundInfiniteLoopException();
+            }
             start = moveToNextWeekday(start);
             LocalDate roundEnd = start.plusWeeks(interval).minusDays(1);
             if (roundEnd.isAfter(end)) roundEnd = end;
@@ -77,9 +91,8 @@ public class TechBloggingChallengeService {
     private void validateNoDuplicateRound(boolean isFirstHalf, LocalDate start, LocalDate end) {
         boolean exists =
                 roundRepository
-                        .findByIsFirstHalfAndStartDateBetween(isFirstHalf, start, end)
-                        .stream()
-                        .anyMatch(r -> !r.isDeleted());
+                        .existsByIsFirstHalfAndIsDeletedFalseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                                isFirstHalf, end, start);
         if (exists) {
             throw new TechBloggingRoundAlreadyExistsException();
         }
@@ -93,10 +106,7 @@ public class TechBloggingChallengeService {
                         .findById(request.getRoundId())
                         .orElseThrow(() -> new TechBloggingRoundNotFoundException());
         long days =
-                java.time.Duration.between(
-                                request.getStartDate().atStartOfDay(),
-                                request.getEndDate().atTime(23, 59, 59))
-                        .toDays();
+                ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate().plusDays(1));
         if (days < MINIMUM_ROUND_DURATION_DAYS) { // 14일 미만
             throw new TechBloggingRoundPeriodTooShortException();
         }
@@ -121,9 +131,7 @@ public class TechBloggingChallengeService {
                         .findById(roundId)
                         .orElseThrow(() -> new TechBloggingRoundNotFoundException());
 
-        String year = String.valueOf(round.getStartDate().getYear());
-        String half = round.isFirstHalf() ? "상반기" : "하반기";
-        String roundName = String.format("%s %s %d회차", year, half, round.getSequence());
+        String roundName = generateRoundName(round);
 
         return new RoundDetailResponse(
                 round.getId(),
@@ -138,19 +146,21 @@ public class TechBloggingChallengeService {
     @Transactional(readOnly = true)
     public RoundListResponse getRoundList() {
         List<RoundDetailResponse> roundDetails =
-                roundRepository.findAll().stream()
-                        .filter(round -> !round.isDeleted())
+                roundRepository.findByIsDeletedFalse().stream()
                         .map(this::convertToRoundDetailResponse)
                         .collect(Collectors.toList());
 
         return new RoundListResponse(roundDetails);
     }
 
-    private RoundDetailResponse convertToRoundDetailResponse(TechBloggingRound round) {
+    private String generateRoundName(TechBloggingRound round) {
         String year = String.valueOf(round.getStartDate().getYear());
         String half = round.isFirstHalf() ? "상반기" : "하반기";
-        String roundName = String.format("%s %s %d회차", year, half, round.getSequence());
+        return String.format("%s %s %d회차", year, half, round.getSequence());
+    }
 
+    private RoundDetailResponse convertToRoundDetailResponse(TechBloggingRound round) {
+        String roundName = generateRoundName(round);
         return new RoundDetailResponse(
                 round.getId(),
                 roundName,
@@ -163,11 +173,9 @@ public class TechBloggingChallengeService {
     // 전체 상반기/하반기 회차 삭제
     @Transactional
     public void deleteAllRounds(int year, boolean isFirstHalf) {
-        LocalDate start = isFirstHalf ? LocalDate.of(year, 3, 1) : LocalDate.of(year, 9, 1);
-        LocalDate end =
-                isFirstHalf
-                        ? LocalDate.of(year, 7, 31)
-                        : LocalDate.of(year + 1, 2, YearMonth.of(year + 1, 2).lengthOfMonth());
+        LocalDate[] periodDates = calculatePeriodDates(year, isFirstHalf);
+        LocalDate start = periodDates[0];
+        LocalDate end = periodDates[1];
 
         List<TechBloggingRound> rounds =
                 roundRepository.findByIsFirstHalfAndStartDateBetween(isFirstHalf, start, end);

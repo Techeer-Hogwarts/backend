@@ -11,4 +11,9 @@ public interface TechBloggingRoundRepository extends JpaRepository<TechBloggingR
     // 필요시 커스텀 쿼리 추가
     List<TechBloggingRound> findByIsFirstHalfAndStartDateBetween(
             boolean isFirstHalf, LocalDate start, LocalDate end);
+
+    boolean existsByIsFirstHalfAndIsDeletedFalseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            boolean isFirstHalf, LocalDate end, LocalDate start);
+
+    List<TechBloggingRound> findByIsDeletedFalse();
 }
