@@ -30,10 +30,10 @@ public class TechBloggingChallengeService {
     private static final int MINIMUM_ROUND_DURATION_DAYS = 13; // 최소 2주(14일) 미만 체크
     private final TechBloggingRoundRepository roundRepository;
 
-    private LocalDate[] calculatePeriodDates(int year, boolean isFirstHalf) {
-        LocalDate start = isFirstHalf ? LocalDate.of(year, 3, 1) : LocalDate.of(year, 9, 1);
+    private LocalDate[] calculatePeriodDates(int year, boolean firstHalf) {
+        LocalDate start = firstHalf ? LocalDate.of(year, 3, 1) : LocalDate.of(year, 9, 1);
         LocalDate end =
-                isFirstHalf
+                firstHalf
                         ? LocalDate.of(year, 7, 31)
                         : LocalDate.of(year + 1, 2, YearMonth.of(year + 1, 2).lengthOfMonth());
         return new LocalDate[] {start, end};
@@ -43,22 +43,23 @@ public class TechBloggingChallengeService {
     @Transactional
     public void createRounds(CreateRoundRequest request) {
         int year = request.getYear();
-        boolean isFirstHalf = request.isFirstHalf();
+        boolean firstHalf = request.isFirstHalf();
         int interval = request.getIntervalWeeks();
 
-        LocalDate[] periodDates = calculatePeriodDates(year, isFirstHalf);
+        LocalDate[] periodDates = calculatePeriodDates(year, firstHalf);
         LocalDate start = periodDates[0];
         LocalDate end = periodDates[1];
 
         validateNotPastDate(start);
-        validateNoDuplicateRound(isFirstHalf, start, end); // 동일 기간에 중복된 회차가 있는지 체크
-        generateRounds(start, end, interval, isFirstHalf);
+        validateNoDuplicateRound(firstHalf, start, end); // 동일 기간에 중복된 회차가 있는지 체크
+        generateRounds(start, end, interval, firstHalf);
     }
 
-    private void generateRounds(LocalDate start, LocalDate end, int interval, boolean isFirstHalf) {
+    private void generateRounds(LocalDate start, LocalDate end, int interval, boolean firstHalf) {
         int sequence = 1;
         int maxIterations = 100; // 무한루프 방지 안전장치
         int iterations = 0;
+        int baseYear = start.getYear(); // 1회차 연도 저장
         while (!start.isAfter(end)) {
             if (++iterations > maxIterations) {
                 throw new TechBloggingRoundInfiniteLoopException();
@@ -72,7 +73,7 @@ public class TechBloggingChallengeService {
                 isLastRound = true;
             }
             TechBloggingRound round =
-                    TechBloggingRound.create(start, roundEnd, sequence++, isFirstHalf);
+                    TechBloggingRound.create(start, roundEnd, sequence++, firstHalf, baseYear);
             roundRepository.save(round);
             if (isLastRound) break;
             start = roundEnd.plusDays(1);
@@ -93,11 +94,11 @@ public class TechBloggingChallengeService {
         }
     }
 
-    private void validateNoDuplicateRound(boolean isFirstHalf, LocalDate start, LocalDate end) {
+    private void validateNoDuplicateRound(boolean firstHalf, LocalDate start, LocalDate end) {
         boolean exists =
                 roundRepository
-                        .existsByIsFirstHalfAndIsDeletedFalseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                                isFirstHalf, end, start);
+                        .existsByFirstHalfAndIsDeletedFalseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                                firstHalf, end, start);
         if (exists) {
             throw new TechBloggingRoundAlreadyExistsException();
         }
@@ -136,7 +137,9 @@ public class TechBloggingChallengeService {
                         .findById(roundId)
                         .orElseThrow(() -> new TechBloggingRoundNotFoundException());
 
-        String roundName = generateRoundName(round);
+        String year = String.valueOf(round.getBaseYear());
+        String half = round.isFirstHalf() ? "상반기" : "하반기";
+        String roundName = String.format("%s %s %d회차", year, half, round.getSequence());
 
         return new RoundDetailResponse(
                 round.getId(),
@@ -158,14 +161,11 @@ public class TechBloggingChallengeService {
         return new RoundListResponse(roundDetails);
     }
 
-    private String generateRoundName(TechBloggingRound round) {
-        String year = String.valueOf(round.getStartDate().getYear());
-        String half = round.isFirstHalf() ? "상반기" : "하반기";
-        return String.format("%s %s %d회차", year, half, round.getSequence());
-    }
-
     private RoundDetailResponse convertToRoundDetailResponse(TechBloggingRound round) {
-        String roundName = generateRoundName(round);
+        String year = String.valueOf(round.getBaseYear());
+        String half = round.isFirstHalf() ? "상반기" : "하반기";
+        String roundName = String.format("%s %s %d회차", year, half, round.getSequence());
+
         return new RoundDetailResponse(
                 round.getId(),
                 roundName,
@@ -177,13 +177,13 @@ public class TechBloggingChallengeService {
 
     // 전체 상반기/하반기 회차 삭제
     @Transactional
-    public void deleteAllRounds(int year, boolean isFirstHalf) {
-        LocalDate[] periodDates = calculatePeriodDates(year, isFirstHalf);
+    public void deleteAllRounds(int year, boolean firstHalf) {
+        LocalDate[] periodDates = calculatePeriodDates(year, firstHalf);
         LocalDate start = periodDates[0];
         LocalDate end = periodDates[1];
 
         List<TechBloggingRound> rounds =
-                roundRepository.findByIsFirstHalfAndStartDateBetween(isFirstHalf, start, end);
+                roundRepository.findByFirstHalfAndStartDateBetween(firstHalf, start, end);
         rounds.forEach(TechBloggingRound::softDelete);
     }
 
@@ -223,12 +223,14 @@ public class TechBloggingChallengeService {
                 request.isFirstHalf(), request.getStartDate(), request.getEndDate());
 
         // 회차 생성
+        int baseYear = request.getStartDate().getYear();
         TechBloggingRound round =
                 TechBloggingRound.create(
                         request.getStartDate(),
                         request.getEndDate(),
                         request.getSequence(),
-                        request.isFirstHalf());
+                        request.isFirstHalf(),
+                        baseYear);
         roundRepository.save(round);
     }
 }

@@ -38,7 +38,7 @@ public class TechBloggingRound extends BaseEntity {
 
     // 상반기/하반기 구분
     @Column(nullable = false)
-    private boolean isFirstHalf;
+    private boolean firstHalf;
 
     // 회차 시작 날짜
     @Column(nullable = false)
@@ -51,6 +51,10 @@ public class TechBloggingRound extends BaseEntity {
     // 회사순서 sequence
     @Column(nullable = false)
     private Integer sequence;
+
+    // 기준 연도(1회차 연도, 하반기일 때 1회차 연도 기준으로 roundName 생성)
+    @Column(nullable = false)
+    private Integer baseYear;
 
     @Builder.Default
     @OneToMany(mappedBy = "techBloggingRound")
@@ -69,13 +73,14 @@ public class TechBloggingRound extends BaseEntity {
     }
 
     public static TechBloggingRound create(
-            LocalDate startDate, LocalDate endDate, int sequence, boolean isFirstHalf) {
+            LocalDate startDate, LocalDate endDate, int sequence, boolean firstHalf, int baseYear) {
         return TechBloggingRound.builder()
                 .startDate(startDate)
                 .endDate(endDate)
                 .sequence(sequence)
-                .isFirstHalf(isFirstHalf)
+                .firstHalf(firstHalf)
                 .isDeleted(false)
+                .baseYear(baseYear)
                 .build();
     }
 }
