@@ -2,6 +2,7 @@ package backend.techeerzip.domain.techBloggingChallenge.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,15 +23,15 @@ import lombok.NoArgsConstructor;
 @Table(name = "TechBloggingAttendance")
 public class TechBloggingAttendance extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blogId", nullable = false)
     private Blog blog;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "techBloggingRoundId", nullable = false)
     private TechBloggingRound techBloggingRound;
 
