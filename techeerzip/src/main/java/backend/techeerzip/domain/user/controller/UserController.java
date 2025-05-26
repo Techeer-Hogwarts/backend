@@ -1,20 +1,26 @@
 package backend.techeerzip.domain.user.controller;
 
-import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
-import backend.techeerzip.domain.user.dto.request.UserResetPasswordRequest;
-import backend.techeerzip.domain.user.service.UserService;
-import backend.techeerzip.global.logger.CustomLogger;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
+import backend.techeerzip.domain.user.dto.request.UserResetPasswordRequest;
+import backend.techeerzip.domain.user.dto.response.GetUserResponse;
+import backend.techeerzip.domain.user.service.UserService;
+import backend.techeerzip.global.logger.CustomLogger;
+import backend.techeerzip.global.resolver.UserId;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @Tag(name = "user", description = "유저 API")
 @RestController
@@ -53,5 +59,13 @@ public class UserController {
         userService.resetPassword(email, code, newPassword);
         logger.info("비밀번호 재설정 요청 처리 완료 - email: {}", userResetPasswordRequest.getEmail(), CONTEXT);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "유저 조회", description = "토큰으로 유저 정보를 조회합니다.")
+    @GetMapping("")
+    public ResponseEntity<GetUserResponse> getUser(@Parameter(hidden = true) @UserId Long userId) {
+        GetUserResponse response = userService.getUserInfo(userId);
+        logger.info("유저 정보 조회 완료 - userId: {}", userId, CONTEXT);
+        return ResponseEntity.ok(response);
     }
 }
