@@ -32,6 +32,7 @@ import backend.techeerzip.domain.resume.entity.Resume;
 import backend.techeerzip.domain.role.entity.Role;
 import backend.techeerzip.domain.session.entity.Session;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import backend.techeerzip.domain.techBloggingChallenge.entity.TechBloggingAttendance;
 import backend.techeerzip.domain.userExperience.entity.UserExperience;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -75,6 +76,9 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private final List<UserExperience> experiences = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<TechBloggingAttendance> techBloggingAttendances = new ArrayList<>();
 
     @Id
     @SequenceGenerator(name = "user_id_seq_gen", sequenceName = "User_id_seq", allocationSize = 1)
