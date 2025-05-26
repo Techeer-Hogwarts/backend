@@ -13,16 +13,24 @@ public enum ErrorCode {
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "Invalid Type Value"),
     HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "Access is Denied"),
 
-    // Jwt
+    // Auth
     AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "A001", "이메일 또는 비밀번호가 올바르지 않습니다."),
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "A002", "유효하지 않은 JWT 토큰입니다."),
     AUTH_EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "A003", "JWT 토큰이 만료 되었습니다."),
     AUTH_MISSING_TOKEN(HttpStatus.UNAUTHORIZED, "A004", "JWT 토큰이 필요합니다."),
+    AUTH_EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "A005", "이메일 인증 코드 전송이 실패했습니다."),
+    AUTH_INVALID_EMAIL_CODE(HttpStatus.BAD_REQUEST, "A006", "잘못된 이메일 인증 코드입니다."),
+    AUTH_NOT_TECHEER(HttpStatus.BAD_REQUEST, "A007", "테커가 아닌 사용자입니다."),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "사용자를 찾을 수 없습니다."),
-    EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "U002", "Email is Duplication"),
-    LOGIN_INPUT_INVALID(HttpStatus.BAD_REQUEST, "U003", "Login input is invalid"),
+    USER_NOT_VERIFIED_EMAIL(HttpStatus.UNAUTHORIZED, "U002", "이메일 인증이 완료되지 않았습니다."),
+    USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "U003", "이미 가입한 이메일입니다."),
+    USER_NOT_RESUME(HttpStatus.BAD_REQUEST, "U004", "이력서 파일이 없습니다."),
+    USER_NOT_UNAUTHORIZED_ADMIN(HttpStatus.FORBIDDEN, "U005", "권한이 없는 사용자입니다."),
+    USER_PROFILE_IMG_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "U006", "프로필 이미지를 가져오지 못했습니다."),
+    USER_INVALID_POSITION(HttpStatus.BAD_REQUEST, "U006", "유효하지 않은 포지션 입력입니다."),
+    USER_INVALID_GRADE(HttpStatus.BAD_REQUEST, "U007", "유효하지 않은 학년 입력입니다."),
 
     // Blog
     BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "블로그를 찾을 수 없습니다."),
