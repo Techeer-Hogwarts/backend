@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import backend.techeerzip.domain.techBloggingChallenge.validator.ValidDateRange;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -33,5 +35,6 @@ public class CreateSingleRoundRequest {
     private int sequence;
 
     @Schema(description = "상반기 여부 (true: 상반기, false: 하반기)", example = "true")
-    private boolean isFirstHalf;
+    @JsonProperty("isFirstHalf")
+    private boolean firstHalf;
 }

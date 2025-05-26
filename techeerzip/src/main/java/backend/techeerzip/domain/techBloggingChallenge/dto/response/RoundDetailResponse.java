@@ -28,5 +28,5 @@ public class RoundDetailResponse {
     private LocalDate endDate;
 
     @Schema(description = "챌린지 회차 상반기 여부", example = "true")
-    private boolean isFirstHalf;
+    private boolean firstHalf;
 }
