@@ -1,14 +1,13 @@
 package backend.techeerzip.domain.auth.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 @Getter
 @NoArgsConstructor
@@ -22,6 +21,7 @@ public class LoginRequest {
     private String email;
 
     @NotBlank
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$")
     @Schema(description = "비밀번호", example = "passW0rd!")
     private String password;
 
