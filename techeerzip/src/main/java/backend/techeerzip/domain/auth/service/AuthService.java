@@ -4,10 +4,12 @@ import backend.techeerzip.domain.auth.dto.request.LoginRequest;
 import backend.techeerzip.domain.auth.dto.token.TokenPair;
 import backend.techeerzip.domain.auth.exception.AuthInvalidCredentialsException;
 import backend.techeerzip.domain.auth.exception.AuthNotTecheerException;
+import backend.techeerzip.domain.auth.exception.AuthNotVerifiedEmailException;
 import backend.techeerzip.domain.auth.exception.EmailSendFailedException;
 import backend.techeerzip.domain.auth.exception.InvalidVerificationCodeException;
 import backend.techeerzip.domain.auth.jwt.JwtTokenProvider;
 import backend.techeerzip.domain.auth.util.AuthEmailTemplate;
+import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -42,6 +44,7 @@ public class AuthService {
     private final RedisTemplate<String, String> redisTemplate;
     private final CustomLogger logger;
     private static final String CONTEXT = "AuthService";
+    private final UserRepository userRepository;
 
     @Value("${PROFILE_IMG_URL}")
     private String profileImgUrl;
@@ -107,9 +110,14 @@ public class AuthService {
     }
 
     // 이메일 인증 코드 확인
-    public void verifyCode(String email, String Code) {
+    public void verifyCode(String email, String code) {
         String cached = redisTemplate.opsForValue().get(email);
-        if (cached == null || !cached.equals(Code)) {
+
+        if (cached == null) {
+            throw new AuthNotVerifiedEmailException();
+        }
+
+        if (!cached.equals(code)) {
             throw new InvalidVerificationCodeException();
         }
 

@@ -20,11 +20,11 @@ public enum ErrorCode {
     AUTH_MISSING_TOKEN(HttpStatus.UNAUTHORIZED, "A004", "JWT 토큰이 필요합니다."),
     AUTH_EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "A005", "이메일 인증 코드 전송이 실패했습니다."),
     AUTH_INVALID_EMAIL_CODE(HttpStatus.BAD_REQUEST, "A006", "잘못된 이메일 인증 코드입니다."),
-    AUTH_NOT_TECHEER(HttpStatus.BAD_REQUEST, "A007", "테커가 아닌 사용자입니다."),
+    AUTH_NOT_VERIFIED_EMAIL(HttpStatus.UNAUTHORIZED, "A007", "이메일 인증이 완료되지 않았습니다."),
+    AUTH_NOT_TECHEER(HttpStatus.BAD_REQUEST, "A008", "테커가 아닌 사용자입니다."),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "사용자를 찾을 수 없습니다."),
-    USER_NOT_VERIFIED_EMAIL(HttpStatus.UNAUTHORIZED, "U002", "이메일 인증이 완료되지 않았습니다."),
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "U003", "이미 가입한 이메일입니다."),
     USER_NOT_RESUME(HttpStatus.BAD_REQUEST, "U004", "이력서 파일이 없습니다."),
     USER_NOT_UNAUTHORIZED_ADMIN(HttpStatus.FORBIDDEN, "U005", "권한이 없는 사용자입니다."),
