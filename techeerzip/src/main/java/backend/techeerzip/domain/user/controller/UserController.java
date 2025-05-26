@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
+import backend.techeerzip.domain.user.dto.request.UpdateUserProfileImgRequest;
 import backend.techeerzip.domain.user.dto.request.UserResetPasswordRequest;
+import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.service.UserService;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -66,6 +68,16 @@ public class UserController {
     public ResponseEntity<GetUserResponse> getUser(@Parameter(hidden = true) @UserId Long userId) {
         GetUserResponse response = userService.getUserInfo(userId);
         logger.info("유저 정보 조회 완료 - userId: {}", userId, CONTEXT);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "프로필 사진 동기화", description = "슬랙 프로필 이미지를 동기화합니다.")
+    @PatchMapping("/profileImage")
+    public ResponseEntity<GetProfileImgResponse> updateProfileImage(
+            @Valid @RequestBody UpdateUserProfileImgRequest updateUserProfileImgRequest) {
+        String email = updateUserProfileImgRequest.getEmail();
+        GetProfileImgResponse response = userService.updateProfileImg(email);
+        logger.info("프로필 사진 동기화 완료 - email: {}", email, CONTEXT);
         return ResponseEntity.ok(response);
     }
 }
