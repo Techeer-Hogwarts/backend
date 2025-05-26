@@ -132,7 +132,7 @@ public class User {
     private boolean isAuth;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "roleId", nullable = false)
     private Role role;
 
     @Column(nullable = false, length = 100)
@@ -185,7 +185,8 @@ public class User {
         this.mediumUrl = mediumUrl;
         this.tistoryUrl = tistoryUrl;
         this.velogUrl = velogUrl;
-        // createdAt/updatedAt/isDeleted default는 JPA/DB에 위임
+        this.isDeleted = false;
+        // createdAt/updatedAt default는 JPA/DB에 위임
     }
 
     public void update(
