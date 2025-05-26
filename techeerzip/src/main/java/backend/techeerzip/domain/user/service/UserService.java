@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import backend.techeerzip.domain.auth.service.AuthService;
+import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.exception.UserNotFoundException;
+import backend.techeerzip.domain.user.mapper.UserMapper;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class UserService {
     //    private final IndexService indexService;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final CustomLogger logger;
     private static final String CONTEXT = "UserService";
 
@@ -33,5 +36,11 @@ public class UserService {
                 userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException());
 
         user.setPassword(passwordEncoder.encode(newPassword));
+    }
+
+    @Transactional(readOnly = true)
+    public GetUserResponse getUserInfo(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        return userMapper.toGetUserResponse(user);
     }
 }
