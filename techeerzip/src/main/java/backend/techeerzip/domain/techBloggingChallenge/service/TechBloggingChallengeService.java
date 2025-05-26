@@ -65,11 +65,16 @@ public class TechBloggingChallengeService {
             }
             start = moveToNextWeekday(start);
             LocalDate roundEnd = start.plusWeeks(interval).minusDays(1);
-            if (roundEnd.isAfter(end)) roundEnd = end;
-
+            boolean isLastRound = false;
+            // 마지막 회차는 end를 넘어가도 2주를 채움
+            if (roundEnd.isAfter(end)) {
+                roundEnd = start.plusWeeks(interval).minusDays(1);
+                isLastRound = true;
+            }
             TechBloggingRound round =
                     TechBloggingRound.create(start, roundEnd, sequence++, isFirstHalf);
             roundRepository.save(round);
+            if (isLastRound) break;
             start = roundEnd.plusDays(1);
         }
     }
