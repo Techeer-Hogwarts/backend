@@ -94,63 +94,26 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
         };
     }
 
-    public List<Blog> findBlogsForChallenge(
-            List<Long> blogIds, String sort, Blog cursorBlog, int limit) {
+    public List<Blog> findBlogsForChallenge(List<Long> blogIds, Blog cursorBlog, int limit) {
         return queryFactory
                 .selectFrom(blog)
-                .where(blog.id.in(blogIds), cursorCondition(cursorBlog, sort))
-                .orderBy(orderSpecifier(sort))
+                .where(blog.id.in(blogIds), cursorCondition(cursorBlog))
+                .orderBy(orderSpecifier())
                 .limit(limit)
                 .fetch();
     }
 
-    private BooleanExpression cursorCondition(Blog cursorBlog, String sort) {
+    private BooleanExpression cursorCondition(Blog cursorBlog) {
         if (cursorBlog == null) return null;
-        if ("viewCount".equals(sort)) {
-            return blog.viewCount
-                    .lt(cursorBlog.getViewCount())
-                    .or(
-                            blog.viewCount
-                                    .eq(cursorBlog.getViewCount())
-                                    .and(blog.createdAt.lt(cursorBlog.getCreatedAt())))
-                    .or(
-                            blog.viewCount
-                                    .eq(cursorBlog.getViewCount())
-                                    .and(blog.createdAt.eq(cursorBlog.getCreatedAt()))
-                                    .and(blog.id.lt(cursorBlog.getId())));
-        } else if ("name".equals(sort)) {
-            return blog.title
-                    .gt(cursorBlog.getTitle())
-                    .or(
-                            blog.title
-                                    .eq(cursorBlog.getTitle())
-                                    .and(blog.createdAt.lt(cursorBlog.getCreatedAt())))
-                    .or(
-                            blog.title
-                                    .eq(cursorBlog.getTitle())
-                                    .and(blog.createdAt.eq(cursorBlog.getCreatedAt()))
-                                    .and(blog.id.lt(cursorBlog.getId())));
-        } else { // latest
-            return blog.createdAt
-                    .lt(cursorBlog.getCreatedAt())
-                    .or(
-                            blog.createdAt
-                                    .eq(cursorBlog.getCreatedAt())
-                                    .and(blog.id.lt(cursorBlog.getId())));
-        }
+        return blog.createdAt
+                .lt(cursorBlog.getCreatedAt())
+                .or(
+                        blog.createdAt
+                                .eq(cursorBlog.getCreatedAt())
+                                .and(blog.id.lt(cursorBlog.getId())));
     }
 
-    private OrderSpecifier<?>[] orderSpecifier(String sort) {
-        if ("viewCount".equals(sort)) {
-            return new OrderSpecifier<?>[] {
-                blog.viewCount.desc(), blog.createdAt.desc(), blog.id.desc()
-            };
-        } else if ("name".equals(sort)) {
-            return new OrderSpecifier<?>[] {
-                blog.title.asc(), blog.createdAt.desc(), blog.id.desc()
-            };
-        } else {
-            return new OrderSpecifier<?>[] {blog.createdAt.desc(), blog.id.desc()};
-        }
+    private OrderSpecifier<?>[] orderSpecifier() {
+        return new OrderSpecifier<?>[] {blog.createdAt.desc(), blog.id.desc()};
     }
 }
