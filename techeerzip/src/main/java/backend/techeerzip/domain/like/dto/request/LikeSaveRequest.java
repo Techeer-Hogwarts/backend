@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 public class LikeSaveRequest {
     private Long contentId;
     private String category;
-    private String type;
+    private Boolean likeStatus;
 
-    public LikeSaveRequest(Long contentId, String category, String type) {
+    public LikeSaveRequest(Long contentId, String category, Boolean likeStatus) {
         this.contentId = contentId;
         this.category = category;
-        this.type = type;
+        this.likeStatus = likeStatus;
     }
 }

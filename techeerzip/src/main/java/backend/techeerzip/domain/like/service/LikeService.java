@@ -45,12 +45,29 @@ public class LikeService {
 
     @Transactional
     public void createLike(Long userId, LikeSaveRequest request) {
-        logger.info("좋아요 생성 요청 처리 중 - userId: {}, request: {} | context: {}", userId, request, CONTEXT);
+        logger.info("좋아요 생성/수정 요청 처리 중 - userId: {}, request: {} | context: {}", userId, request, CONTEXT);
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Like like = new Like(request.getContentId(), request.getCategory(), user);
-        likeRepository.save(like);
-        logger.info("좋아요 생성 요청 처리 완료 | context: {}", CONTEXT);
+            
+        likeRepository.findByUserIdAndContentIdAndCategory(userId, request.getContentId(), request.getCategory())
+            .ifPresentOrElse(
+                like -> {
+                    if (like.isDeleted()) {
+                        like.reactivate(); // Reactivate soft-deleted like
+                        logger.info("삭제된 좋아요 재활성화 처리 완료 | context: {}", CONTEXT);
+                    } else {
+                        like.delete(); // Soft delete active like
+                        logger.info("기존 좋아요 삭제 처리 완료 | context: {}", CONTEXT);
+                    }
+                },
+                () -> {
+                    Like newLike = new Like(request.getContentId(), request.getCategory(), user);
+                    likeRepository.save(newLike);
+                    logger.info("새로운 좋아요 생성 처리 완료 | context: {}", CONTEXT);
+                }
+            );
+            
+        logger.info("좋아요 생성/수정 요청 처리 완료 | context: {}", CONTEXT);
     }
 
     public LikeListResponse getLikeList(Long userId, LikeCategory category, Long cursorId, Integer limit, String sortBy) {

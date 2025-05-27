@@ -22,12 +22,12 @@ public interface LikeSwagger {
                     "좋아요를 저장 혹은 설정을 변경합니다.\n\n카테고리는 SESSION, BLOG, RESUME 입니다.")
     @ApiResponses(
             value = {
-                @ApiResponse(responseCode = "200", description = "좋아요 생성/변경 성공"),
+                @ApiResponse(responseCode = "201", description = "좋아요 생성/변경 성공"),
                 @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                 @ApiResponse(responseCode = "401", description = "인증 실패"),
                 @ApiResponse(responseCode = "404", description = "리소스를 찾을 수 없음")
             })
-    default ResponseEntity<LikeListResponse> postLike(
+    default ResponseEntity<Void> postLike(
             @Parameter(hidden = true) @UserId Long userId,
             @Parameter(description = "좋아요 요청 정보") LikeSaveRequest request) {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");

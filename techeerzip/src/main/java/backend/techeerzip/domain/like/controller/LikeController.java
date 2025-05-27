@@ -1,7 +1,5 @@
 package backend.techeerzip.domain.like.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,13 +25,13 @@ public class LikeController implements LikeSwagger {
 
     @PostMapping
     @Override
-    public ResponseEntity<LikeListResponse> postLike(
+    public ResponseEntity<Void> postLike(
             @Parameter(hidden = true) @UserId Long userId,
             @RequestBody LikeSaveRequest request) {
         logger.info("좋아요 생성 요청 처리 중 - userId: {}, request: {} | context: {}", userId, request, CONTEXT);
         likeService.createLike(userId, request);
         logger.info("좋아요 생성 요청 처리 완료 | context: {}", CONTEXT);
-        return ResponseEntity.ok(likeService.getLikeList(userId, null, 0L, 10, "latest"));
+        return ResponseEntity.status(201).build();
     }
 
     @GetMapping

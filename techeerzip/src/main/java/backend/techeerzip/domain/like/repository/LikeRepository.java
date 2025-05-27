@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.like.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,5 +23,11 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
         @Param("category") String category,
         @Param("cursorId") Long cursorId,
         Pageable pageable
+    );
+
+    Optional<Like> findByUserIdAndContentIdAndCategory(
+        Long userId, 
+        Long contentId, 
+        String category
     );
 }
