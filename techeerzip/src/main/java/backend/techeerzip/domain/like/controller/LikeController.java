@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import backend.techeerzip.domain.like.dto.request.LikeSaveRequest;
 import backend.techeerzip.domain.like.dto.response.LikeListResponse;
 import backend.techeerzip.domain.like.entity.LikeCategory;
-import lombok.RequiredArgsConstructor;
-import backend.techeerzip.global.resolver.UserId;
 import backend.techeerzip.domain.like.service.LikeService;
 import backend.techeerzip.global.logger.CustomLogger;
+import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @Tag(name = "likes", description = "좋아요 API")
 @RestController
@@ -26,9 +26,9 @@ public class LikeController implements LikeSwagger {
     @PostMapping
     @Override
     public ResponseEntity<Void> postLike(
-            @Parameter(hidden = true) @UserId Long userId,
-            @RequestBody LikeSaveRequest request) {
-        logger.info("좋아요 생성 요청 처리 중 - userId: {}, request: {} | context: {}", userId, request, CONTEXT);
+            @Parameter(hidden = true) @UserId Long userId, @RequestBody LikeSaveRequest request) {
+        logger.info(
+                "좋아요 생성 요청 처리 중 - userId: {}, request: {} | context: {}", userId, request, CONTEXT);
         likeService.createLike(userId, request);
         logger.info("좋아요 생성 요청 처리 완료 | context: {}", CONTEXT);
         return ResponseEntity.status(201).build();
@@ -42,8 +42,12 @@ public class LikeController implements LikeSwagger {
             @RequestParam(required = false, defaultValue = "0") Long cursorId,
             @RequestParam(required = false, defaultValue = "10") Integer limit) {
         logger.info(
-            "좋아요 목록 조회 요청 처리 중 - userId: {}, category: {}, cursorId: {}, limit: {} | context: {}",
-            userId, category, cursorId, limit, CONTEXT);
+                "좋아요 목록 조회 요청 처리 중 - userId: {}, category: {}, cursorId: {}, limit: {} | context: {}",
+                userId,
+                category,
+                cursorId,
+                limit,
+                CONTEXT);
         LikeListResponse response = likeService.getLikeList(userId, category, cursorId, limit);
         logger.info("좋아요 목록 조회 요청 처리 완료 | context: {}", CONTEXT);
         return ResponseEntity.ok(response);

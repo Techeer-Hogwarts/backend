@@ -18,8 +18,7 @@ public interface LikeSwagger {
 
     @Operation(
             summary = "좋아요 생성 및 설정 변경",
-            description =
-                    "좋아요를 저장 혹은 설정을 변경합니다.\n\n카테고리는 SESSION, BLOG, RESUME 입니다.")
+            description = "좋아요를 저장 혹은 설정을 변경합니다.\n\n카테고리는 SESSION, BLOG, RESUME 입니다.")
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "201", description = "좋아요 생성/변경 성공"),
@@ -36,9 +35,9 @@ public interface LikeSwagger {
     @Operation(
             summary = "유저 별 좋아요 목록 조회",
             description =
-                    "유저 별 좋아요한 콘텐츠 목록을 조회합니다.\n\n" +
-                    "카테고리는 SESSION, BLOG, RESUME 입니다.\n" +
-                    "최신순으로 정렬됩니다.")
+                    "유저 별 좋아요한 콘텐츠 목록을 조회합니다.\n\n"
+                            + "카테고리는 SESSION, BLOG, RESUME 입니다.\n"
+                            + "최신순으로 정렬됩니다.")
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "좋아요 목록 조회 성공"),
@@ -48,9 +47,13 @@ public interface LikeSwagger {
             })
     default ResponseEntity<LikeListResponse> getLikeList(
             @Parameter(hidden = true) @UserId Long userId,
-            @Parameter(description = "카테고리 (SESSION, BLOG, RESUME)") @RequestParam(required = false) LikeCategory category,
-            @Parameter(description = "마지막으로 조회한 좋아요의 ID") @RequestParam(required = false, defaultValue = "0") Long cursorId,
-            @Parameter(description = "가져올 개수") @RequestParam(required = false, defaultValue = "10") Integer limit) {
+            @Parameter(description = "카테고리 (SESSION, BLOG, RESUME)") @RequestParam(required = false)
+                    LikeCategory category,
+            @Parameter(description = "마지막으로 조회한 좋아요의 ID")
+                    @RequestParam(required = false, defaultValue = "0")
+                    Long cursorId,
+            @Parameter(description = "가져올 개수") @RequestParam(required = false, defaultValue = "10")
+                    Integer limit) {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
     }
 }

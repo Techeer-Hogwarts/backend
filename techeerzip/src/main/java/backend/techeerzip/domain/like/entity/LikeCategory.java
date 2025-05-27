@@ -4,4 +4,4 @@ public enum LikeCategory {
     SESSION,
     BLOG,
     RESUME,
-} 
+}

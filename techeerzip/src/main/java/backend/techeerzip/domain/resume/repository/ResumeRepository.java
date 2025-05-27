@@ -9,5 +9,6 @@ import backend.techeerzip.domain.resume.entity.Resume;
 
 public interface ResumeRepository extends JpaRepository<Resume, Long> {
     List<Resume> findByUserId(Long userId);
+
     Optional<Resume> findByIdAndIsDeletedFalse(Long id);
 }

@@ -15,4 +15,4 @@ public interface LikeRepositoryCustom {
      * @return 좋아요 목록
      */
     List<Like> findLikesWithCursor(Long userId, String category, Long cursorId, int limit);
-} 
+}
