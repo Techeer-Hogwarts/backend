@@ -6,4 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public sealed interface LikedContentResponse permits 
     LikedBlogResponse, 
     LikedSessionResponse, 
-    LikedResumeResponse {} 
+    LikedResumeResponse {
+    
+    @Schema(description = "콘텐츠 ID")
+    Long id();
+} 

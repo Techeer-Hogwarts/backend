@@ -38,7 +38,7 @@ public interface LikeSwagger {
             description =
                     "유저 별 좋아요한 콘텐츠 목록을 조회합니다.\n\n" +
                     "카테고리는 SESSION, BLOG, RESUME 입니다.\n" +
-                    "정렬 기준은 latest(최신순), likeCount(좋아요순), viewCount(조회수순) 입니다.")
+                    "최신순으로 정렬됩니다.")
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "좋아요 목록 조회 성공"),
@@ -50,8 +50,7 @@ public interface LikeSwagger {
             @Parameter(hidden = true) @UserId Long userId,
             @Parameter(description = "카테고리 (SESSION, BLOG, RESUME)") @RequestParam(required = false) LikeCategory category,
             @Parameter(description = "마지막으로 조회한 좋아요의 ID") @RequestParam(required = false, defaultValue = "0") Long cursorId,
-            @Parameter(description = "가져올 개수") @RequestParam(required = false, defaultValue = "10") Integer limit,
-            @Parameter(description = "정렬 기준 (latest: 최신순, likeCount: 좋아요순, viewCount: 조회수순)") @RequestParam(required = false, defaultValue = "latest") String sortBy) {
+            @Parameter(description = "가져올 개수") @RequestParam(required = false, defaultValue = "10") Integer limit) {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
     }
 }

@@ -40,12 +40,11 @@ public class LikeController implements LikeSwagger {
             @Parameter(hidden = true) @UserId Long userId,
             @RequestParam(required = false) LikeCategory category,
             @RequestParam(required = false, defaultValue = "0") Long cursorId,
-            @RequestParam(required = false, defaultValue = "10") Integer limit,
-            @RequestParam(required = false, defaultValue = "latest") String sortBy) {
+            @RequestParam(required = false, defaultValue = "10") Integer limit) {
         logger.info(
-            "좋아요 목록 조회 요청 처리 중 - userId: {}, category: {}, cursorId: {}, limit: {}, sortBy: {} | context: {}",
-            userId, category, cursorId, limit, sortBy, CONTEXT);
-        LikeListResponse response = likeService.getLikeList(userId, category, cursorId, limit, sortBy);
+            "좋아요 목록 조회 요청 처리 중 - userId: {}, category: {}, cursorId: {}, limit: {} | context: {}",
+            userId, category, cursorId, limit, CONTEXT);
+        LikeListResponse response = likeService.getLikeList(userId, category, cursorId, limit);
         logger.info("좋아요 목록 조회 요청 처리 완료 | context: {}", CONTEXT);
         return ResponseEntity.ok(response);
     }

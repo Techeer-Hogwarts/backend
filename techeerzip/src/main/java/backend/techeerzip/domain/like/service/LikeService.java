@@ -3,7 +3,6 @@ package backend.techeerzip.domain.like.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,22 +69,17 @@ public class LikeService {
         logger.info("좋아요 생성/수정 요청 처리 완료 | context: {}", CONTEXT);
     }
 
-    public LikeListResponse getLikeList(Long userId, LikeCategory category, Long cursorId, Integer limit, String sortBy) {
-        logger.info("좋아요 목록 조회 요청 처리 중 - userId: {}, category: {}, cursorId: {}, limit: {}, sortBy: {} | context: {}", 
-            userId, category, cursorId, limit, sortBy, CONTEXT);
+    public LikeListResponse getLikeList(Long userId, LikeCategory category, Long cursorId, Integer limit) {
+        logger.info("좋아요 목록 조회 요청 처리 중 - userId: {}, category: {}, cursorId: {}, limit: {} | context: {}", 
+            userId, category, cursorId, limit, CONTEXT);
         
-        // Get paginated likes using cursor
-        List<Like> likes = likeRepository.findActiveLikesByUserIdAndCategoryWithCursor(
+        // Get paginated likes using cursor-based pagination
+        List<Like> likes = likeRepository.findLikesWithCursor(
             userId, 
             category.name(), 
-            cursorId == 0L ? Long.MAX_VALUE : cursorId,
-            PageRequest.of(0, limit)
+            cursorId == 0L ? null : cursorId,
+            limit
         );
-        
-        // Sort likes based on sortBy parameter if needed
-        if (sortBy != null && !sortBy.equals("latest")) {
-            likes = sortLikes(likes, sortBy);
-        }
         
         // Transform likes to content responses
         List<LikedContentResponse> contents = likes.stream()
@@ -189,58 +183,6 @@ public class LikeService {
             .collect(Collectors.toList());
 
         logger.info("좋아요 목록 조회 요청 처리 완료 | context: {}", CONTEXT);
-        return new LikeListResponse(contents);
-    }
-
-    private List<Like> sortLikes(List<Like> likes, String sortBy) {
-        return switch (sortBy) {
-            case "likeCount" -> likes.stream()
-                .sorted((a, b) -> {
-                    int aCount = getLikeCount(a);
-                    int bCount = getLikeCount(b);
-                    return Integer.compare(bCount, aCount); // Descending order
-                })
-                .collect(Collectors.toList());
-            case "viewCount" -> likes.stream()
-                .sorted((a, b) -> {
-                    int aCount = getViewCount(a);
-                    int bCount = getViewCount(b);
-                    return Integer.compare(bCount, aCount); // Descending order
-                })
-                .collect(Collectors.toList());
-            default -> likes.stream() // "latest" or any other value
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt())) // Descending order
-                .collect(Collectors.toList());
-        };
-    }
-
-    private int getLikeCount(Like like) {
-        return switch (like.getCategory()) {
-            case "BLOG" -> blogRepository.findByIdAndIsDeletedFalse(like.getContentId())
-                .map(Blog::getLikeCount)
-                .orElse(0);
-            case "SESSION" -> sessionRepository.findByIdAndIsDeletedFalse(like.getContentId())
-                .map(Session::getLikeCount)
-                .orElse(0);
-            case "RESUME" -> resumeRepository.findByIdAndIsDeletedFalse(like.getContentId())
-                .map(Resume::getLikeCount)
-                .orElse(0);
-            default -> 0;
-        };
-    }
-
-    private int getViewCount(Like like) {
-        return switch (like.getCategory()) {
-            case "BLOG" -> blogRepository.findByIdAndIsDeletedFalse(like.getContentId())
-                .map(Blog::getViewCount)
-                .orElse(0);
-            case "SESSION" -> sessionRepository.findByIdAndIsDeletedFalse(like.getContentId())
-                .map(Session::getViewCount)
-                .orElse(0);
-            case "RESUME" -> resumeRepository.findByIdAndIsDeletedFalse(like.getContentId())
-                .map(Resume::getViewCount)
-                .orElse(0);
-            default -> 0;
-        };
+        return new LikeListResponse(contents, limit);
     }
 }
