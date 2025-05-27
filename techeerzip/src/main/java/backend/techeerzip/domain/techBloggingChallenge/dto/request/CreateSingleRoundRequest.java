@@ -20,6 +20,11 @@ import lombok.NoArgsConstructor;
 @ValidDateRange
 @Schema(name = "CreateSingleRoundRequest", description = "단일 회차 생성 요청 DTO")
 public class CreateSingleRoundRequest {
+
+    @NotNull(message = "챌린지 기간 ID는 필수입니다")
+    @Schema(description = "챌린지 기간 ID", example = "1")
+    private Long termId;
+
     @NotNull(message = "회차 시작 날짜는 필수입니다")
     @Future(message = "회차 시작 날짜는 현재 날짜 이후여야 합니다")
     @Schema(description = "회차 시작 날짜", example = "2024-03-01")

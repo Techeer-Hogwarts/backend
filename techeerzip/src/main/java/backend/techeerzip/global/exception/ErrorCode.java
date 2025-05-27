@@ -109,7 +109,12 @@ public enum ErrorCode {
     ROUND_NOT_FOUND(HttpStatus.NOT_FOUND, "TBR003", "존재하지 않는 챌린지 회차입니다."),
     ROUND_PAST_DATE(HttpStatus.BAD_REQUEST, "TBR004", "과거의 회차는 생성할 수 없습니다."),
     ROUND_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "TBR005", "종료 날짜는 시작 날짜보다 이후여야 합니다."),
-    ROUND_INFINITE_LOOP(HttpStatus.BAD_REQUEST, "TBR006", "라운드 생성 중 무한 루프가 감지되었습니다. 입력값을 확인하세요.");
+    ROUND_INFINITE_LOOP(HttpStatus.BAD_REQUEST, "TBR006", "라운드 생성 중 무한 루프가 감지되었습니다. 입력값을 확인하세요."),
+    TECH_BLOGGING_TERM_ALREADY_EXISTS(
+            HttpStatus.BAD_REQUEST, "TBT001", "이미 해당 연도/반기의 챌린지 기간이 존재합니다."),
+    TECH_BLOGGING_TERM_NOT_FOUND(HttpStatus.NOT_FOUND, "TBT002", "존재하지 않는 챌린지 기간입니다."),
+    TECH_BLOGGING_TERM_ALREADY_JOINED(HttpStatus.CONFLICT, "TBT003", "이미 해당 챌린지에 참여한 유저입니다."),
+    TECH_BLOGGING_TERM_NO_ROUNDS(HttpStatus.NOT_FOUND, "TBT004", "해당 챌린지 기간에 회차가 존재하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;

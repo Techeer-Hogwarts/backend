@@ -91,7 +91,7 @@ public class TaskService {
     }
 
     /** 매일 새벽 3시 - 유저 최신 블로그 게시물 크롤링 요청 */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void requestDailyUpdate() {
         logger.info("일일 블로그 업데이트 요청 시작", CONTEXT);
         List<BlogUrlsResponse> userBlogUrls = blogService.getAllUserBlogUrl();
