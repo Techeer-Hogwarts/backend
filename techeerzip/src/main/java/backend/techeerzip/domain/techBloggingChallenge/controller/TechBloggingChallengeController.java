@@ -1,16 +1,26 @@
 package backend.techeerzip.domain.techBloggingChallenge.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import backend.techeerzip.domain.techBloggingChallenge.dto.request.CreateRoundRequest;
+import backend.techeerzip.domain.techBloggingChallenge.dto.request.ApplyChallengeRequest;
+import backend.techeerzip.domain.techBloggingChallenge.dto.request.BlogChallengeCursorRequest;
 import backend.techeerzip.domain.techBloggingChallenge.dto.request.CreateSingleRoundRequest;
-import backend.techeerzip.domain.techBloggingChallenge.dto.request.DeleteAllRoundsRequest;
+import backend.techeerzip.domain.techBloggingChallenge.dto.request.CreateTermRequest;
 import backend.techeerzip.domain.techBloggingChallenge.dto.request.UpdateRoundRequest;
-import backend.techeerzip.domain.techBloggingChallenge.dto.response.RoundListResponse;
+import backend.techeerzip.domain.techBloggingChallenge.dto.response.AttendanceStatusResponse;
+import backend.techeerzip.domain.techBloggingChallenge.dto.response.BlogChallengeListResponse;
+import backend.techeerzip.domain.techBloggingChallenge.dto.response.RoundDetailResponse;
+import backend.techeerzip.domain.techBloggingChallenge.dto.response.TermDetailResponse;
+import backend.techeerzip.domain.techBloggingChallenge.dto.response.TermRoundsSummaryResponse;
+import backend.techeerzip.domain.techBloggingChallenge.dto.response.TermSummaryResponse;
 import backend.techeerzip.domain.techBloggingChallenge.service.TechBloggingChallengeService;
+import backend.techeerzip.global.resolver.UserId;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -19,84 +29,99 @@ import lombok.RequiredArgsConstructor;
 public class TechBloggingChallengeController implements TechBloggingChallengeSwagger {
     private final TechBloggingChallengeService challengeService;
 
+    // 특정 분기(연도/반기) 챌린지 지원 (일반 유저용 API)
+    @PostMapping("/apply")
+    public ResponseEntity<Void> applyChallenge(
+            @Parameter(hidden = true) @UserId Long userId,
+            @RequestBody ApplyChallengeRequest request) {
+        challengeService.applyChallenge(userId, request);
+        return ResponseEntity.ok().build();
+    }
+
     // 추후 관리자용 인증에 대해 고려할 예정
-
-    @PostMapping("/rounds/batch") // 관리자용
+    // 챌린지 기간 생성 (회차 포함) (관리자용 API)
+    @PostMapping("/terms")
     @Override
-    public ResponseEntity<Void> createRounds(@Valid @RequestBody CreateRoundRequest request) {
-        challengeService.createRounds(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<TermDetailResponse> createTerm(
+            @Valid @RequestBody CreateTermRequest request) {
+        TermDetailResponse response = challengeService.createTerm(request);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/rounds") // 관리자용
+    // 챌린지 기간 조회
+    @GetMapping("/terms/{termId}")
     @Override
-    public ResponseEntity<Void> createSingleRound(
+    public ResponseEntity<TermDetailResponse> getTerm(@PathVariable Long termId) {
+        TermDetailResponse response = challengeService.getTerm(termId);
+        return ResponseEntity.ok(response);
+    }
+
+    // 추후 관리자용 인증에 대해 고려할 예정
+    // 챌린지 기간 삭제 (관리자용 API)
+    @DeleteMapping("/terms/{termId}")
+    @Override
+    public ResponseEntity<Void> deleteTerm(@PathVariable Long termId) {
+        challengeService.deleteTerm(termId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 추후 관리자용 인증에 대해 고려할 예정
+    // 단일 회차 생성 (관리자용 API)
+    @PostMapping("/terms/rounds")
+    @Override
+    public ResponseEntity<RoundDetailResponse> createRound(
             @Valid @RequestBody CreateSingleRoundRequest request) {
-        challengeService.createSingleRound(request);
-        return ResponseEntity.ok().build();
+        RoundDetailResponse response = challengeService.createRound(request);
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/rounds") // 관리자용
+    // 추후 관리자용 인증에 대해 고려할 예정
+    // 회차 수정 (관리자용 API)
+    @PutMapping("/rounds")
     @Override
-    public ResponseEntity<Void> updateRound(@Valid @RequestBody UpdateRoundRequest request) {
-        challengeService.updateRound(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<RoundDetailResponse> updateRound(
+            @Valid @RequestBody UpdateRoundRequest request) {
+        RoundDetailResponse response = challengeService.updateRound(request);
+        return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/rounds/{roundId}") // 관리자용
+    // 추후 관리자용 인증에 대해 고려할 예정
+    // 회차 삭제 (관리자용 API)
+    @DeleteMapping("/rounds/{roundId}")
     @Override
     public ResponseEntity<Void> deleteRound(@PathVariable Long roundId) {
         challengeService.deleteRound(roundId);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/rounds") // 관리자용
-    @Override
-    public ResponseEntity<Void> deleteAllRounds(
-            @Valid @RequestBody DeleteAllRoundsRequest request) {
-        challengeService.deleteAllRounds(request.getYear(), request.isFirstHalf());
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/rounds") // 관리자용
-    @Override
-    public ResponseEntity<RoundListResponse> getRoundList() {
-        RoundListResponse response = challengeService.getRoundList();
+    // 모든 회차 조회 (필터 종류 조회에도 쓰임)
+    @GetMapping("/rounds")
+    public ResponseEntity<List<TermSummaryResponse>> getTermList() {
+        List<TermSummaryResponse> response = challengeService.getTermList();
         return ResponseEntity.ok(response);
     }
 
-    // 일반 유저용 API
+    // 챌린지 기간 및 회차 요약 조회
+    @GetMapping("/terms/{termId}/summary")
+    public ResponseEntity<TermRoundsSummaryResponse> getTermRoundsSummary(
+            @PathVariable Long termId) {
+        TermRoundsSummaryResponse response = challengeService.getTermRoundsSummary(termId);
+        return ResponseEntity.ok(response);
+    }
 
-    // 테크 블로깅 챌린지 지원 : 미래에 진행예정이나 현재 진행중인 챌린지에만 지원할 수 있음, 지원 취소는 없음
+    // 챌린지 출석 현황 조회 (termId 없으면 현재 진행중인 챌린지)
+    @GetMapping("/terms/attendance")
+    public ResponseEntity<List<AttendanceStatusResponse>> getAttendanceStatus(
+            @RequestParam(value = "termId", required = false) Long termId) {
+        List<AttendanceStatusResponse> response = challengeService.getAttendanceStatus(termId);
+        return ResponseEntity.ok(response);
+    }
 
-    // 테크 블로깅 목록 조회(필터 종류 조회) : 2025 상반기-회차 1~10, 2025 하반기-회차 1~10 조회 가능
-
-    // 회차별 블로그 조회 (디폴트값 : 현재 진행중인 블로그 챌린지의 최신순 블로그 조회) : 회차별 블로그 조회 가능(상반기, 하반기 변경
-    // 가능, 조회 옵션도 존재 : 최신순, 조회순, 이름순)
-
-    // 챌린지에 참여한느 유저들의 출석 현황 조회
-    // {
-    // [
-    // {
-    // "userId": 1,
-    // "userName": "김진희",
-    // "sequence": [1, 0, 0, 4, 2, 1, 3, 2, 0, 0, 0, 0],
-    // "totalCount": 13
-    // },
-    // {
-    // "userId": 2,
-    // "userName": "김진희",
-    // "sequence": [1, 0, 0, 4, 2, 1, 3, 2, 0, 0, 0, 0]
-    // "totalCount": 13
-    // },
-    // {
-    // "userId": 3,
-    // "userName": "김진희",
-    // "sequence": [1, 0, 0, 4, 2, 1, 3, 2, 0, 0, 0, 0]
-    // "totalCount": 13
-    // },
-    // ],
-    // }
-    // 위의 값이 예상 응답값으로, sequence는 회차의 제출한 블로그 갯수를 의미한다. 제출하지 않은 블로그는 0으로 표시된다. 또한 총
-    // 제출 블로그 갯수도 조회 가능하다.
+    // 회차별 블로그 커서 기반 조회
+    @GetMapping("/rounds/blogs")
+    public ResponseEntity<BlogChallengeListResponse> getBlogsByRoundCursor(
+            BlogChallengeCursorRequest request) {
+        BlogChallengeListResponse response = challengeService.getBlogsByRoundCursor(request);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -6,9 +6,12 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -36,10 +39,6 @@ public class TechBloggingRound extends BaseEntity {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
-    // 상반기/하반기 구분
-    @Column(nullable = false)
-    private boolean firstHalf;
-
     // 회차 시작 날짜
     @Column(nullable = false)
     private LocalDate startDate;
@@ -48,13 +47,13 @@ public class TechBloggingRound extends BaseEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    // 회사순서 sequence
+    // 회차 순서
     @Column(nullable = false)
     private Integer sequence;
 
-    // 기준 연도(1회차 연도, 하반기일 때 1회차 연도 기준으로 roundName 생성)
-    @Column(nullable = false)
-    private Integer baseYear;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "termId", nullable = false)
+    private TechBloggingTerm term;
 
     @Builder.Default
     @OneToMany(mappedBy = "techBloggingRound")
@@ -73,14 +72,27 @@ public class TechBloggingRound extends BaseEntity {
     }
 
     public static TechBloggingRound create(
-            LocalDate startDate, LocalDate endDate, int sequence, boolean firstHalf, int baseYear) {
+            LocalDate startDate, LocalDate endDate, int sequence, TechBloggingTerm term) {
         return TechBloggingRound.builder()
                 .startDate(startDate)
                 .endDate(endDate)
                 .sequence(sequence)
-                .firstHalf(firstHalf)
                 .isDeleted(false)
-                .baseYear(baseYear)
+                .term(term)
                 .build();
+    }
+
+    // 연도/반기 정보는 participation을 통해 접근
+    public int getYear() {
+        return term.getYear();
+    }
+
+    public boolean isFirstHalf() {
+        return term.isFirstHalf();
+    }
+
+    // 회차 이름 생성 (예: "2024 상반기 1회차")
+    public String getRoundName() {
+        return String.format("%d %s %d회차", getYear(), isFirstHalf() ? "상반기" : "하반기", sequence);
     }
 }

@@ -41,4 +41,11 @@ public class TechBloggingAttendance extends BaseEntity {
 
     @Column(nullable = false)
     private boolean isDeleted = false;
+
+    public TechBloggingAttendance(User user, TechBloggingRound round, Blog blog) {
+        this.user = user;
+        this.techBloggingRound = round;
+        this.blog = blog;
+        this.isDeleted = false;
+    }
 }

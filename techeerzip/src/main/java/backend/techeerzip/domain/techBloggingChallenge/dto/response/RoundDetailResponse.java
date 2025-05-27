@@ -15,8 +15,14 @@ public class RoundDetailResponse {
     @Schema(description = "챌린지 회차 Id값", example = "1")
     private Long roundId;
 
+    @Schema(description = "챌린지 기간 ID", example = "1")
+    private Long termId;
+
     @Schema(description = "챌린지 회차 이름", example = "2025 상반기 1회차")
     private String roundName;
+
+    @Schema(description = "챌린지 기간 이름", example = "2025년 상반기 챌린지")
+    private String termName;
 
     @Schema(description = "챌린지 회차 순서", example = "1")
     private int sequence;
@@ -27,6 +33,9 @@ public class RoundDetailResponse {
     @Schema(description = "챌린지 회차 종료 날짜", example = "2025-03-07")
     private LocalDate endDate;
 
-    @Schema(description = "챌린지 회차 상반기 여부", example = "true")
+    @Schema(description = "챌린지 연도", example = "2025")
+    private int year;
+
+    @Schema(description = "챌린지 상반기 여부", example = "true")
     private boolean firstHalf;
 }

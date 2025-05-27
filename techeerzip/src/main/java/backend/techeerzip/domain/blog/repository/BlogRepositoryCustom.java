@@ -24,4 +24,6 @@ public interface BlogRepositoryCustom {
      * @return 블로그 목록
      */
     List<Blog> findPopularBlogsWithCursor(Long cursorId, int limit);
+
+    List<Blog> findBlogsForChallenge(List<Long> blogIds, String sort, Blog cursorBlog, int limit);
 }
