@@ -62,4 +62,9 @@ public class Like {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void reactivate() {
+        this.isDeleted = false;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
