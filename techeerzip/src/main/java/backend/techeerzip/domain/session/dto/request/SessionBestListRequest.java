@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
-public record CursorPageViewCountRequest(
+public record SessionBestListRequest(
         @Schema(description = "가져올 데이터 수 (기본값: 10)", example = "10", nullable = true)
         Integer size,
 

@@ -40,6 +40,9 @@ public class Session extends BaseEntity {
             foreignKey = @ForeignKey(name = "Session_userId_fkey"))
     private User user;
 
+    @Column(name = "userId", insertable = false, updatable = false)
+    private Long userId;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -88,7 +91,7 @@ public class Session extends BaseEntity {
             String date,
             String category,
             String position,
-            User user) {
+            Long userId) {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
@@ -102,7 +105,7 @@ public class Session extends BaseEntity {
         this.date = date;
         this.category = category;
         this.position = position;
-        this.user = user;
+        this.userId = userId;
     }
 
     public void update(
@@ -143,5 +146,9 @@ public class Session extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public Long getUserId() {
+        return this.userId;
     }
 }

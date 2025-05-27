@@ -1,12 +1,12 @@
 package backend.techeerzip.domain.session.controller;
 
 import backend.techeerzip.domain.session.dto.request.SessionCreateRequest;
+import backend.techeerzip.domain.session.dto.request.SessionListQueryRequest;
 import backend.techeerzip.domain.session.dto.response.SessionResponse;
 import backend.techeerzip.domain.session.service.SessionService;
-import backend.techeerzip.domain.session.dto.request.CursorPageViewCountRequest;
-import backend.techeerzip.domain.session.dto.response.CursorPageViewCountResponse;
-import backend.techeerzip.domain.session.dto.request.CursorPageCreatedAtRequest;
-import backend.techeerzip.domain.session.dto.response.CursorPageCreatedAtResponse;
+import backend.techeerzip.domain.session.dto.request.SessionBestListRequest;
+import backend.techeerzip.domain.session.dto.response.SessionBestListResponse;
+import backend.techeerzip.domain.session.dto.response.SessionListResponse;
 import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,16 +47,16 @@ public class SessionController {
 
     @Operation(summary = "세션 게시물 목록 조회", description = "세션 게시물 목록을 커서 기반 페이지네이션으로 조회합니다.")
     @GetMapping
-    public ResponseEntity<CursorPageCreatedAtResponse<SessionResponse>> getAllSessions(
-            @ParameterObject @Valid CursorPageCreatedAtRequest request) {
+    public ResponseEntity<SessionListResponse<SessionResponse>> getAllSessions(
+            @ParameterObject @Valid SessionListQueryRequest request) {
         return ResponseEntity.ok(sessionService.getAllSessions(request));
     }
 
     @Operation(summary = "유저 별 세션 게시물 목록 조회", description = "유저 별 세션 게시물 목록을 커서 기반 페이지네이션으로 조회합니다.")
     @GetMapping("/user/{userId}")
-    public ResponseEntity<CursorPageCreatedAtResponse<SessionResponse>> getAllSessionsByUserId(
+    public ResponseEntity<SessionListResponse<SessionResponse>> getAllSessionsByUserId(
             @PathVariable Long userId,
-            @ParameterObject @Valid CursorPageCreatedAtRequest request
+            @ParameterObject @Valid SessionListQueryRequest request
     ) {
         return ResponseEntity.ok(sessionService.getAllSessionsByUserId(userId,request));
 
@@ -80,8 +80,8 @@ public class SessionController {
 
     @Operation(summary = "세션 인기 게시물 목록 조회", description = "세션 인기 게시물 목록을 커서 기반 페이지네이션으로 조회합니다.")
     @GetMapping("/best")
-    public ResponseEntity<CursorPageViewCountResponse<SessionResponse>> getAllBestSessions(
-            @ParameterObject @Valid CursorPageViewCountRequest request
+    public ResponseEntity<SessionBestListResponse<SessionResponse>> getAllBestSessions(
+            @ParameterObject @Valid SessionBestListRequest request
     ) {
         return ResponseEntity.ok(sessionService.getAllBestSessions(request));
     }

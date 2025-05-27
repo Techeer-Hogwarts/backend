@@ -1,11 +1,11 @@
 package backend.techeerzip.domain.session.repository;
 
+import backend.techeerzip.domain.session.dto.request.SessionListQueryRequest;
 import backend.techeerzip.domain.session.entity.QSession;
 import backend.techeerzip.domain.session.entity.Session;
-import backend.techeerzip.domain.session.dto.request.CursorPageViewCountRequest;
-import backend.techeerzip.domain.session.dto.response.CursorPageViewCountResponse;
-import backend.techeerzip.domain.session.dto.request.CursorPageCreatedAtRequest;
-import backend.techeerzip.domain.session.dto.response.CursorPageCreatedAtResponse;
+import backend.techeerzip.domain.session.dto.request.SessionBestListRequest;
+import backend.techeerzip.domain.session.dto.response.SessionBestListResponse;
+import backend.techeerzip.domain.session.dto.response.SessionListResponse;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -33,15 +33,15 @@ public class SessionDSLRepositoryImpl implements SessionDSLRepository {
      * - id 내림차순
      */
     @Override
-    public CursorPageCreatedAtResponse<Session> findAllByCursor(CursorPageCreatedAtRequest request) {
+    public SessionListResponse<Session> findAllByCursor(SessionListQueryRequest request) {
         int size = request.size() != null ? request.size() : 10;
+        
+        // 필터링 조건 구성
+        BooleanExpression filterCondition = buildFilterCondition(request);
+        
         // 커서 조건 정의
-        BooleanExpression cursorCondition = null;
-        if (request.cursor() != null && request.createdAt() != null) {
-            cursorCondition = session.createdAt.lt(request.createdAt())
-                    .or(session.createdAt.eq(request.createdAt())
-                            .and(session.id.lt(request.cursor())));
-        }
+        BooleanExpression cursorCondition = buildCreatedAtCursorCondition(filterCondition, request.cursor(), request.createdAt());
+        
         // 쿼리 실행
         List<Session> results = queryFactory
                 .selectFrom(session)
@@ -49,12 +49,13 @@ public class SessionDSLRepositoryImpl implements SessionDSLRepository {
                 .orderBy(session.createdAt.desc(), session.id.desc())
                 .limit(size + 1)
                 .fetch();
+        
         // 응답 구성
         boolean hasNext = results.size() > size;
         if (hasNext) results.remove(size); // 초과분 제거
         Long nextCursor = hasNext ? results.getLast().getId() : null;
         LocalDateTime nextCreatedAt = hasNext ? results.getLast().getCreatedAt() : null;
-        return new CursorPageCreatedAtResponse<>(results, nextCursor, nextCreatedAt, hasNext);
+        return new SessionListResponse<>(results, nextCursor, nextCreatedAt, hasNext);
     }
 
     /**
@@ -72,16 +73,21 @@ public class SessionDSLRepositoryImpl implements SessionDSLRepository {
      * - id 내림차순
      */
     @Override
-    public CursorPageCreatedAtResponse<Session> findAllByUserIdCursor(Long userId, CursorPageCreatedAtRequest request) {
+    public SessionListResponse<Session> findAllByUserIdCursor(Long userId, SessionListQueryRequest request) {
         int size = request.size() != null ? request.size() : 10;
-        // 유저 조건과 결합한 커서 조건 정의
-        BooleanExpression cursorCondition = session.user.id.eq(userId);
-        if (request.cursor() != null && request.createdAt() != null) {
-            BooleanExpression paginationCondition = session.createdAt.lt(request.createdAt())
-                    .or(session.createdAt.eq(request.createdAt())
-                            .and(session.id.lt(request.cursor())));
-            cursorCondition = cursorCondition.and(paginationCondition);
+        
+        // 필터링 조건 구성
+        BooleanExpression filterCondition = buildFilterCondition(request);
+        
+        // 유저 조건과 필터 조건 결합
+        BooleanExpression baseCondition = session.user.id.eq(userId);
+        if (filterCondition != null) {
+            baseCondition = baseCondition.and(filterCondition);
         }
+        
+        // 커서 조건 정의
+        BooleanExpression cursorCondition = buildCreatedAtCursorCondition(baseCondition, request.cursor(), request.createdAt());
+        
         // 쿼리 실행
         List<Session> results = queryFactory
                 .selectFrom(session)
@@ -89,12 +95,13 @@ public class SessionDSLRepositoryImpl implements SessionDSLRepository {
                 .orderBy(session.createdAt.desc(), session.id.desc())
                 .limit(size + 1)
                 .fetch();
+        
         // 응답 구성
         boolean hasNext = results.size() > size;
         if (hasNext) results.remove(size); // 초과분 제거
         Long nextCursor = hasNext ? results.getLast().getId() : null;
         LocalDateTime nextCreatedAt = hasNext ? results.getLast().getCreatedAt() : null;
-        return new CursorPageCreatedAtResponse<>(results, nextCursor, nextCreatedAt, hasNext);
+        return new SessionListResponse<>(results, nextCursor, nextCreatedAt, hasNext);
     }
 
     /**
@@ -111,7 +118,7 @@ public class SessionDSLRepositoryImpl implements SessionDSLRepository {
      * - id 내림차순
      */
     @Override
-    public CursorPageViewCountResponse<Session> findAllBestSessionsByCursor(CursorPageViewCountRequest request) {
+    public SessionBestListResponse<Session> findAllBestSessionsByCursor(SessionBestListRequest request) {
         int size = request.size() != null ? request.size() : 10;
         LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
         // 커서 조건 정의
@@ -143,6 +150,90 @@ public class SessionDSLRepositoryImpl implements SessionDSLRepository {
         Long nextCursor = hasNext ? results.getLast().getId() : null;
         LocalDateTime nextCreatedAt = hasNext ? results.getLast().getCreatedAt() : null;
         Integer nextViewCount = hasNext ? results.getLast().getViewCount() : null;
-        return new CursorPageViewCountResponse<>(results, nextCursor, nextCreatedAt, nextViewCount, hasNext);
+        return new SessionBestListResponse<>(results, nextCursor, nextCreatedAt, nextViewCount, hasNext);
+    }
+
+    /**
+     * createdAt 기준 커서 페이지네이션 조건을 구성하는 공통 메서드
+     */
+    private BooleanExpression buildCreatedAtCursorCondition(BooleanExpression baseCondition, Long cursor, LocalDateTime createdAt) {
+        BooleanExpression cursorCondition = baseCondition;
+        if (cursor != null && createdAt != null) {
+            BooleanExpression paginationCondition = session.createdAt.lt(createdAt)
+                    .or(session.createdAt.eq(createdAt)
+                            .and(session.id.lt(cursor)));
+            cursorCondition = cursorCondition != null ? 
+                cursorCondition.and(paginationCondition) : paginationCondition;
+        }
+        return cursorCondition;
+    }
+
+    /**
+     * 필터링 조건을 구성하는 메서드
+     */
+    private BooleanExpression buildFilterCondition(SessionListQueryRequest request) {
+        BooleanExpression condition = null;
+        
+        condition = addCondition(condition, buildCategoryCondition(request.category()));
+        condition = addCondition(condition, buildPositionCondition(request.position()));
+        condition = addCondition(condition, buildDateCondition(request.date()));
+        
+        return condition;
+    }
+    
+    /**
+     * 카테고리 필터링 조건을 구성하는 메서드
+     */
+    private BooleanExpression buildCategoryCondition(String category) {
+        if (category != null && !category.isEmpty()) {
+            return session.category.eq(category);
+        }
+        return null;
+    }
+    
+    /**
+     * 포지션 필터링 조건을 구성하는 메서드
+     */
+    private BooleanExpression buildPositionCondition(List<String> positions) {
+        if (positions == null || positions.isEmpty()) {
+            return null;
+        }
+        
+        BooleanExpression positionCondition = null;
+        for (String pos : positions) {
+            if (positionCondition == null) {
+                positionCondition = session.position.eq(pos);
+            } else {
+                positionCondition = positionCondition.or(session.position.eq(pos));
+            }
+        }
+        return positionCondition;
+    }
+    
+    /**
+     * 기간 필터링 조건을 구성하는 메서드
+     */
+    private BooleanExpression buildDateCondition(List<String> dates) {
+        if (dates == null || dates.isEmpty()) {
+            return null;
+        }
+        
+        BooleanExpression dateCondition = null;
+        for (String dateStr : dates) {
+            if (dateCondition == null) {
+                dateCondition = session.date.eq(dateStr);
+            } else {
+                dateCondition = dateCondition.or(session.date.eq(dateStr));
+            }
+        }
+        return dateCondition;
+    }
+    
+    /**
+     * 조건을 안전하게 추가하는 헬퍼 메서드
+     */
+    private BooleanExpression addCondition(BooleanExpression existing, BooleanExpression newCondition) {
+        if (newCondition == null) return existing;
+        return existing == null ? newCondition : existing.and(newCondition);
     }
 }
