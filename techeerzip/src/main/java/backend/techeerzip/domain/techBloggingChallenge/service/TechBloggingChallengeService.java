@@ -423,11 +423,6 @@ public class TechBloggingChallengeService {
     // 회차별 블로그 커서 기반 조회
     @Transactional(readOnly = true)
     public BlogChallengeListResponse getBlogsByRoundCursor(BlogChallengeCursorRequest request) {
-        String sort =
-                (request.getSort() == null || request.getSort().isBlank())
-                        ? "latest"
-                        : request.getSort();
-
         Long termId = request.getTermId();
         if (termId == null) {
             termId = findCurrentTermId();
@@ -453,10 +448,10 @@ public class TechBloggingChallengeService {
                             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 blogId입니다."));
         }
 
-        // 3. Blog 테이블에서 정렬/커서 조건 적용해서 조회
+        // 3. Blog 테이블에서 최신순 정렬/커서 조건 적용해서 조회
         List<Blog> blogs =
                 blogRepository.findBlogsForChallenge(
-                        validBlogIds, sort, cursorBlog, request.getLimit() + 1);
+                        validBlogIds, cursorBlog, request.getLimit() + 1);
 
         List<BlogChallengeSummaryResponse> blogResponses =
                 blogs.stream()

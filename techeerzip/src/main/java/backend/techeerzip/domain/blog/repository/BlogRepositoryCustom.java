@@ -25,5 +25,13 @@ public interface BlogRepositoryCustom {
      */
     List<Blog> findPopularBlogsWithCursor(Long cursorId, int limit);
 
-    List<Blog> findBlogsForChallenge(List<Long> blogIds, String sort, Blog cursorBlog, int limit);
+    /**
+     * 챌린지용 블로그 목록을 최신순으로 조회합니다.
+     *
+     * @param blogIds 조회할 블로그 ID 목록
+     * @param cursorBlog 커서 블로그
+     * @param limit 조회할 개수
+     * @return 블로그 목록
+     */
+    List<Blog> findBlogsForChallenge(List<Long> blogIds, Blog cursorBlog, int limit);
 }
