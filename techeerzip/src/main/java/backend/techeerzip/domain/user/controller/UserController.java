@@ -1,5 +1,7 @@
 package backend.techeerzip.domain.user.controller;
 
+import java.util.List;
+
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
@@ -11,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
+import backend.techeerzip.domain.user.dto.request.UpdateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserProfileImgRequest;
 import backend.techeerzip.domain.user.dto.request.UserResetPasswordRequest;
+import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.service.UserService;
@@ -79,5 +84,41 @@ public class UserController {
         GetProfileImgResponse response = userService.updateProfileImg(email);
         logger.info("프로필 사진 동기화 완료 - email: {}", email, CONTEXT);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "권한 요청", description = "유저가 권한 요청을 보냅니다.")
+    @PostMapping("/permission/request")
+    public ResponseEntity<Void> requestPermission(
+            @Valid @Parameter(hidden = true) @UserId Long userId,
+            @RequestBody CreateUserPermissionRequest createUserPermissionRequest) {
+        userService.createUserPermissionRequest(userId, createUserPermissionRequest.getRoleId());
+        logger.info("권한 요청 완료 - userId: {}", userId, CONTEXT);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "권한 요청 목록 조회", description = "관리자가 권한 요청 목록을 조회합니다.")
+    @GetMapping("/permission/request")
+    public ResponseEntity<List<GetPermissionResponse>> getPermissionRequests(
+            @Valid @Parameter(hidden = true) @UserId Long userId) {
+        List<GetPermissionResponse> response = userService.getAllPendingPermissionRequests(userId);
+        logger.info("권한 요청 목록 조회 완료 - userId: {}", userId, CONTEXT);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "권한 승인", description = "관리자가 권한 요청을 승인합니다.")
+    @PatchMapping("/permission/approve")
+    public ResponseEntity<Void> approvePermission(
+            @Valid @Parameter(hidden = true) @UserId Long userId,
+            @RequestBody UpdateUserPermissionRequest updateUserPermissionRequest) {
+        userService.approveUserPermission(
+                userId,
+                updateUserPermissionRequest.getUserId(),
+                updateUserPermissionRequest.getNewRoleId());
+        logger.info(
+                "권한 승인 완료 - userId: {}, newRoleId: {}",
+                updateUserPermissionRequest.getUserId(),
+                updateUserPermissionRequest.getNewRoleId(),
+                CONTEXT);
+        return ResponseEntity.ok().build();
     }
 }
