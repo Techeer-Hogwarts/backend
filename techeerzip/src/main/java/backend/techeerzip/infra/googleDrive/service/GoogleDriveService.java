@@ -6,6 +6,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +42,17 @@ public class GoogleDriveService {
 
     private Drive driveClient;
 
-    private void authorize() throws Exception {
+    @PostConstruct
+    public void init() {
+        try {
+            initDriveClient();
+        } catch (Exception e) {
+            logger.error("구글 드라이브 인증 초기화 실패: {}", e.getMessage());
+            throw new RuntimeException("구글 드라이브 인증 초기화 실패", e);
+        }
+    }
+
+    private void initDriveClient() throws Exception {
 
         GoogleCredential credential = new GoogleCredential.Builder()
                 .setTransport(com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.newTrustedTransport())
@@ -70,7 +83,7 @@ public class GoogleDriveService {
 
         // 버퍼를 InputStreamContent로 변환
         InputStreamContent mediaContent = new InputStreamContent(
-                "application/pdf", // TODO: 유효성 검사 필요
+                "application/pdf", // TODO: googleDrive에서는 파일 타입 지정하지 않고 이력서 도메인에서 타입 검사
                 new ByteArrayInputStream(fileBuffer));
 
         // 파일 업로드
@@ -79,5 +92,33 @@ public class GoogleDriveService {
                 .execute();
 
         return uploadFile.getWebViewLink() != null ? uploadFile.getWebViewLink() : "";
+    }
+
+    public void moveToFileArchive(String fileName) throws IOException {
+        // 파일 ID 검색
+        String fileQuery = String.format("name='%s' and '%s' in parents", fileName, folderId);
+        FileList result = driveClient.files().list()
+                .setQ(fileQuery)
+                .setSpaces("drive")
+                .setFields("files(id, name)")
+                .execute();
+
+        List<File> files = result.getFiles();
+        if (files.isEmpty()) {
+            logger.error("파일 {}을(를) 찾을 수 없습니다.", fileName);
+            // 예외처리
+            return;
+        }
+
+        String fileId = files.get(0).getId();
+
+        // 파일 위치 아카이브로 이동
+        driveClient.files().update(fileId, null)
+                .setAddParents(archiveFolderId)
+                .setRemoveParents(folderId)
+                .setFields("id, parents")
+                .execute();
+
+        logger.info("파일 [{}]를 아카이브 폴더 [{}]로 이동 완료", fileName, archiveFolderId);
     }
 }
