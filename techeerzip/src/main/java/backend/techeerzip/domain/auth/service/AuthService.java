@@ -129,7 +129,7 @@ public class AuthService {
         return "true".equals(redisTemplate.opsForValue().get("verified_" + email));
     }
 
-    public void login(HttpServletResponse response, LoginRequest loginRequest) {
+    public TokenPair login(HttpServletResponse response, LoginRequest loginRequest) {
         String email = loginRequest.getEmail();
         logger.debug(String.format("로그인 요청 - email: %s", email), CONTEXT);
 
@@ -159,6 +159,8 @@ public class AuthService {
 
             response.addHeader("Set-Cookie", accessToken.toString());
             response.addHeader("Set-Cookie", refreshToken.toString());
+
+            return new TokenPair(tokenPair.getAccessToken(), tokenPair.getRefreshToken());
 
         } catch (Exception e) {
             logger.warn(String.format("로그인 실패 - email: %s", email), CONTEXT);

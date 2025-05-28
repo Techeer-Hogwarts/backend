@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import backend.techeerzip.domain.auth.dto.request.LoginRequest;
 import backend.techeerzip.domain.auth.dto.request.SendEmailRequest;
 import backend.techeerzip.domain.auth.dto.request.VerifyCodeRequest;
+import backend.techeerzip.domain.auth.dto.token.TokenPair;
 import backend.techeerzip.domain.auth.service.AuthService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.global.resolver.UserId;
@@ -57,12 +58,12 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "로그인을 진행합니다.")
     @PostMapping("/login")
-    public ResponseEntity<Void> login(
+    public ResponseEntity<TokenPair> login(
             @Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         logger.info("로그인 요청 처리 중 - email: {}", loginRequest.getEmail(), CONTEXT);
-        authService.login(response, loginRequest);
+        TokenPair tokenPair = authService.login(response, loginRequest);
         logger.info("로그인 처리 완료 - email: {}", loginRequest.getEmail(), CONTEXT);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(tokenPair);
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃을 진행합니다.")
