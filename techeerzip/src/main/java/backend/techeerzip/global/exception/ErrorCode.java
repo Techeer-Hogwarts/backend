@@ -1,8 +1,7 @@
 package backend.techeerzip.global.exception;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
@@ -27,7 +26,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "사용자를 찾을 수 없습니다."),
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "U003", "이미 가입한 이메일입니다."),
     USER_NOT_RESUME(HttpStatus.BAD_REQUEST, "U004", "이력서 파일이 없습니다."),
-    USER_NOT_UNAUTHORIZED_ADMIN(HttpStatus.FORBIDDEN, "U005", "권한이 없는 사용자입니다."),
+    USER_UNAUTHORIZED_ADMIN(HttpStatus.FORBIDDEN, "U005", "권한이 없는 사용자입니다."),
     USER_PROFILE_IMG_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "U006", "프로필 이미지를 가져오지 못했습니다."),
     USER_INVALID_POSITION(HttpStatus.BAD_REQUEST, "U006", "유효하지 않은 포지션 입력입니다."),
     USER_INVALID_GRADE(HttpStatus.BAD_REQUEST, "U007", "유효하지 않은 학년 입력입니다."),
@@ -69,7 +68,10 @@ public enum ErrorCode {
     REDIS_CONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "R001", "Redis connection error"),
     REDIS_MESSAGE_PROCESSING_ERROR(
             HttpStatus.INTERNAL_SERVER_ERROR, "R002", "Redis message processing error"),
-    REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found");
+    REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found"),
+
+    // Role
+    ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "해당 권한을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
