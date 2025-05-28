@@ -59,52 +59,6 @@ public class SessionDSLRepositoryImpl implements SessionDSLRepository {
     }
 
     /**
-     * 특정 유저가 작성한 세션 목록을 커서 기반으로 조회합니다.
-     *
-     * <p>기본 조건:
-     * - userId와 일치하는 유저의 세션만 조회
-     *
-     * <p>커서 조건 (createdAt, id 기준):
-     * - createdAt이 더 과거
-     * - 같다면 id가 더 작음
-     *
-     * <p>정렬 기준 (최신순):
-     * - createdAt 내림차순
-     * - id 내림차순
-     */
-    @Override
-    public SessionListResponse<Session> findAllByUserIdCursor(Long userId, SessionListQueryRequest request) {
-        int size = request.size() != null ? request.size() : 10;
-        
-        // 필터링 조건 구성
-        BooleanExpression filterCondition = buildFilterCondition(request);
-        
-        // 유저 조건과 필터 조건 결합
-        BooleanExpression baseCondition = session.user.id.eq(userId);
-        if (filterCondition != null) {
-            baseCondition = baseCondition.and(filterCondition);
-        }
-        
-        // 커서 조건 정의
-        BooleanExpression cursorCondition = buildCreatedAtCursorCondition(baseCondition, request.cursor(), request.createdAt());
-        
-        // 쿼리 실행
-        List<Session> results = queryFactory
-                .selectFrom(session)
-                .where(cursorCondition)
-                .orderBy(session.createdAt.desc(), session.id.desc())
-                .limit(size + 1)
-                .fetch();
-        
-        // 응답 구성
-        boolean hasNext = results.size() > size;
-        if (hasNext) results.remove(size); // 초과분 제거
-        Long nextCursor = hasNext ? results.getLast().getId() : null;
-        LocalDateTime nextCreatedAt = hasNext ? results.getLast().getCreatedAt() : null;
-        return new SessionListResponse<>(results, nextCursor, nextCreatedAt, hasNext);
-    }
-
-    /**
      * 인기 세션 목록을 커서 기반으로 조회합니다. (최근 2주 이내의 조회수 순)
      *
      * <p>커서 조건 (viewCount, createdAt, id 우선순위로 비교):

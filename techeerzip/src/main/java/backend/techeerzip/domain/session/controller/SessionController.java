@@ -52,16 +52,6 @@ public class SessionController {
         return ResponseEntity.ok(sessionService.getAllSessions(request));
     }
 
-    @Operation(summary = "유저 별 세션 게시물 목록 조회", description = "유저 별 세션 게시물 목록을 커서 기반 페이지네이션으로 조회합니다.")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<SessionListResponse<SessionResponse>> getAllSessionsByUserId(
-            @PathVariable Long userId,
-            @ParameterObject @Valid SessionListQueryRequest request
-    ) {
-        return ResponseEntity.ok(sessionService.getAllSessionsByUserId(userId,request));
-
-    }
-
     @Operation(summary = "세션 단일 조회", description = "세션 ID를 기반으로 단일 세션을 조회합니다.")
     @GetMapping("/{sessionId}")
     public ResponseEntity<SessionResponse> getSessionBySessionId(@PathVariable Long sessionId) {

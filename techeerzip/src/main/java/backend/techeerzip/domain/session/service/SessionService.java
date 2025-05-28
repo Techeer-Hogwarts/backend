@@ -82,14 +82,6 @@ public class SessionService {
         return new SessionListResponse<>(sessionResponses, page.nextCursor(), page.nextCreatedAt(), page.hasNext());
     }
 
-    public SessionListResponse<SessionResponse> getAllSessionsByUserId(Long userId, SessionListQueryRequest request) {
-        SessionListResponse<Session> page = sessionRepository.findAllByUserIdCursor(userId, request);
-        List<SessionResponse> sessionResponses = page.content().stream()
-                .map(SessionResponse::from)
-                .toList();
-        return new SessionListResponse<>(sessionResponses, page.nextCursor(), page.nextCreatedAt(), page.hasNext());
-    }
-
     public SessionResponse getSessionBySessionId(Long sessionId) {
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(SessionNotFoundException::new);
