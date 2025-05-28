@@ -8,7 +8,6 @@ import backend.techeerzip.domain.session.dto.request.SessionBestListRequest;
 import backend.techeerzip.domain.session.dto.response.SessionBestListResponse;
 import backend.techeerzip.domain.session.dto.response.SessionListResponse;
 import backend.techeerzip.global.resolver.UserId;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
@@ -22,10 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v3/sessions")
 @RequiredArgsConstructor
-public class SessionController {
+public class SessionController implements SessionSwagger {
     private final SessionService sessionService;
 
-    @Operation(summary = "세션 게시물 게시", description = "세션 게시물을 게시합니다.")
     @PostMapping
     public ResponseEntity<Long> createSession(
             @RequestBody @Valid SessionCreateRequest request,
@@ -34,7 +32,6 @@ public class SessionController {
         return ResponseEntity.ok(sessionService.createSession(request, userId));
     }
 
-    @Operation(summary = "세션 게시물 수정", description = "세션 게시물을 수정합니다.")
     @PutMapping("/{sessionId}")
     public ResponseEntity<Void> updateSession(
             @RequestBody @Valid SessionCreateRequest request,
@@ -45,20 +42,17 @@ public class SessionController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "세션 게시물 목록 조회", description = "세션 게시물 목록을 커서 기반 페이지네이션으로 조회합니다.")
     @GetMapping
     public ResponseEntity<SessionListResponse<SessionResponse>> getAllSessions(
             @ParameterObject @Valid SessionListQueryRequest request) {
         return ResponseEntity.ok(sessionService.getAllSessions(request));
     }
 
-    @Operation(summary = "세션 단일 조회", description = "세션 ID를 기반으로 단일 세션을 조회합니다.")
     @GetMapping("/{sessionId}")
     public ResponseEntity<SessionResponse> getSessionBySessionId(@PathVariable Long sessionId) {
         return ResponseEntity.ok(sessionService.getSessionBySessionId(sessionId));
     }
 
-    @Operation(summary = "세션 게시물 삭제", description = "세션 게시물을 삭제합니다.")
     @DeleteMapping("/{sessionId}")
     public ResponseEntity<Void> deleteSession(
             @PathVariable Long sessionId,
@@ -68,7 +62,6 @@ public class SessionController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "세션 인기 게시물 목록 조회", description = "세션 인기 게시물 목록을 커서 기반 페이지네이션으로 조회합니다.")
     @GetMapping("/best")
     public ResponseEntity<SessionBestListResponse<SessionResponse>> getAllBestSessions(
             @ParameterObject @Valid SessionBestListRequest request
