@@ -6,10 +6,16 @@ import backend.techeerzip.domain.session.dto.response.SessionResponse;
 import backend.techeerzip.domain.session.entity.Session;
 import backend.techeerzip.domain.session.exception.SessionNotFoundException;
 import backend.techeerzip.domain.session.exception.SessionUnauthorizedException;
+import backend.techeerzip.domain.session.mapper.SessionMapper;
 import backend.techeerzip.domain.session.repository.SessionRepository;
 import backend.techeerzip.domain.session.dto.request.SessionBestListRequest;
 import backend.techeerzip.domain.session.dto.response.SessionBestListResponse;
 import backend.techeerzip.domain.session.dto.response.SessionListResponse;
+
+import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.repository.UserRepository;
+import backend.techeerzip.infra.index.IndexEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +28,14 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class SessionService {
     private final SessionRepository sessionRepository;
+    private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Long createSession(SessionCreateRequest request, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
         Session session = new Session(
                 request.title(),
                 request.thumbnail(),
@@ -34,9 +45,11 @@ public class SessionService {
                 request.date(),
                 request.category(),
                 request.position(),
-                userId
+                user
         );
         Session savedSession = sessionRepository.save(session);
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>("session", SessionMapper.toIndexDto(savedSession)));
         return savedSession.getId();
     }
 
@@ -55,7 +68,9 @@ public class SessionService {
                 request.category(),
                 request.position()
         );
-        sessionRepository.save(session);
+        Session updatedSession = sessionRepository.save(session);
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>("session", SessionMapper.toIndexDto(updatedSession)));
     }
 
     @Transactional
@@ -66,8 +81,6 @@ public class SessionService {
                 .toList();
         return new SessionListResponse<>(sessionResponses, page.nextCursor(), page.nextCreatedAt(), page.hasNext());
     }
-
-
 
     public SessionListResponse<SessionResponse> getAllSessionsByUserId(Long userId, SessionListQueryRequest request) {
         SessionListResponse<Session> page = sessionRepository.findAllByUserIdCursor(userId, request);
@@ -89,6 +102,7 @@ public class SessionService {
                 .orElseThrow(SessionNotFoundException::new);
         validateSessionAuthor(userId, session);
         sessionRepository.deleteById(sessionId);
+        eventPublisher.publishEvent(new IndexEvent.Delete("session", sessionId));
     }
 
     @Transactional
@@ -107,6 +121,6 @@ public class SessionService {
     }
 
     private void validateSessionAuthor(Long userId, Session session) {
-        if (!userId.equals(session.getUserId())) throw new SessionUnauthorizedException();
+        if (!userId.equals(session.getUser().getId())) throw new SessionUnauthorizedException();
     }
 }
