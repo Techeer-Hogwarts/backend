@@ -1,5 +1,11 @@
 package backend.techeerzip.global.config;
 
+import backend.techeerzip.domain.auth.jwt.JwtAuthenticationFilter;
+import backend.techeerzip.domain.auth.jwt.JwtTokenProvider;
+import backend.techeerzip.domain.auth.jwt.handler.CustomAccessDeniedHandler;
+import backend.techeerzip.domain.auth.jwt.handler.CustomAuthenticationEntryPoint;
+import backend.techeerzip.global.logger.CustomLogger;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -11,13 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import backend.techeerzip.domain.auth.jwt.JwtAuthenticationFilter;
-import backend.techeerzip.domain.auth.jwt.JwtTokenProvider;
-import backend.techeerzip.domain.auth.jwt.handler.CustomAccessDeniedHandler;
-import backend.techeerzip.domain.auth.jwt.handler.CustomAuthenticationEntryPoint;
-import backend.techeerzip.global.logger.CustomLogger;
-import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -33,7 +32,7 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
         return http.securityMatcher(
-                        "api/v3/api-docs/**",
+                        "/api/v3/api-docs/**",
                         "/api/v3/docs/**",
                         "/api/v3/docs",
                         "/api/v3/swagger-ui/**",
@@ -58,7 +57,10 @@ public class SecurityConfig {
                         auth ->
                                 auth
                                         // jwt 인증 필요 없는 엔드 포인트
-                                        .requestMatchers("api/v3/auth/**")
+                                        .requestMatchers(
+                                                "/api/v3/auth/**",
+                                                "/api/v3/users/signup",
+                                                "/api/v3/users/findPwd")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

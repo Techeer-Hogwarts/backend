@@ -63,7 +63,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 String.format("사용자 조회 성공 - userId: %d, email: %s", user.getId(), user.getEmail()),
                 CONTEXT);
 
-        GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().toString());
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().getName());
 
         return new CustomUserPrincipal(
                 user.getId(),

@@ -1,23 +1,21 @@
 package backend.techeerzip.domain.auth.jwt;
 
-import java.io.IOException;
-import java.util.List;
-
+import backend.techeerzip.domain.auth.dto.token.TokenPair;
+import backend.techeerzip.domain.auth.exception.InvalidJwtTokenException;
+import backend.techeerzip.global.logger.CustomLogger;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import java.io.IOException;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import backend.techeerzip.domain.auth.dto.token.TokenPair;
-import backend.techeerzip.global.logger.CustomLogger;
-import io.jsonwebtoken.ExpiredJwtException;
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -69,6 +67,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     logger.info(
                             String.format("액세스 토큰 인증 완료 - email: %s", authentication.getName()),
                             CONTEXT);
+                } else {
+                    throw new InvalidJwtTokenException();
                 }
             } else {
                 // 액세스 토큰이 null인 경우

@@ -2,32 +2,55 @@ package backend.techeerzip.domain.user.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.auth.exception.AuthNotVerifiedEmailException;
 import backend.techeerzip.domain.auth.service.AuthService;
+import backend.techeerzip.domain.blog.repository.BlogRepository;
+import backend.techeerzip.domain.bookmark.repository.BookmarkRepository;
+import backend.techeerzip.domain.event.repository.EventRepository;
+import backend.techeerzip.domain.like.repository.LikeRepository;
+import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
+import backend.techeerzip.domain.resume.dto.request.CreateResumeRequest;
+import backend.techeerzip.domain.resume.repository.ResumeRepository;
+import backend.techeerzip.domain.resume.service.ResumeService;
 import backend.techeerzip.domain.role.entity.Role;
 import backend.techeerzip.domain.role.exception.RoleNotFoundException;
 import backend.techeerzip.domain.role.repository.RoleRepository;
+import backend.techeerzip.domain.session.repository.SessionRepository;
+import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
+import backend.techeerzip.domain.user.dto.request.CreateUserExperienceRequest;
+import backend.techeerzip.domain.user.dto.request.CreateUserRequest;
+import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
 import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.exception.UserAlreadyExistsException;
 import backend.techeerzip.domain.user.exception.UserNotFoundException;
+import backend.techeerzip.domain.user.exception.UserNotResumeException;
 import backend.techeerzip.domain.user.exception.UserProfileImgFailException;
 import backend.techeerzip.domain.user.exception.UserUnauthorizedAdminException;
 import backend.techeerzip.domain.user.mapper.UserMapper;
 import backend.techeerzip.domain.user.repository.PermissionRequestRepository;
 import backend.techeerzip.domain.user.repository.UserRepository;
+import backend.techeerzip.domain.userExperience.entity.UserExperience;
+import backend.techeerzip.domain.userExperience.repository.UserExperienceRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +60,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+
+    private final UserExperienceRepository userExperienceRepository;
+    private final ResumeService resumeService;
 
     @Value("${PROFILE_IMG_URL}")
     private String profileImgUrl;
@@ -49,12 +75,166 @@ public class UserService {
     //    private final ResumeService resumeService;
     //    private final IndexService indexService;
     private final PasswordEncoder passwordEncoder;
+
     private final UserRepository userRepository;
     private final PermissionRequestRepository permissionRequestRepository;
     private final RoleRepository roleRepository;
+
+    private final BlogRepository blogRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final EventRepository eventRepository;
+    private final LikeRepository likeRepository;
+    private final ProjectMemberRepository projectMemberRepository;
+    private final ResumeRepository resumeRepository;
+    private final SessionRepository sessionRepository;
+    private final StudyMemberRepository studyMemberRepository;
+
     private final UserMapper userMapper;
     private final CustomLogger logger;
     private static final String CONTEXT = "UserService";
+
+    @Transactional
+    public void signUp(
+            CreateUserWithResumeRequest createUserWithResumeRequest, MultipartFile file) {
+        CreateUserRequest createUserRequest = createUserWithResumeRequest.getCreateUserRequest();
+        CreateResumeRequest resumeRequest = createUserWithResumeRequest.getCreateResumeRequest();
+        List<CreateUserExperienceRequest> experiences =
+                createUserWithResumeRequest.getCreateUserExperienceRequest().getExperiences();
+
+        if (!authService.checkEmailverified(createUserRequest.getEmail())) {
+            logger.error("이메일 인증 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
+            throw new AuthNotVerifiedEmailException();
+        }
+
+        if (file == null || file.isEmpty()) {
+            logger.error("이력서 파일 첨부 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
+            throw new UserNotResumeException();
+        }
+
+        String profileImage = fetchProfileImg(createUserRequest.getEmail());
+
+        Role defaultRole = roleRepository.findById(3L).orElseThrow(RoleNotFoundException::new);
+
+        String password = createUserRequest.getPassword();
+        String hashedPassword = passwordEncoder.encode(password);
+
+        Optional<User> existingUserOpt = userRepository.findByEmail(createUserRequest.getEmail());
+
+        User savedUser;
+
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
+
+            if (!existingUser.isDeleted()) {
+                throw new UserAlreadyExistsException();
+            }
+
+            existingUser.setDeleted(false);
+            existingUser.setPassword(hashedPassword);
+            existingUser.setName(createUserRequest.getName());
+            existingUser.setMainPosition(createUserRequest.getMainPosition());
+            existingUser.setSubPosition(createUserRequest.getSubPosition());
+            existingUser.setGrade(createUserRequest.getGrade());
+            existingUser.setGithubUrl(createUserRequest.getGithubUrl());
+            existingUser.setTistoryUrl(createUserRequest.getTistoryUrl());
+            existingUser.setVelogUrl(createUserRequest.getVelogUrl());
+            existingUser.setMediumUrl(createUserRequest.getMediumUrl());
+            existingUser.setSchool(createUserRequest.getSchool());
+            existingUser.setYear(createUserRequest.getYear());
+            existingUser.setLft(createUserRequest.getIsLft());
+            existingUser.setProfileImage(profileImage);
+            existingUser.setAuth(true);
+            existingUser.setRole(defaultRole);
+
+            savedUser = userRepository.save(existingUser);
+        } else {
+            User newUser =
+                    User.builder()
+                            .email(createUserRequest.getEmail())
+                            .password(hashedPassword)
+                            .name(createUserRequest.getName())
+                            .mainPosition(createUserRequest.getMainPosition())
+                            .subPosition(createUserRequest.getSubPosition())
+                            .grade(createUserRequest.getGrade())
+                            .githubUrl(createUserRequest.getGithubUrl())
+                            .tistoryUrl(createUserRequest.getTistoryUrl())
+                            .velogUrl(createUserRequest.getVelogUrl())
+                            .mediumUrl(createUserRequest.getMediumUrl())
+                            .school(createUserRequest.getSchool())
+                            .year(createUserRequest.getYear())
+                            .isLft(createUserRequest.getIsLft())
+                            .profileImage(profileImage)
+                            .isAuth(true)
+                            .role(defaultRole)
+                            .build();
+
+            savedUser = userRepository.save(newUser);
+        }
+
+        // 블로그 크롤링 실행
+        // 이력서 저장
+
+        List<UserExperience> experiencesData =
+                experiences.stream()
+                        .map(
+                                exp ->
+                                        UserExperience.builder()
+                                                .userId(savedUser.getId())
+                                                .position(exp.getPosition())
+                                                .companyName(exp.getCompanyName())
+                                                .startDate(exp.getStartDate())
+                                                .endDate(exp.getEndDate())
+                                                .category(exp.getCategory())
+                                                .isFinished(exp.getEndDate() != null)
+                                                .description(exp.getDescription())
+                                                .build())
+                        .toList();
+
+        userExperienceRepository.saveAll(experiencesData);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId, HttpServletResponse response) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        user.delete();
+        userRepository.save(user);
+        logger.info("유저 테이블 isDeleted 처리 완료 - userId: {}", userId, CONTEXT);
+
+        blogRepository.updateIsDeletedByUserId(userId);
+        bookmarkRepository.updateIsDeletedByUserId(userId);
+        eventRepository.updateIsDeletedByUserId(userId);
+        likeRepository.updateIsDeletedByUserId(userId);
+        projectMemberRepository.updateIsDeletedByUserId(userId);
+        resumeRepository.updateIsDeletedByUserId(userId);
+        sessionRepository.updateIsDeletedByUserId(userId);
+        studyMemberRepository.updateIsDeletedByUserId(userId);
+
+        logger.info("해당 유저 연관 데이터 isDeleted 처리 완료 - userId: {}", userId, CONTEXT);
+
+        ResponseCookie expiredAccessToken =
+                ResponseCookie.from("access_token", "")
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(0)
+                        .sameSite("None")
+                        .build();
+
+        ResponseCookie expiredRefreshToken =
+                ResponseCookie.from("refresh_token", "")
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(0)
+                        .sameSite("None")
+                        .build();
+
+        response.addHeader("Set-Cookie", expiredAccessToken.toString());
+        response.addHeader("Set-Cookie", expiredRefreshToken.toString());
+
+        logger.info("토큰 무효화 및 쿠키 삭제 완료 - userId: {}", userId, CONTEXT);
+    }
 
     @Transactional
     public void resetPassword(String email, String code, String newPassword) {

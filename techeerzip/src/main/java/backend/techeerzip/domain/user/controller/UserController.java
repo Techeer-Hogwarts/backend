@@ -5,13 +5,17 @@ import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
@@ -39,14 +43,12 @@ public class UserController {
     private static final String CONTEXT = "UserController";
 
     @Operation(summary = "회원가입", description = "새로운 회원을 생성합니다.")
-    @PostMapping("/signup")
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> signup(
-            @Valid @RequestBody CreateUserWithResumeRequest createUserWithResumeRequest,
-            HttpServletResponse response) {
-        logger.info(
-                "회원가입 요청 처리 중 - email: {}",
-                createUserWithResumeRequest.getCreateUserRequest().getEmail(),
-                CONTEXT);
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("createUserWithResumeRequest") @Valid
+                    CreateUserWithResumeRequest createUserWithResumeRequest) {
+        userService.signUp(createUserWithResumeRequest, file);
         logger.info(
                 "회원가입 처리 완료 - email: {}",
                 createUserWithResumeRequest.getCreateUserRequest().getEmail(),
@@ -54,11 +56,19 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "회원 탈퇴", description = "회원을 삭제합니다.")
+    @DeleteMapping(value = "")
+    public ResponseEntity<Void> deleteUser(
+            @Valid @Parameter(hidden = true) @UserId Long userId, HttpServletResponse response) {
+        userService.deleteUser(userId, response);
+        logger.info("회원 탈퇴 처리 완료 - userId: {}", userId, CONTEXT);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "비밀번호 재설정", description = "이메일 인증 후 비밀번호를 재설정합니다.")
     @PatchMapping("/findPwd")
     public ResponseEntity<Void> resetPassword(
-            @Valid @RequestBody UserResetPasswordRequest userResetPasswordRequest,
-            HttpServletResponse response) {
+            @Valid @RequestBody UserResetPasswordRequest userResetPasswordRequest) {
         String email = userResetPasswordRequest.getEmail();
         String code = userResetPasswordRequest.getCode();
         String newPassword = userResetPasswordRequest.getNewPassword();
@@ -70,7 +80,8 @@ public class UserController {
 
     @Operation(summary = "유저 조회", description = "토큰으로 유저 정보를 조회합니다.")
     @GetMapping("")
-    public ResponseEntity<GetUserResponse> getUser(@Parameter(hidden = true) @UserId Long userId) {
+    public ResponseEntity<GetUserResponse> getUser(
+            @Valid @Parameter(hidden = true) @UserId Long userId) {
         GetUserResponse response = userService.getUserInfo(userId);
         logger.info("유저 정보 조회 완료 - userId: {}", userId, CONTEXT);
         return ResponseEntity.ok(response);

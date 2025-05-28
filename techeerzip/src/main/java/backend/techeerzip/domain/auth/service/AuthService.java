@@ -9,6 +9,7 @@ import backend.techeerzip.domain.auth.exception.EmailSendFailedException;
 import backend.techeerzip.domain.auth.exception.InvalidVerificationCodeException;
 import backend.techeerzip.domain.auth.jwt.JwtTokenProvider;
 import backend.techeerzip.domain.auth.util.AuthEmailTemplate;
+import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
 import jakarta.mail.MessagingException;
@@ -45,6 +46,7 @@ public class AuthService {
     private final CustomLogger logger;
     private static final String CONTEXT = "AuthService";
     private final UserRepository userRepository;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Value("${PROFILE_IMG_URL}")
     private String profileImgUrl;
@@ -131,9 +133,18 @@ public class AuthService {
 
     public TokenPair login(HttpServletResponse response, LoginRequest loginRequest) {
         String email = loginRequest.getEmail();
-        logger.debug(String.format("로그인 요청 - email: %s", email), CONTEXT);
+        logger.info("로그인 요청 - email: {}", email, CONTEXT);
 
         try {
+            User user =
+                    userRepository
+                            .findByEmail(email)
+                            .orElseThrow(AuthInvalidCredentialsException::new);
+
+            if (user.isDeleted()) {
+                throw new AuthInvalidCredentialsException();
+            }
+
             Authentication authentication =
                     authenticationManager.authenticate(loginRequest.toAuthentication());
 
@@ -166,5 +177,9 @@ public class AuthService {
             logger.warn(String.format("로그인 실패 - email: %s", email), CONTEXT);
             throw new AuthInvalidCredentialsException();
         }
+    }
+
+    public void logout(Long userId) {
+        logger.info("로그아웃 요청 - userId:{}", userId, CONTEXT);
     }
 }
