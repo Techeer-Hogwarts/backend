@@ -1,0 +1,42 @@
+package backend.techeerzip.domain.resume.dto.request;
+
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.URL;
+
+import backend.techeerzip.domain.resume.entity.ResumeCategory;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import net.minidev.json.annotate.JsonIgnore;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(name = "CreateResumeRequest", description = "이력서 생성 DTO")
+public class CreateResumeRequest {
+
+    @JsonIgnore
+    @Schema(hidden = true)
+    @URL
+    @Nullable
+    private String url;
+
+    @NotNull
+    @Schema(description = "이력서 타입", example = "PORTFOLIO")
+    private ResumeCategory category;
+
+    @NotBlank
+    @Schema(description = "이력서 포지션", example = "Backend")
+    private String position;
+
+    @Schema(description = "이력서 제목에 추가할 부가 설명", example = "스타트업")
+    private String title;
+
+    @NotNull
+    @Schema(description = "이력서 대표 지정 여부", example = "true")
+    private Boolean isMain;
+}

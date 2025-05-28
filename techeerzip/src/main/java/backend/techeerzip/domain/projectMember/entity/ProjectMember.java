@@ -15,10 +15,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import backend.techeerzip.domain.permissionRequest.entity.StatusCategory;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.global.entity.BaseEntity;
+import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
