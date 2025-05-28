@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class SessionController implements SessionSwagger {
     private final SessionService sessionService;
 
+    @Override
     @PostMapping
     public ResponseEntity<Long> createSession(
             @RequestBody @Valid SessionCreateRequest request,
@@ -29,6 +30,7 @@ public class SessionController implements SessionSwagger {
         return ResponseEntity.ok(sessionService.createSession(request, userId));
     }
 
+    @Override
     @PutMapping("/{sessionId}")
     public ResponseEntity<Void> updateSession(
             @RequestBody @Valid SessionCreateRequest request,
@@ -39,17 +41,20 @@ public class SessionController implements SessionSwagger {
         return ResponseEntity.ok().build();
     }
 
+    @Override
     @GetMapping("/{sessionId}")
     public ResponseEntity<SessionResponse> getSessionBySessionId(@PathVariable Long sessionId) {
         return ResponseEntity.ok(sessionService.getSessionBySessionId(sessionId));
     }
 
+    @Override
     @GetMapping
     public ResponseEntity<SessionListResponse<SessionResponse>> getAllSessions(
             @ParameterObject @Valid SessionListQueryRequest request) {
         return ResponseEntity.ok(sessionService.getAllSessions(request));
     }
 
+    @Override
     @GetMapping("/best")
     public ResponseEntity<SessionBestListResponse<SessionResponse>> getAllBestSessions(
             @ParameterObject @Valid SessionBestListRequest request
@@ -57,6 +62,7 @@ public class SessionController implements SessionSwagger {
         return ResponseEntity.ok(sessionService.getAllBestSessions(request));
     }
 
+    @Override
     @DeleteMapping("/{sessionId}")
     public ResponseEntity<Void> deleteSession(
             @PathVariable Long sessionId,
