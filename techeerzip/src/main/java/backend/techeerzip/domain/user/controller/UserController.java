@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -131,5 +132,12 @@ public class UserController {
                 updateUserPermissionRequest.getNewRoleId(),
                 CONTEXT);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "특정 프로필 조회", description = "userId로 특정 유저 프로필을 조회합니다.")
+    @GetMapping("/{userId}")
+    public ResponseEntity<GetUserResponse> getProfile(@PathVariable Long userId) {
+        GetUserResponse response = userService.getUserInfo(userId);
+        return ResponseEntity.ok(response);
     }
 }

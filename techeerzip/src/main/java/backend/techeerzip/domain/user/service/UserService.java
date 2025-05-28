@@ -349,4 +349,10 @@ public class UserService {
 
         permissionRequestRepository.updateStatusByUserId(userId, StatusCategory.APPROVED);
     }
+
+    public GetUserResponse getProfile(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        return userMapper.toGetUserResponse(user);
+    }
 }
