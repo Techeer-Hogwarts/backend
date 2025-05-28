@@ -179,7 +179,30 @@ public class AuthService {
         }
     }
 
-    public void logout(Long userId) {
+    public void logout(Long userId, HttpServletResponse response) {
         logger.info("로그아웃 요청 - userId:{}", userId, CONTEXT);
+
+        ResponseCookie expiredAccessToken =
+                ResponseCookie.from("access_token", "")
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(0)
+                        .sameSite("None")
+                        .build();
+
+        ResponseCookie expiredRefreshToken =
+                ResponseCookie.from("refresh_token", "")
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(0)
+                        .sameSite("None")
+                        .build();
+
+        response.addHeader("Set-Cookie", expiredAccessToken.toString());
+        response.addHeader("Set-Cookie", expiredRefreshToken.toString());
+
+        logger.info("토큰 무효화 및 쿠키 삭제 완료 - userId: {}", userId, CONTEXT);
     }
 }

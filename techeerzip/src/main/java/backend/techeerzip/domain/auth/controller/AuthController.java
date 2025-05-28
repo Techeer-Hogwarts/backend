@@ -17,6 +17,7 @@ import backend.techeerzip.domain.auth.service.AuthService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +34,7 @@ public class AuthController {
     @Operation(summary = "이메일 인증 코드 전송", description = "사용자의 이메일로 인증 코드를 전송합니다.")
     @PostMapping("/email")
     public ResponseEntity<Void> sendVerificationEmail(
-            @Valid @RequestBody SendEmailRequest sendEmailRequest, HttpServletResponse response) {
+            @Valid @RequestBody SendEmailRequest sendEmailRequest) {
         String email = sendEmailRequest.getEmail();
         authService.sendVerificationEmail(email);
         logger.info("이메일 인증 코드 전송 중 - email: {}", email, CONTEXT);
@@ -44,7 +45,7 @@ public class AuthController {
     @Operation(summary = "이메일 인증 코드 확인", description = "전송된 이메일 인증 코드를 확인합니다.")
     @PostMapping("/code")
     public ResponseEntity<Void> verifyCode(
-            @Valid @RequestBody VerifyCodeRequest verifyCodeRequest, HttpServletResponse response) {
+            @Valid @RequestBody VerifyCodeRequest verifyCodeRequest) {
         String email = verifyCodeRequest.getEmail();
         String code = verifyCodeRequest.getCode();
 
@@ -68,8 +69,9 @@ public class AuthController {
 
     @Operation(summary = "로그아웃", description = "로그아웃을 진행합니다.")
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@UserId Long userId, HttpServletResponse response) {
-        logger.info("로그아웃 요청 처리 중 - userId: {}", userId, CONTEXT);
+    public ResponseEntity<Void> logout(
+            @Valid @Parameter(hidden = true) @UserId Long userId, HttpServletResponse response) {
+        authService.logout(userId, response);
         logger.info("로그아웃 처리 완료 - userId: {}", userId, CONTEXT);
         return ResponseEntity.ok().build();
     }
