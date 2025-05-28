@@ -74,7 +74,6 @@ public class SessionService {
                 new IndexEvent.Create<>("session", SessionMapper.toIndexDto(updatedSession)));
     }
 
-    @Transactional
     public SessionListResponse<SessionResponse> getAllSessions(SessionListQueryRequest request) {
         SessionListResponse<Session> page = sessionRepository.findAllByCursor(request);
         List<SessionResponse> sessionResponses = page.content().stream()
@@ -98,7 +97,6 @@ public class SessionService {
         eventPublisher.publishEvent(new IndexEvent.Delete("session", sessionId));
     }
 
-    @Transactional
     public SessionBestListResponse<SessionResponse> getAllBestSessions(SessionBestListRequest request) {
         SessionBestListResponse<Session> page = sessionRepository.findAllBestSessionsByCursor(request);
         List<SessionResponse> sessionResponses = page.content().stream()
