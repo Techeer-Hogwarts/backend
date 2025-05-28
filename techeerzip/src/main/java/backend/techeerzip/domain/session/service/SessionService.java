@@ -13,6 +13,7 @@ import backend.techeerzip.domain.session.dto.response.SessionBestListResponse;
 import backend.techeerzip.domain.session.dto.response.SessionListResponse;
 
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.infra.index.IndexEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,7 +35,7 @@ public class SessionService {
     @Transactional
     public Long createSession(SessionCreateRequest request, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+                .orElseThrow(UserNotFoundException::new);
 
         Session session = new Session(
                 request.title(),
