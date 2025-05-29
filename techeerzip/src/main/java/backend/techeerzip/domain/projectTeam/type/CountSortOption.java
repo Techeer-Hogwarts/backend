@@ -3,14 +3,18 @@ package backend.techeerzip.domain.projectTeam.type;
 import static backend.techeerzip.domain.projectTeam.entity.QProjectTeam.projectTeam;
 import static backend.techeerzip.domain.studyTeam.entity.QStudyTeam.studyTeam;
 
-import com.querydsl.core.types.OrderSpecifier;
 import java.util.Arrays;
+
+import com.querydsl.core.types.OrderSpecifier;
+
 import lombok.Getter;
 
 @Getter
 public enum CountSortOption {
-    VIEW_COUNT_DESC_PROJECT(projectTeam.viewCount.desc(), SortType.VIEW_COUNT_DESC, TeamType.PROJECT),
-    LIKE_COUNT_DESC_PROJECT(projectTeam.likeCount.desc(), SortType.LIKE_COUNT_DESC, TeamType.PROJECT),
+    VIEW_COUNT_DESC_PROJECT(
+            projectTeam.viewCount.desc(), SortType.VIEW_COUNT_DESC, TeamType.PROJECT),
+    LIKE_COUNT_DESC_PROJECT(
+            projectTeam.likeCount.desc(), SortType.LIKE_COUNT_DESC, TeamType.PROJECT),
     VIEW_COUNT_DESC_STUDY(studyTeam.viewCount.desc(), SortType.VIEW_COUNT_DESC, TeamType.STUDY),
     LIKE_COUNT_DESC_STUDY(studyTeam.likeCount.desc(), SortType.LIKE_COUNT_DESC, TeamType.STUDY);
 

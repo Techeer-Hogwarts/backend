@@ -1,11 +1,5 @@
 package backend.techeerzip.domain.projectTeam.repository.querydsl;
 
-import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
-import backend.techeerzip.domain.projectTeam.type.DateSortOption;
-import backend.techeerzip.domain.projectTeam.type.CountSortOption;
-import backend.techeerzip.domain.projectTeam.type.SortType;
-import backend.techeerzip.domain.projectTeam.type.TeamType;
-import com.querydsl.core.types.dsl.NumberPath;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,18 +10,24 @@ import org.springframework.stereotype.Repository;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
 import backend.techeerzip.domain.common.util.DslBooleanBuilder;
 import backend.techeerzip.domain.projectMember.entity.QProjectMember;
+import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectUserTeamsResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.entity.QProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.QProjectTeam;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamMapper;
+import backend.techeerzip.domain.projectTeam.type.CountSortOption;
+import backend.techeerzip.domain.projectTeam.type.DateSortOption;
 import backend.techeerzip.domain.projectTeam.type.PositionNumType;
+import backend.techeerzip.domain.projectTeam.type.SortType;
+import backend.techeerzip.domain.projectTeam.type.TeamType;
 import backend.techeerzip.global.entity.StatusCategory;
 
 @Repository
@@ -51,15 +51,15 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
                 .and(PT.isDeleted.isFalse())
                 .build();
     }
+
     private static BooleanExpression dateCursorConditionBuilder(LocalDateTime date, Long id) {
         if (date == null) return null;
         if (id == null) return PT.updatedAt.lt(date);
-        return PT.updatedAt.lt(date)
-                .or(PT.updatedAt.eq(date).and(PT.id.lt(id)));
+        return PT.updatedAt.lt(date).or(PT.updatedAt.eq(date).and(PT.id.lt(id)));
     }
 
-
-    public static BooleanExpression countCursorConditionBuilder(SortType sortType, Integer count, Long id) {
+    public static BooleanExpression countCursorConditionBuilder(
+            SortType sortType, Integer count, Long id) {
         return switch (sortType) {
             case VIEW_COUNT_DESC -> buildCountCursor(PT.viewCount, count, id);
             case LIKE_COUNT_DESC -> buildCountCursor(PT.likeCount, count, id);
@@ -67,15 +67,19 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         };
     }
 
-    private static BooleanExpression buildCountCursor(NumberPath<Integer> field, Integer count, Long id) {
+    private static BooleanExpression buildCountCursor(
+            NumberPath<Integer> field, Integer count, Long id) {
         if (count == null) return null;
         if (id == null) return field.lt(count);
         return field.lt(count).or(field.eq(count).and(PT.id.lt(id)));
     }
 
-
-    private static BooleanExpression setBuilderWithPosAndDate(Long id, LocalDateTime dateTime,
-            Boolean isRecruited, Boolean isFinished, List<PositionNumType> numTypes) {
+    private static BooleanExpression setBuilderWithPosAndDate(
+            Long id,
+            LocalDateTime dateTime,
+            Boolean isRecruited,
+            Boolean isFinished,
+            List<PositionNumType> numTypes) {
         return DslBooleanBuilder.builder()
                 .andIfNotNull(dateCursorConditionBuilder(dateTime, id))
                 .andIfNotNull(isRecruited, PT.isRecruited::eq)
@@ -85,8 +89,13 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
                 .build();
     }
 
-    private static BooleanExpression setBuilderWithPosAndCount(Long id, Integer count,
-            Boolean isRecruited, Boolean isFinished, List<PositionNumType> numTypes, SortType sortType) {
+    private static BooleanExpression setBuilderWithPosAndCount(
+            Long id,
+            Integer count,
+            Boolean isRecruited,
+            Boolean isFinished,
+            List<PositionNumType> numTypes,
+            SortType sortType) {
         return DslBooleanBuilder.builder()
                 .andIfNotNull(countCursorConditionBuilder(sortType, count, id))
                 .andIfNotNull(isRecruited, PT.isRecruited::eq)
@@ -126,13 +135,13 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         return expression;
     }
 
-    public List<ProjectTeam> sliceYoungTeams(GetProjectTeamsQuery query) {
+    public List<ProjectTeam> sliceTeams(GetProjectTeamsQuery query) {
         if (query.getSortType().isDate()) {
-            return sliceYoungTeamByDate(query);
+            return sliceTeamsByDate(query);
         }
 
         if (query.getSortType().isCount()) {
-            return sliceYoungTeamByCount(query);
+            return sliceTeamsByCount(query);
         }
         throw new IllegalArgumentException();
     }
@@ -145,26 +154,26 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         return teams.stream().map(ProjectTeamMapper::toGetAllResponse).toList();
     }
 
-    public List<ProjectTeam> sliceYoungTeamByDate(GetProjectTeamsQuery query) {
+    public List<ProjectTeam> sliceTeamsByDate(GetProjectTeamsQuery query) {
         final Long id = query.getIdCursor();
         final List<PositionNumType> numTypes = query.getPositionNumTypes();
         final SortType sortType = query.getSortType();
         final LocalDateTime dateCursor = query.getDateCursor();
         final int limit = query.getLimit();
-        final boolean isRecruited = query.getIsRecruited();
-        final boolean isFinished = query.getIsFinished();
+        final Boolean isRecruited = query.getIsRecruited();
+        final Boolean isFinished = query.getIsFinished();
 
         final BooleanExpression condition =
                 setBuilderWithPosAndDate(id, dateCursor, isRecruited, isFinished, numTypes);
 
         return selectFrom(PT)
-                        .where(condition)
-                        .orderBy(DateSortOption.setOrder(sortType.name(), TeamType.PROJECT))
-                        .limit(limit + 1)
-                        .fetch();
+                .where(condition)
+                .orderBy(DateSortOption.setOrder(sortType, TeamType.PROJECT))
+                .limit(limit + 1)
+                .fetch();
     }
 
-    public List<ProjectTeam> sliceYoungTeamByCount(GetProjectTeamsQuery query) {
+    public List<ProjectTeam> sliceTeamsByCount(GetProjectTeamsQuery query) {
         final Long id = query.getIdCursor();
         final List<PositionNumType> numTypes = query.getPositionNumTypes();
         final SortType sortType = query.getSortType();
@@ -174,13 +183,14 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final boolean isFinished = query.getIsFinished();
 
         final BooleanExpression condition =
-                setBuilderWithPosAndCount(id, countCursor, isRecruited, isFinished, numTypes, sortType);
+                setBuilderWithPosAndCount(
+                        id, countCursor, isRecruited, isFinished, numTypes, sortType);
 
         return selectFrom(PT)
-                        .where(condition)
-                        .orderBy(CountSortOption.setOrder(sortType.name(), TeamType.PROJECT))
-                        .limit(limit + 1)
-                        .fetch();
+                .where(condition)
+                .orderBy(CountSortOption.setOrder(sortType.name(), TeamType.PROJECT))
+                .limit(limit + 1)
+                .fetch();
     }
 
     public List<ProjectUserTeamsResponse> findAllTeamsByUserId(Long userId) {
@@ -201,6 +211,4 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
                                                 PM.user.name,
                                                 GroupBy.list(PMI.imageUrl).as("mainImageUrl"))));
     }
-
-
 }

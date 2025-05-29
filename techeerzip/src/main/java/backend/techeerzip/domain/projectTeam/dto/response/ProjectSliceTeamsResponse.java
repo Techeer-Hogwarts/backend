@@ -3,6 +3,8 @@ package backend.techeerzip.domain.projectTeam.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
 import lombok.Builder;
@@ -10,6 +12,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@JsonTypeName("PROJECT")
 public class ProjectSliceTeamsResponse implements SliceTeamsResponse {
 
     private final Long id;
@@ -23,6 +26,8 @@ public class ProjectSliceTeamsResponse implements SliceTeamsResponse {
     private final int devopsNum;
     private final int fullStackNum;
     private final int dataEngineerNum;
+    private final int viewCount;
+    private final int likeCount;
     private final List<String> mainImages;
     private final List<TeamStackInfo.WithName> teamStacks;
     private final LocalDateTime createdAt;

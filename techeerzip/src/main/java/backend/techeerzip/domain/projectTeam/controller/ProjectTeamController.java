@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
-import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,6 +23,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
@@ -87,8 +87,9 @@ public class ProjectTeamController implements ProjectTeamSwagger {
         return ResponseEntity.ok(response.id());
     }
 
-    @GetMapping("/allTeams")
-    public ResponseEntity<GetAllTeamsResponse> getAllTeams(GetTeamsQueryRequest request) {
+    @PostMapping("/allTeams")
+    public ResponseEntity<GetAllTeamsResponse> getAllTeams(
+            @RequestBody GetTeamsQueryRequest request) {
         return ResponseEntity.ok(projectTeamFacadeService.getAllProjectAndStudyTeams(request));
     }
 
@@ -132,7 +133,8 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/accept")
-    public ResponseEntity<EmptyResponse> acceptApplicant(@RequestBody ProjectApplicantRequest request) {
+    public ResponseEntity<EmptyResponse> acceptApplicant(
+            @RequestBody ProjectApplicantRequest request) {
         final Long userId = 35L;
         final List<SlackRequest.DM> slackRequest =
                 projectTeamFacadeService.acceptApplicant(request, userId);
@@ -141,7 +143,8 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/reject")
-    public ResponseEntity<EmptyResponse> rejectApplicant(@RequestBody ProjectApplicantRequest request) {
+    public ResponseEntity<EmptyResponse> rejectApplicant(
+            @RequestBody ProjectApplicantRequest request) {
         final Long userId = 35L;
         final List<SlackRequest.DM> slackRequest =
                 projectTeamFacadeService.rejectApplicant(request, userId);

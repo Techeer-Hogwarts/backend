@@ -1,12 +1,7 @@
 package backend.techeerzip.domain.projectTeam.service;
 
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
-import static backend.techeerzip.domain.studyTeam.service.StudyTeamService.getNextInfo;
-import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
-import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.SliceNextInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
-import backend.techeerzip.domain.projectTeam.type.SortType;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,6 +23,7 @@ import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundEx
 import backend.techeerzip.domain.projectMember.mapper.ProjectMemberMapper;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectMember.service.ProjectMemberService;
+import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
@@ -35,12 +31,15 @@ import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
 import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceNextCursor;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
@@ -63,6 +62,7 @@ import backend.techeerzip.domain.projectTeam.repository.ProjectMainImageReposito
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
+import backend.techeerzip.domain.projectTeam.type.SortType;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
@@ -143,7 +143,7 @@ public class ProjectTeamService {
      * @param resultImages 결과 이미지 URL 리스트 (선택, 최대 10개까지 허용)
      * @param request 팀 생성 요청 정보 (팀 정보, 모집 인원, 멤버, 스택 포함)
      * @return 프로젝트 팀 생성 결과 ID와 슬랙/인덱싱 요청 객체
-     * @throws IllegalArgumentException 모집 인원이 음수이거나 isRecruited=true인데 인원수가 0인 경우
+     * @throws IllegalArgumentException 모집 인원이 음수이거나 isRecruited==true인데 인원 수가 0인 경우
      * @throws ProjectDuplicateTeamName 팀 이름이 중복된 경우
      * @throws ProjectInvalidProjectMemberException 프로젝트 멤버가 존재하지 않거나 유효하지 않은 경우
      */
@@ -520,55 +520,68 @@ public class ProjectTeamService {
      * @return 프로젝트 팀 목록
      */
     @Transactional(readOnly = true)
-    public List<ProjectSliceTeamsResponse> getYoungTeamsById(
-            List<Long> keys, Boolean isRecruited, Boolean isFinished) {
-        return projectTeamDslRepository.findManyYoungTeamById(keys, isRecruited, isFinished);
+    public List<ProjectSliceTeamsResponse> getYoungTeamsById(List<Long> keys) {
+        final List<ProjectTeam> teams = projectTeamRepository.findAllById(keys);
+
+        return teams.stream().map(ProjectTeamMapper::toGetAllResponse).toList();
     }
 
-
     @Transactional(readOnly = true)
-    public GetAllTeamsResponse getYoungTeams(GetProjectTeamsQuery query) {
+    public GetAllTeamsResponse getSliceTeams(GetProjectTeamsQuery query) {
         final int limit = query.getLimit();
         final SortType sortType = query.getSortType();
-        final List<ProjectTeam> teams = projectTeamDslRepository.sliceYoungTeams(query);
-        final SliceNextInfo next = setNextInfo(teams, limit, sortType);
+        final List<ProjectTeam> teams = projectTeamDslRepository.sliceTeams(query);
+        final SliceNextCursor next = setNextInfo(teams, limit, sortType);
         final List<ProjectTeam> fitTeams = ensureMaxSize(teams, limit);
-        final List<SliceTeamsResponse> responses = new ArrayList<>(
-                fitTeams.stream().map(ProjectTeamMapper::toGetAllResponse).toList());
+        final List<SliceTeamsResponse> responses =
+                new ArrayList<>(
+                        fitTeams.stream().map(ProjectTeamMapper::toGetAllResponse).toList());
 
         return new GetAllTeamsResponse(responses, next);
     }
 
-    private static SliceNextInfo setNextInfo(List<ProjectTeam> sortedTeams, Integer limit, SortType sortType) {
+    private static SliceNextCursor setNextInfo(
+            List<ProjectTeam> sortedTeams, Integer limit, SortType sortType) {
         if (sortedTeams.size() <= limit) {
-            return SliceNextInfo.builder().hasNext(false).build();
+            return SliceNextCursor.builder().hasNext(false).build();
         }
         final ProjectTeam last = sortedTeams.getLast();
-        return getNextInfo(sortType, last.getId(), last.getUpdatedAt(), last.getViewCount(),
+        return getNextInfo(
+                sortType,
+                last.getId(),
+                last.getUpdatedAt(),
+                last.getViewCount(),
                 last.getLikeCount());
     }
 
-    public static SliceNextInfo getNextInfo(SortType sortType, Long id, LocalDateTime updatedAt,
-            Integer viewCount, Integer likeCount) {
+    public static SliceNextCursor getNextInfo(
+            SortType sortType,
+            Long id,
+            LocalDateTime updatedAt,
+            Integer viewCount,
+            Integer likeCount) {
         return switch (sortType) {
-            case SortType.UPDATE_AT_DESC -> SliceNextInfo.builder()
-                    .hasNext(true)
-                    .id(id)
-                    .dateCursor(updatedAt)
-                    .sortType(sortType)
-                    .build();
-            case SortType.VIEW_COUNT_DESC -> SliceNextInfo.builder()
-                    .hasNext(true)
-                    .id(id)
-                    .countCursor(viewCount)
-                    .sortType(sortType)
-                    .build();
-            case SortType.LIKE_COUNT_DESC -> SliceNextInfo.builder()
-                    .hasNext(true)
-                    .id(id)
-                    .countCursor(likeCount)
-                    .sortType(sortType)
-                    .build();
+            case SortType.UPDATE_AT_DESC ->
+                    SliceNextCursor.builder()
+                            .hasNext(true)
+                            .id(id)
+                            .dateCursor(updatedAt)
+                            .sortType(sortType)
+                            .build();
+            case SortType.VIEW_COUNT_DESC ->
+                    SliceNextCursor.builder()
+                            .hasNext(true)
+                            .id(id)
+                            .countCursor(viewCount)
+                            .sortType(sortType)
+                            .build();
+            case SortType.LIKE_COUNT_DESC ->
+                    SliceNextCursor.builder()
+                            .hasNext(true)
+                            .id(id)
+                            .countCursor(likeCount)
+                            .sortType(sortType)
+                            .build();
         };
     }
 
