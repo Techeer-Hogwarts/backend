@@ -1,23 +1,12 @@
 package backend.techeerzip.domain.auth.service;
 
-import backend.techeerzip.domain.auth.dto.request.LoginRequest;
-import backend.techeerzip.domain.auth.dto.token.TokenPair;
-import backend.techeerzip.domain.auth.exception.AuthInvalidCredentialsException;
-import backend.techeerzip.domain.auth.exception.AuthNotTecheerException;
-import backend.techeerzip.domain.auth.exception.AuthNotVerifiedEmailException;
-import backend.techeerzip.domain.auth.exception.EmailSendFailedException;
-import backend.techeerzip.domain.auth.exception.InvalidVerificationCodeException;
-import backend.techeerzip.domain.auth.jwt.JwtTokenProvider;
-import backend.techeerzip.domain.auth.util.AuthEmailTemplate;
-import backend.techeerzip.domain.user.entity.User;
-import backend.techeerzip.domain.user.repository.UserRepository;
-import backend.techeerzip.global.logger.CustomLogger;
+import java.time.Duration;
+import java.util.Map;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletResponse;
-import java.time.Duration;
-import java.util.Map;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
@@ -32,6 +21,20 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+
+import backend.techeerzip.domain.auth.dto.request.LoginRequest;
+import backend.techeerzip.domain.auth.dto.token.TokenPair;
+import backend.techeerzip.domain.auth.exception.AuthInvalidCredentialsException;
+import backend.techeerzip.domain.auth.exception.AuthNotTecheerException;
+import backend.techeerzip.domain.auth.exception.AuthNotVerifiedEmailException;
+import backend.techeerzip.domain.auth.exception.EmailSendFailedException;
+import backend.techeerzip.domain.auth.exception.InvalidVerificationCodeException;
+import backend.techeerzip.domain.auth.jwt.JwtTokenProvider;
+import backend.techeerzip.domain.auth.util.AuthEmailTemplate;
+import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.repository.UserRepository;
+import backend.techeerzip.global.logger.CustomLogger;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
