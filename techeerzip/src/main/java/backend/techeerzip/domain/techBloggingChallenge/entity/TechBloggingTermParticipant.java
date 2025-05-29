@@ -1,10 +1,9 @@
 package backend.techeerzip.domain.techBloggingChallenge.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.BaseEntity;
 import lombok.*;
 
 @Entity
@@ -13,11 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Table(name = "TechBloggingTermParticipant")
-public class TechBloggingTermParticipant {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class TechBloggingTermParticipant extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "termId", nullable = false)
     private TechBloggingTerm term;
@@ -26,20 +21,16 @@ public class TechBloggingTermParticipant {
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
-    @Column(nullable = false)
-    private LocalDateTime joinedAt;
-
     @Builder.Default
     @Column(nullable = false)
     private boolean isDeleted = false;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     public static TechBloggingTermParticipant create(TechBloggingTerm term, User user) {
-        return TechBloggingTermParticipant.builder()
-                .term(term)
-                .user(user)
-                .joinedAt(LocalDateTime.now())
-                .isDeleted(false)
-                .build();
+        return TechBloggingTermParticipant.builder().term(term).user(user).isDeleted(false).build();
     }
 
     public void softDelete() {

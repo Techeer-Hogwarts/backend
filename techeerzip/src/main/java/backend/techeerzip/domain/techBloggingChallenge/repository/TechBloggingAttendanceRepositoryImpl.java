@@ -2,10 +2,9 @@ package backend.techeerzip.domain.techBloggingChallenge.repository;
 
 import static backend.techeerzip.domain.blog.entity.QBlog.blog;
 import static backend.techeerzip.domain.techBloggingChallenge.entity.QTechBloggingAttendance.techBloggingAttendance;
+import static backend.techeerzip.domain.techBloggingChallenge.entity.QTechBloggingRound.techBloggingRound;
 
 import java.util.List;
-
-import jakarta.persistence.EntityManager;
 
 import org.springframework.stereotype.Repository;
 
@@ -14,15 +13,15 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.blog.entity.Blog;
+import backend.techeerzip.domain.techBloggingChallenge.entity.TechBloggingRound;
+import lombok.RequiredArgsConstructor;
 
 @Repository
+@RequiredArgsConstructor
 public class TechBloggingAttendanceRepositoryImpl
         implements TechBloggingAttendanceRepositoryCustom {
     private final JPAQueryFactory queryFactory;
-
-    public TechBloggingAttendanceRepositoryImpl(EntityManager em) {
-        this.queryFactory = new JPAQueryFactory(em);
-    }
+    private final TechBloggingRoundRepository roundRepository;
 
     @Override
     public List<Blog> findBlogsByRoundWithCursor(
@@ -30,14 +29,14 @@ public class TechBloggingAttendanceRepositoryImpl
         return queryFactory
                 .select(blog)
                 .from(techBloggingAttendance)
-                .join(techBloggingAttendance.blog, blog)
+                .join(techBloggingAttendance.techBloggingRound, techBloggingRound)
+                .join(blog)
+                .on(blog.id.eq(techBloggingAttendance.blog.id))
                 .where(
                         roundIdCondition(roundId),
                         techBloggingAttendance.isDeleted.eq(false),
                         blog.isDeleted.eq(false),
-                        termId != null
-                                ? techBloggingAttendance.techBloggingRound.term.id.eq(termId)
-                                : null,
+                        termId != null ? techBloggingRound.term.id.eq(termId) : null,
                         cursorCondition(cursorBlog, sort))
                 .orderBy(orderSpecifier(sort))
                 .limit(size + 1)
@@ -46,14 +45,25 @@ public class TechBloggingAttendanceRepositoryImpl
 
     @Override
     public List<Long> getValidBlogIds(Long termId, Long roundId) {
+        TechBloggingRound round =
+                roundId != null
+                        ? roundRepository
+                                .findById(roundId)
+                                .orElseThrow(
+                                        () -> new IllegalArgumentException("존재하지 않는 roundId입니다."))
+                        : null;
+
         return queryFactory
                 .select(techBloggingAttendance.blog.id)
                 .from(techBloggingAttendance)
+                .join(techBloggingAttendance.techBloggingRound, techBloggingRound)
                 .where(
-                        roundIdCondition(roundId),
                         techBloggingAttendance.isDeleted.eq(false),
-                        termId != null
-                                ? techBloggingAttendance.techBloggingRound.term.id.eq(termId)
+                        techBloggingRound.term.id.eq(termId),
+                        round != null
+                                ? techBloggingAttendance.createdAt.between(
+                                        round.getStartDate().atStartOfDay(),
+                                        round.getEndDate().atTime(23, 59, 59))
                                 : null)
                 .fetch();
     }

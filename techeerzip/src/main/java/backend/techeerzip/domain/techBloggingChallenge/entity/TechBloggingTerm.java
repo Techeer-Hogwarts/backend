@@ -1,11 +1,11 @@
 package backend.techeerzip.domain.techBloggingChallenge.entity;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
 
+import backend.techeerzip.global.entity.BaseEntity;
 import lombok.*;
 
 @Entity
@@ -14,7 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Table(name = "TechBloggingTerm")
-public class TechBloggingTerm {
+public class TechBloggingTerm extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,17 +33,9 @@ public class TechBloggingTerm {
     @OneToMany(mappedBy = "term", cascade = CascadeType.ALL)
     private List<TechBloggingTermParticipant> participants = new ArrayList<>();
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
     @Builder.Default
     @Column(nullable = false)
     private boolean isDeleted = false;
-
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
 
     public void addRound(TechBloggingRound round) {
         this.rounds.add(round);
