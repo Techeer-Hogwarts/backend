@@ -2,7 +2,6 @@ package backend.techeerzip.domain.projectTeam.dto.request;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -23,11 +22,11 @@ public class GetTeamsQuery {
 
     @Min(1)
     private final int limit;
+
     private final LocalDateTime createAt;
 
     @NotNull private final List<TeamType> teamTypes;
     private final SortType sortType;
     private final Boolean isRecruited;
     private final Boolean isFinished;
-
 }

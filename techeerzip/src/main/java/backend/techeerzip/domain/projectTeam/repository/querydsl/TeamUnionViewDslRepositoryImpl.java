@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.repository.querydsl;
 
-import backend.techeerzip.domain.projectTeam.type.TeamType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -41,8 +40,7 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
                         .andIfNotNull(request.getIsRecruited(), TU.isRecruited::eq)
                         .andIfNotNull(request.getIsFinished(), TU.isFinished::eq)
                         .and(TU.isDeleted.isFalse())
-                        .andIfNotNull(
-                                buildCursorCondition(request))
+                        .andIfNotNull(buildCursorCondition(request))
                         .build();
 
         final List<UnionSliceTeam> teams =
@@ -82,8 +80,8 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
         final LocalDateTime date = request.getDateCursor();
         final Integer count = request.getCountCursor();
         final SortType sortType = request.getSortType();
-        final LocalDateTime createAt = Optional.ofNullable(request.getCreateAt())
-                .orElse(LocalDateTime.MAX);
+        final LocalDateTime createAt =
+                Optional.ofNullable(request.getCreateAt()).orElse(LocalDateTime.MAX);
         return switch (sortType) {
             case UPDATE_AT_DESC -> buildCursorForDate(date, TU.updatedAt, id);
             case VIEW_COUNT_DESC -> buildCursorForInt(count, TU.viewCount, createAt, id);
@@ -96,18 +94,19 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
         if (fieldValue == null || createdAt == null || id == null) return null;
 
         return expr.lt(fieldValue)
-                .or(expr.eq(fieldValue).and(
-                        TU.createdAt.lt(createdAt)
-                                .or(TU.createdAt.eq(createdAt).and(TU.id.lt(id)))
-                ));
+                .or(
+                        expr.eq(fieldValue)
+                                .and(
+                                        TU.createdAt
+                                                .lt(createdAt)
+                                                .or(TU.createdAt.eq(createdAt).and(TU.id.lt(id)))));
     }
 
     private BooleanExpression buildCursorForDate(
             LocalDateTime fieldValue, DateTimePath<LocalDateTime> expr, Long id) {
         if (fieldValue == null || id == null) return null;
 
-        return expr.lt(fieldValue)
-                .or(expr.eq(fieldValue).and(TU.id.lt(id)));
+        return expr.lt(fieldValue).or(expr.eq(fieldValue).and(TU.id.lt(id)));
     }
 
     private static SliceNextCursor setNextInfo(

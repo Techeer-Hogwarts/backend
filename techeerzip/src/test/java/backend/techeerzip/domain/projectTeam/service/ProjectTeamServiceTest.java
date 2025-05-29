@@ -10,9 +10,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
-import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +33,7 @@ import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveReq
 import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectMember.service.ProjectMemberService;
+import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
@@ -44,7 +42,9 @@ import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo.WithStack;
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
@@ -61,7 +61,6 @@ import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
-import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
 import backend.techeerzip.domain.role.entity.Role;
@@ -794,8 +793,7 @@ class ProjectTeamServiceTest {
             when(projectTeamDslRepository.sliceYoungTeams(any()))
                     .thenReturn(List.of(mock(ProjectTeam.class)));
             GetAllTeamsResponse result =
-                    projectTeamService.getYoungTeams(
-                            mock(GetProjectTeamsQuery.class));
+                    projectTeamService.getYoungTeams(mock(GetProjectTeamsQuery.class));
         }
     }
 

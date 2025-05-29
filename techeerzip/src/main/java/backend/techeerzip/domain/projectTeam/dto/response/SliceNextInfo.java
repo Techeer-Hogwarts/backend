@@ -1,9 +1,9 @@
 package backend.techeerzip.domain.projectTeam.dto.response;
 
-import backend.techeerzip.domain.projectTeam.type.SortType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import backend.techeerzip.domain.projectTeam.type.SortType;
 import lombok.Builder;
 import lombok.Getter;
 

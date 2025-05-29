@@ -1,8 +1,5 @@
 package backend.techeerzip.domain.studyTeam.repository.querydsl;
 
-import backend.techeerzip.domain.projectTeam.type.CountSortOption;
-import backend.techeerzip.domain.projectTeam.type.DateSortOption;
-import backend.techeerzip.domain.projectTeam.type.TeamType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +15,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
 import backend.techeerzip.domain.common.util.DslBooleanBuilder;
 import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
+import backend.techeerzip.domain.projectTeam.type.CountSortOption;
+import backend.techeerzip.domain.projectTeam.type.DateSortOption;
 import backend.techeerzip.domain.projectTeam.type.SortType;
+import backend.techeerzip.domain.projectTeam.type.TeamType;
 import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.entity.QStudyTeam;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;

@@ -1,9 +1,7 @@
 package backend.techeerzip.domain.projectTeam.dto.request;
 
-import jakarta.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import backend.techeerzip.domain.projectTeam.type.PositionType;
 import backend.techeerzip.domain.projectTeam.type.SortType;

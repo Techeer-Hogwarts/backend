@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectMember.entity;
 
-
 @SpringBootTest
 class ProjectMemberTest {
     private ProjectMember pm;

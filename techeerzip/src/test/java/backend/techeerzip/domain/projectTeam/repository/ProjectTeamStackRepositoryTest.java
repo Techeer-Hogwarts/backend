@@ -1,16 +1,11 @@
 package backend.techeerzip.domain.projectTeam.repository;
 
-import java.util.List;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.entity.TeamStack;
 import backend.techeerzip.domain.stack.entity.Stack;
 import backend.techeerzip.domain.stack.entity.StackCategory;
 import backend.techeerzip.domain.stack.repository.StackRepository;

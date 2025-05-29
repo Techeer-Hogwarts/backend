@@ -63,7 +63,9 @@ public class TeamQueryMapper {
                 GetProjectTeamsQuery.builder()
                         .idCursor(req.getId())
                         .limit(Optional.ofNullable(req.getLimit()).orElse(DEFAULT_LIMIT))
-                        .sortType(Optional.ofNullable(req.getSortType()).orElse(SortType.UPDATE_AT_DESC))
+                        .sortType(
+                                Optional.ofNullable(req.getSortType())
+                                        .orElse(SortType.UPDATE_AT_DESC))
                         .isRecruited(req.getIsRecruited())
                         .isFinished(req.getIsFinished())
                         .positionNumTypes(
@@ -86,7 +88,9 @@ public class TeamQueryMapper {
                 GetStudyTeamsQuery.builder()
                         .idCursor(req.getId())
                         .limit(Optional.ofNullable(req.getLimit()).orElse(DEFAULT_LIMIT))
-                        .sortType(Optional.ofNullable(req.getSortType()).orElse(SortType.UPDATE_AT_DESC))
+                        .sortType(
+                                Optional.ofNullable(req.getSortType())
+                                        .orElse(SortType.UPDATE_AT_DESC))
                         .isRecruited(req.getIsRecruited())
                         .isFinished(req.getIsFinished());
 
@@ -105,11 +109,12 @@ public class TeamQueryMapper {
             List<ProjectSliceTeamsResponse> projectResponses,
             List<StudySliceTeamsResponse> studyResponses,
             SortType sortType) {
-        Comparator<SliceTeamsResponse> comparator = switch (sortType) {
-            case UPDATE_AT_DESC -> Comparator.comparing(SliceTeamsResponse::getUpdatedAt);
-            case VIEW_COUNT_DESC -> Comparator.comparing(SliceTeamsResponse::getViewCount);
-            case LIKE_COUNT_DESC -> Comparator.comparing(SliceTeamsResponse::getLikeCount);
-        };
+        Comparator<SliceTeamsResponse> comparator =
+                switch (sortType) {
+                    case UPDATE_AT_DESC -> Comparator.comparing(SliceTeamsResponse::getUpdatedAt);
+                    case VIEW_COUNT_DESC -> Comparator.comparing(SliceTeamsResponse::getViewCount);
+                    case LIKE_COUNT_DESC -> Comparator.comparing(SliceTeamsResponse::getLikeCount);
+                };
 
         PriorityQueue<SliceTeamsResponse> queue = new PriorityQueue<>(comparator.reversed());
 
@@ -122,6 +127,5 @@ public class TeamQueryMapper {
         }
 
         return result;
-
     }
 }
