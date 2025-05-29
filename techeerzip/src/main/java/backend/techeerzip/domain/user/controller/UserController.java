@@ -1,23 +1,5 @@
 package backend.techeerzip.domain.user.controller;
 
-import java.util.List;
-
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserPermissionRequest;
@@ -33,7 +15,22 @@ import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "user", description = "유저 API")
 @RestController
@@ -149,6 +146,14 @@ public class UserController {
             @RequestBody UpdateUserWithExperienceRequest updateUserWithExperienceRequest) {
         userService.updateProfile(userId, updateUserWithExperienceRequest);
         logger.info("프로필 업데이트 완료 - userId: {}", userId, CONTEXT);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "경력 삭제", description = "경력 정보를 삭제합니다.")
+    @DeleteMapping("/experience/{experienceId}")
+    public ResponseEntity<Void> deleteExperience(@PathVariable Long experienceId) {
+        userService.deleteExperience(experienceId);
+        logger.info("경력 삭제 완료 - experienceId: {}", experienceId, CONTEXT);
         return ResponseEntity.ok().build();
     }
 }
