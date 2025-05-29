@@ -1,12 +1,9 @@
 package backend.techeerzip.domain.projectTeam.repository.querydsl;
 
-import backend.techeerzip.domain.projectTeam.type.SortType;
-import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.NumberPath;
+import backend.techeerzip.domain.projectTeam.type.TeamType;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 import jakarta.persistence.EntityManager;
 
@@ -14,16 +11,19 @@ import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
+import backend.techeerzip.domain.common.util.DslBooleanBuilder;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
-import backend.techeerzip.domain.projectTeam.dto.response.SliceNextInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionSliceYoungInfo;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceNextCursor;
+import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionSliceResult;
+import backend.techeerzip.domain.projectTeam.dto.response.UnionSliceTeam;
 import backend.techeerzip.domain.projectTeam.entity.QTeamUnionView;
 import backend.techeerzip.domain.projectTeam.entity.TeamUnionView;
-import backend.techeerzip.domain.projectTeam.type.TeamType;
+import backend.techeerzip.domain.projectTeam.type.SortType;
 
 @Repository
 public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
@@ -35,106 +35,116 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
         super(TeamUnionView.class, em, factory);
     }
 
-    public TeamUnionSliceYoungInfo fetchSliceBeforeCreatedAtDescCursor(GetTeamsQuery request) {
-        final BooleanExpression condition = buildCursorCondition(
-                request.getGlobalId(),
-                request.getDateCursor(),
-                request.getCountCursor(),
-                request.getSortType()
-        );
+    public TeamUnionSliceResult fetchSliceTeams(GetTeamsQuery request) {
+        final BooleanExpression condition =
+                DslBooleanBuilder.builder()
+                        .andIfNotNull(request.getIsRecruited(), TU.isRecruited::eq)
+                        .andIfNotNull(request.getIsFinished(), TU.isFinished::eq)
+                        .and(TU.isDeleted.isFalse())
+                        .andIfNotNull(
+                                buildCursorCondition(request))
+                        .build();
 
-        final List<TeamUnionInfo> teams = selectTeamUnionInfos(condition, request.getSortType(), request.getLimit());
-        final SliceNextInfo lastInfo = setNextInfo(teams, request.getLimit(), request.getSortType());
-        final List<TeamUnionInfo> fitTeams = ensureMaxSize(teams, request.getLimit());
+        final List<UnionSliceTeam> teams =
+                selectTeamUnionInfos(condition, request.getSortType(), request.getLimit());
+        final SliceNextCursor lastInfo =
+                setNextInfo(teams, request.getLimit(), request.getSortType());
+        final List<UnionSliceTeam> slicedInfos = ensureMaxSize(teams, request.getLimit());
 
-        return mapToYoungTeam(fitTeams, lastInfo);
+        return new TeamUnionSliceResult(slicedInfos, lastInfo);
     }
 
-    private List<TeamUnionInfo> selectTeamUnionInfos(BooleanExpression condition, SortType sortType, Integer limit) {
-        return select(Projections.fields(
-                TeamUnionInfo.class,
-                TU.globalId,
-                TU.id,
-                TU.teamType,
-                TU.createdAt,
-                TU.viewCount,
-                TU.likeCount
-                ))
+    private List<UnionSliceTeam> selectTeamUnionInfos(
+            BooleanExpression condition, SortType sortType, Integer limit) {
+        return select(
+                        Projections.fields(
+                                UnionSliceTeam.class,
+                                TU.id,
+                                TU.teamType,
+                                TU.updatedAt,
+                                TU.viewCount,
+                                TU.likeCount))
                 .from(TU)
                 .where(condition)
-                .orderBy(switch (sortType) {
-                    case UPDATE_AT_DESC -> TU.createdAt.desc();
-                    case VIEW_COUNT_DESC -> TU.viewCount.desc();
-                    case LIKE_COUNT_DESC -> TU.likeCount.desc();
-                }, TU.globalId.desc())
+                .orderBy(
+                        switch (sortType) {
+                            case UPDATE_AT_DESC -> TU.updatedAt.desc();
+                            case VIEW_COUNT_DESC -> TU.viewCount.desc();
+                            case LIKE_COUNT_DESC -> TU.likeCount.desc();
+                        },
+                        TU.id.desc())
                 .limit(limit + 1L)
                 .fetch();
     }
 
-    private BooleanExpression buildCursorCondition(
-            UUID globalId, LocalDateTime date, Integer count,  SortType sortType) {
-
+    private BooleanExpression buildCursorCondition(GetTeamsQuery request) {
+        final Long id = request.getId();
+        final LocalDateTime date = request.getDateCursor();
+        final Integer count = request.getCountCursor();
+        final SortType sortType = request.getSortType();
+        final LocalDateTime createAt = Optional.ofNullable(request.getCreateAt())
+                .orElse(LocalDateTime.MAX);
         return switch (sortType) {
-            case UPDATE_AT_DESC -> buildCursorForDate(date, TU.createdAt, globalId);
-            case VIEW_COUNT_DESC -> buildCursorForInt(count, TU.viewCount, globalId);
-            case LIKE_COUNT_DESC -> buildCursorForInt(count, TU.likeCount, globalId);
+            case UPDATE_AT_DESC -> buildCursorForDate(date, TU.updatedAt, id);
+            case VIEW_COUNT_DESC -> buildCursorForInt(count, TU.viewCount, createAt, id);
+            case LIKE_COUNT_DESC -> buildCursorForInt(count, TU.likeCount, createAt, id);
         };
     }
 
-    private BooleanExpression buildCursorForInt(Integer fieldValue, NumberPath<Integer> expr, UUID globalId) {
-        if (fieldValue == null) return null;
-        if (globalId == null) return expr.lt(fieldValue);
-        return expr.lt(fieldValue).or(expr.eq(fieldValue).and(TU.globalId.lt(globalId)));
+    private BooleanExpression buildCursorForInt(
+            Integer fieldValue, NumberPath<Integer> expr, LocalDateTime createdAt, Long id) {
+        if (fieldValue == null || createdAt == null || id == null) return null;
+
+        return expr.lt(fieldValue)
+                .or(expr.eq(fieldValue).and(
+                        TU.createdAt.lt(createdAt)
+                                .or(TU.createdAt.eq(createdAt).and(TU.id.lt(id)))
+                ));
     }
 
-    private BooleanExpression buildCursorForDate(LocalDateTime fieldValue, DateTimePath<LocalDateTime> expr, UUID globalId) {
-        if (fieldValue == null) return null;
-        if (globalId == null) return expr.lt(fieldValue);
-        return expr.lt(fieldValue).or(expr.eq(fieldValue).and(TU.globalId.lt(globalId)));
+    private BooleanExpression buildCursorForDate(
+            LocalDateTime fieldValue, DateTimePath<LocalDateTime> expr, Long id) {
+        if (fieldValue == null || id == null) return null;
+
+        return expr.lt(fieldValue)
+                .or(expr.eq(fieldValue).and(TU.id.lt(id)));
     }
 
-    private static SliceNextInfo setNextInfo(List<TeamUnionInfo> sortedTeams, Integer limit, SortType sortType) {
+    private static SliceNextCursor setNextInfo(
+            List<UnionSliceTeam> sortedTeams, Integer limit, SortType sortType) {
         if (sortedTeams.size() <= limit) {
-            return SliceNextInfo.builder().hasNext(false).build();
+            return SliceNextCursor.builder().hasNext(false).build();
         }
-        final TeamUnionInfo last = sortedTeams.getLast();
+        final UnionSliceTeam last = sortedTeams.getLast();
         return switch (sortType) {
-            case UPDATE_AT_DESC -> SliceNextInfo.builder()
-                    .hasNext(true)
-                    .globalId(last.getGlobalId())
-                    .dateCursor(last.getDateCursor())
-                    .sortType(sortType)
-                    .build();
-            case VIEW_COUNT_DESC, LIKE_COUNT_DESC -> SliceNextInfo.builder()
-                    .hasNext(true)
-                    .globalId(last.getGlobalId())
-                    .countCursor(last.getCountCursor())
-                    .sortType(sortType)
-                    .build();
+            case UPDATE_AT_DESC ->
+                    SliceNextCursor.builder()
+                            .hasNext(true)
+                            .id(last.getId())
+                            .dateCursor(last.getUpdatedAt())
+                            .sortType(sortType)
+                            .build();
+            case VIEW_COUNT_DESC ->
+                    SliceNextCursor.builder()
+                            .hasNext(true)
+                            .id(last.getId())
+                            .countCursor(last.getViewCount())
+                            .sortType(sortType)
+                            .build();
+            case LIKE_COUNT_DESC ->
+                    SliceNextCursor.builder()
+                            .hasNext(true)
+                            .id(last.getId())
+                            .countCursor(last.getLikeCount())
+                            .sortType(sortType)
+                            .build();
         };
     }
-
 
     public static <T> List<T> ensureMaxSize(List<T> unionTeams, Integer limit) {
         if (unionTeams.size() > limit) {
             return unionTeams.subList(0, limit);
         }
         return unionTeams;
-    }
-
-    private static TeamUnionSliceYoungInfo mapToYoungTeam(List<TeamUnionInfo> teams, SliceNextInfo last) {
-        final List<Long> projects = new ArrayList<>();
-        final List<Long> studies = new ArrayList<>();
-
-        for (TeamUnionInfo i : teams) {
-            if (i.getTeamType().equals(TeamType.PROJECT)) {
-                projects.add(i.getId());
-            }
-            if (i.getTeamType().equals(TeamType.STUDY)) {
-                studies.add(i.getId());
-            }
-        }
-
-        return new TeamUnionSliceYoungInfo(projects, studies, last);
     }
 }

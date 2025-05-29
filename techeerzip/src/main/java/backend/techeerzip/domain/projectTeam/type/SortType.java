@@ -4,7 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum SortType {
-    UPDATE_AT_DESC, VIEW_COUNT_DESC, LIKE_COUNT_DESC;
+    UPDATE_AT_DESC,
+    VIEW_COUNT_DESC,
+    LIKE_COUNT_DESC;
 
     public boolean isDate() {
         return this.equals(UPDATE_AT_DESC);
