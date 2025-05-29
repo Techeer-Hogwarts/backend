@@ -16,6 +16,6 @@ public interface SessionRepository
     Optional<Session> findByIdAndIsDeletedFalse(Long id);
 
     @Modifying
-    @Query("UPDATE Session s SET s.isDeleted = true WHERE s.user.id = :userId")
+    @Query("DELETE Session s WHERE s.user.id = :userId")
     void updateIsDeletedByUserId(@Param("userId") Long userId);
 }

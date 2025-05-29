@@ -25,6 +25,6 @@ public interface BlogRepository extends JpaRepository<Blog, Long>, BlogRepositor
     boolean existsByUrl(String url);
 
     @Modifying
-    @Query("UPDATE Blog b SET b.isDeleted = true WHERE b.user.id = :userId")
+    @Query("DELETE Blog b WHERE b.user.id = :userId")
     void updateIsDeletedByUserId(@Param("userId") Long userId);
 }

@@ -13,6 +13,6 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     List<Bookmark> findByUserId(Long userId);
 
     @Modifying
-    @Query("UPDATE Bookmark b SET b.isDeleted = true WHERE b.user.id = :userId")
+    @Query("DELETE Bookmark b WHERE b.user.id = :userId")
     void updateIsDeletedByUserId(@Param("userId") Long userId);
 }

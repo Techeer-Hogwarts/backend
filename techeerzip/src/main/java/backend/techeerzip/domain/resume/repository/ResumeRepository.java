@@ -14,6 +14,6 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     Optional<Resume> findByIdAndIsDeletedFalse(Long id);
 
     @Modifying
-    @Query("UPDATE Resume r SET r.isDeleted = true WHERE r.user.id = :userId")
+    @Query("DELETE Resume r WHERE r.user.id = :userId")
     void updateIsDeletedByUserId(@Param("userId") Long userId);
 }
