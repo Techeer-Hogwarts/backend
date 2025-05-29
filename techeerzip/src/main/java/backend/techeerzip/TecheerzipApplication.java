@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-// @PropertySource("classpath:env.properties")
+//@PropertySource("classpath:env.properties")
 public class TecheerzipApplication {
 
     public static void main(String[] args) {
