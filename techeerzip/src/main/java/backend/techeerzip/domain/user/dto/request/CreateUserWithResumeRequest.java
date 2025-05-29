@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import backend.techeerzip.domain.resume.dto.request.CreateResumeRequest;
+import backend.techeerzip.domain.userExperience.dto.request.CreateUserExperienceListRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
