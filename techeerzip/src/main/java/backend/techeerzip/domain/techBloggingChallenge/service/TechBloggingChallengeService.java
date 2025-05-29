@@ -427,7 +427,12 @@ public class TechBloggingChallengeService {
     public BlogChallengeListResponse getBlogsByRoundCursor(BlogChallengeCursorRequest request) {
         Long termId = request.getTermId();
         Long roundId = request.getRoundId();
-
+        logger.info(
+                "Request: termId={}, roundId={}, cursorId={}, limit={}",
+                request.getTermId(),
+                request.getRoundId(),
+                request.getCursorId(),
+                request.getLimit());
         // 1. termId가 없으면 현재 진행중인 termId 사용
         if (termId == null) {
             termId = findCurrentTermId();
