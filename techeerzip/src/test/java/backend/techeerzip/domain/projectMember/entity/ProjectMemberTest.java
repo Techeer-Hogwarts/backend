@@ -1,15 +1,7 @@
 package backend.techeerzip.domain.projectMember.entity;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.type.TeamRole;
-import backend.techeerzip.domain.role.entity.Role;
-import backend.techeerzip.domain.user.entity.User;
-import backend.techeerzip.global.entity.StatusCategory;
-
+@SpringBootTest
 class ProjectMemberTest {
     private ProjectMember pm;
 
