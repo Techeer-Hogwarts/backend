@@ -28,8 +28,6 @@ public enum ErrorCode {
     USER_NOT_RESUME(HttpStatus.BAD_REQUEST, "U004", "이력서 파일이 없습니다."),
     USER_UNAUTHORIZED_ADMIN(HttpStatus.FORBIDDEN, "U005", "권한이 없는 사용자입니다."),
     USER_PROFILE_IMG_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "U006", "프로필 이미지를 가져오지 못했습니다."),
-    USER_INVALID_POSITION(HttpStatus.BAD_REQUEST, "U006", "유효하지 않은 포지션 입력입니다."),
-    USER_INVALID_GRADE(HttpStatus.BAD_REQUEST, "U007", "유효하지 않은 학년 입력입니다."),
 
     // UserExperience
     USER_EXPERIENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "UE001", "해당 경력을 찾을 수 없습니다."),
