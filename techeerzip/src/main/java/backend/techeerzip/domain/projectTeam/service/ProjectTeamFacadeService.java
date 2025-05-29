@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.service;
 
-import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -11,6 +10,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest.DM;
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;

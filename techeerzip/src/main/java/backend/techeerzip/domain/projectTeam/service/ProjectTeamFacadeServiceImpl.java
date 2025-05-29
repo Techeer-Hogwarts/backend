@@ -1,21 +1,14 @@
 package backend.techeerzip.domain.projectTeam.service;
 
-import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
-import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
-import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.SliceNextInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
-import backend.techeerzip.domain.projectTeam.mapper.ProjectQueryMapper;
-import backend.techeerzip.domain.projectTeam.mapper.StudyQueryMapper;
-import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
+import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
@@ -23,17 +16,21 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest.DM;
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionSliceYoungInfo;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceNextCursor;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionSliceResult;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMainImageException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamResultImageException;
-import backend.techeerzip.domain.projectTeam.mapper.TeamViewMapper;
+import backend.techeerzip.domain.projectTeam.mapper.TeamQueryMapper;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepository;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
+import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.service.StudyTeamService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.s3.S3Service;
@@ -80,14 +77,6 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
 
     private static boolean isOnlyStudy(List<TeamType> teamTypes) {
         return !teamTypes.isEmpty() && teamTypes.getFirst().equals(TeamType.STUDY);
-    }
-
-    private static List<SliceTeamsResponse> toTeamGetAllResponse(
-            List<ProjectSliceTeamsResponse> projectResponses,
-            List<StudySliceTeamsResponse> studyResponses) {
-        return Stream.concat(projectResponses.stream(), studyResponses.stream())
-                .sorted(Comparator.comparing(SliceTeamsResponse::getCreatedAt).reversed())
-                .toList();
     }
 
     public ProjectTeamDetailResponse getDetail(Long projectTeamId) {
@@ -158,28 +147,31 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         }
     }
 
-    public GetAllTeamsResponse getAllProjectAndStudyTeams(GetTeamsQueryRequest request) {
-        final List<TeamType> teamTypes = request.getTeamTypes();
+    public GetAllTeamsResponse getAllProjectAndStudyTeams(GetTeamsQueryRequest queryRequest) {
+        final GetTeamsQueryRequest request = queryRequest.withDefaultSortType();
+        final List<TeamType> teamTypes =
+                Optional.ofNullable(request.getTeamTypes()).orElse(List.of());
         if (isOnlyProject(teamTypes)) {
-            final GetProjectTeamsQuery projectQuery = ProjectQueryMapper.mapToQuery(request);
-            return projectTeamService.getYoungTeams(projectQuery);
+            final GetProjectTeamsQuery projectQuery = TeamQueryMapper.mapToProjectQuery(request);
+            return projectTeamService.getSliceTeams(projectQuery);
         }
         if (isOnlyStudy(teamTypes)) {
-            final GetStudyTeamsQuery studyQuery = StudyQueryMapper.mapToQuery(request);
-            return studyTeamService.getYoungTeams(studyQuery);
+            final GetStudyTeamsQuery studyQuery = TeamQueryMapper.mapToStudyQuery(request);
+            return studyTeamService.getSliceTeams(studyQuery);
         }
 
-        final GetTeamsQuery query = TeamViewMapper.mapToQuery(request);
-        final TeamUnionSliceYoungInfo views =
-                teamUnionViewDslRepository.fetchSliceBeforeCreatedAtDescCursor(query);
+        final GetTeamsQuery query = TeamQueryMapper.mapToTeamsQuery(request);
+        final TeamUnionSliceResult slicedResult = teamUnionViewDslRepository.fetchSliceTeams(query);
 
         final List<ProjectSliceTeamsResponse> projectResponses =
-                projectTeamService.getYoungTeamsById(views.projectsId(), query.getIsRecruited(), query.getIsFinished());
+                projectTeamService.getYoungTeamsById(slicedResult.getProjectIds());
 
         final List<StudySliceTeamsResponse> studyResponses =
-                studyTeamService.getYoungTeamsById(views.studiesId(), query.getIsRecruited(), query.getIsFinished());
-        final SliceNextInfo sliceNextInfo = views.sliceNextInfo();
-        final List<SliceTeamsResponse> responses = toTeamGetAllResponse(projectResponses, studyResponses);
+                studyTeamService.getYoungTeamsById(slicedResult.getStudyIds());
+        final SliceNextCursor sliceNextInfo = slicedResult.getSliceNextInfo();
+        final List<SliceTeamsResponse> responses =
+                TeamQueryMapper.toTeamGetAllResponse(
+                        projectResponses, studyResponses, request.getSortType());
 
         return new GetAllTeamsResponse(responses, sliceNextInfo);
     }
