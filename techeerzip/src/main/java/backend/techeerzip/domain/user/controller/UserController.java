@@ -20,11 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
+import backend.techeerzip.domain.user.dto.request.ResetUserPasswordRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserNicknameRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserProfileImgRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserWithExperienceRequest;
-import backend.techeerzip.domain.user.dto.request.UserResetPasswordRequest;
 import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
@@ -71,7 +71,7 @@ public class UserController {
     @Operation(summary = "비밀번호 재설정", description = "이메일 인증 후 비밀번호를 재설정합니다.")
     @PatchMapping("/findPwd")
     public ResponseEntity<Void> resetPassword(
-            @Valid @RequestBody UserResetPasswordRequest userResetPasswordRequest) {
+            @Valid @RequestBody ResetUserPasswordRequest userResetPasswordRequest) {
         String email = userResetPasswordRequest.getEmail();
         String code = userResetPasswordRequest.getCode();
         String newPassword = userResetPasswordRequest.getNewPassword();
