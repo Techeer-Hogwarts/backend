@@ -36,8 +36,9 @@ public class AuthController {
     public ResponseEntity<Void> sendVerificationEmail(
             @Valid @RequestBody SendEmailRequest sendEmailRequest) {
         String email = sendEmailRequest.getEmail();
-        authService.sendVerificationEmail(email);
+
         logger.info("이메일 인증 코드 전송 중 - email: {}", email, CONTEXT);
+        authService.sendVerificationEmail(email);
         logger.info("이메일 인증 코드 전송 완료 - email: {}", email, CONTEXT);
         return ResponseEntity.ok().build();
     }
@@ -49,11 +50,9 @@ public class AuthController {
         String email = verifyCodeRequest.getEmail();
         String code = verifyCodeRequest.getCode();
 
-        logger.info("이메일 인증 코드 확인 중 - email: {}", email, CONTEXT);
-
+        logger.info("이메일 인증 코드 확인 요청 처리 중 - email: {}", email, CONTEXT);
         authService.verifyCode(email, code);
-
-        logger.info("이메일 인증 코드 확인 완료 - email: {}", email, CONTEXT);
+        logger.info("이메일 인증 코드 확인 요청 처리 완료 - email: {}", email, CONTEXT);
         return ResponseEntity.ok().build();
     }
 
@@ -71,6 +70,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @Valid @Parameter(hidden = true) @UserId Long userId, HttpServletResponse response) {
+        logger.info("로그아웃 처리 중 - userId: {}", userId, CONTEXT);
         authService.logout(userId, response);
         logger.info("로그아웃 처리 완료 - userId: {}", userId, CONTEXT);
         return ResponseEntity.ok().build();
