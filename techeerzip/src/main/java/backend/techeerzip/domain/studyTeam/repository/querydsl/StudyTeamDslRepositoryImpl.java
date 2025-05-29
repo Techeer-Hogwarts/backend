@@ -1,23 +1,25 @@
 package backend.techeerzip.domain.studyTeam.repository.querydsl;
 
-import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
-import backend.techeerzip.domain.projectTeam.type.PositionNumType;
-import backend.techeerzip.domain.projectTeam.type.SortType;
-import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
-import com.querydsl.core.types.dsl.NumberPath;
+import backend.techeerzip.domain.projectTeam.type.CountSortOption;
+import backend.techeerzip.domain.projectTeam.type.DateSortOption;
+import backend.techeerzip.domain.projectTeam.type.TeamType;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.persistence.EntityManager;
 
-import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
 import backend.techeerzip.domain.common.util.DslBooleanBuilder;
+import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
+import backend.techeerzip.domain.projectTeam.type.SortType;
+import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.entity.QStudyTeam;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.domain.studyTeam.mapper.StudyTeamMapper;
@@ -40,7 +42,7 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
                 .build();
     }
 
-    public List<StudyTeam> sliceYoungTeamByDate(GetStudyTeamsQuery query) {
+    public List<StudyTeam> sliceTeamsByDate(GetStudyTeamsQuery query) {
         final Long id = query.getIdCursor();
         final SortType sortType = query.getSortType();
         final LocalDateTime dateCursor = query.getDateCursor();
@@ -48,42 +50,40 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final boolean isRecruited = query.getIsRecruited();
         final boolean isFinished = query.getIsFinished();
 
-        final BooleanExpression expression = setBuilderWithAndDate(id, dateCursor, isRecruited, isFinished);
+        final BooleanExpression expression =
+                setBuilderWithAndDate(id, dateCursor, isRecruited, isFinished);
 
         return selectFrom(ST)
                 .where(expression)
-                .orderBy(switch (sortType) {
-                    case UPDATE_AT_DESC -> ST.createdAt.desc();
-                    case VIEW_COUNT_DESC -> ST.viewCount.desc();
-                    case LIKE_COUNT_DESC -> ST.likeCount.desc();
-                })
-                .limit(limit)
+                .orderBy(DateSortOption.setOrder(sortType, TeamType.STUDY))
+                .limit(limit + 1L)
                 .fetch();
     }
 
-    public List<StudyTeam> sliceYoungTeamByCount(GetStudyTeamsQuery query) {
+    public List<StudyTeam> sliceTeamsByCount(GetStudyTeamsQuery query) {
         final Long id = query.getIdCursor();
         final SortType sortType = query.getSortType();
         final Integer countCursor = query.getCountCursor();
         final int limit = query.getLimit();
         final boolean isRecruited = query.getIsRecruited();
         final boolean isFinished = query.getIsFinished();
-        final BooleanExpression expression = setBuilderWithAndCount(id, countCursor, isRecruited, isFinished, sortType);
+        final BooleanExpression expression =
+                setBuilderWithAndCount(id, countCursor, isRecruited, isFinished, sortType);
 
         return selectFrom(ST)
                 .where(expression)
-                .orderBy(ST.createdAt.desc())
-                .limit(limit)
+                .orderBy(CountSortOption.setOrder(sortType.name(), TeamType.STUDY))
+                .limit(limit + 1L)
                 .fetch();
     }
 
-    public List<StudyTeam> sliceYoungTeam(GetStudyTeamsQuery query) {
+    public List<StudyTeam> sliceTeams(GetStudyTeamsQuery query) {
 
         if (query.getSortType().isDate()) {
-            return sliceYoungTeamByDate(query);
+            return sliceTeamsByDate(query);
         }
         if (query.getSortType().isCount()) {
-            return sliceYoungTeamByCount(query);
+            return sliceTeamsByCount(query);
         }
         throw new IllegalArgumentException();
     }
@@ -91,17 +91,18 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
     private static BooleanExpression dateCursorConditionBuilder(LocalDateTime date, Long id) {
         if (date == null) return null;
         if (id == null) return ST.updatedAt.lt(date);
-        return ST.updatedAt.lt(date)
-                .or(ST.updatedAt.eq(date).and(ST.id.lt(id)));
+        return ST.updatedAt.lt(date).or(ST.updatedAt.eq(date).and(ST.id.lt(id)));
     }
 
-    private static BooleanExpression buildCountCursor(NumberPath<Integer> field, Integer count, Long id) {
+    private static BooleanExpression buildCountCursor(
+            NumberPath<Integer> field, Integer count, Long id) {
         if (count == null) return null;
         if (id == null) return field.lt(count);
         return field.lt(count).or(field.eq(count).and(ST.id.lt(id)));
     }
 
-    public static BooleanExpression countCursorConditionBuilder(SortType sortType, Integer count, Long id) {
+    public static BooleanExpression countCursorConditionBuilder(
+            SortType sortType, Integer count, Long id) {
         return switch (sortType) {
             case VIEW_COUNT_DESC -> buildCountCursor(ST.viewCount, count, id);
             case LIKE_COUNT_DESC -> buildCountCursor(ST.likeCount, count, id);
@@ -109,8 +110,8 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         };
     }
 
-    private static BooleanExpression setBuilderWithAndDate(Long id, LocalDateTime dateTime,
-            Boolean isRecruited, Boolean isFinished) {
+    private static BooleanExpression setBuilderWithAndDate(
+            Long id, LocalDateTime dateTime, Boolean isRecruited, Boolean isFinished) {
         return DslBooleanBuilder.builder()
                 .andIfNotNull(dateCursorConditionBuilder(dateTime, id))
                 .andIfNotNull(isRecruited, ST.isRecruited::eq)
@@ -119,8 +120,8 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
                 .build();
     }
 
-    private static BooleanExpression setBuilderWithAndCount(Long id, Integer count,
-            Boolean isRecruited, Boolean isFinished, SortType sortType) {
+    private static BooleanExpression setBuilderWithAndCount(
+            Long id, Integer count, Boolean isRecruited, Boolean isFinished, SortType sortType) {
         return DslBooleanBuilder.builder()
                 .andIfNotNull(countCursorConditionBuilder(sortType, count, id))
                 .andIfNotNull(isRecruited, ST.isRecruited::eq)
@@ -133,13 +134,17 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
             List<Long> keys, Boolean isRecruited, Boolean isFinished) {
         final BooleanExpression expression =
                 setBuilder(isRecruited, isFinished).and(ST.id.in(keys));
-        List<StudyTeam> teams =
-                selectFrom(ST).where(expression).orderBy(ST.createdAt.desc()).fetch();
+        List<StudyTeam> teams = selectFrom(ST).where(expression).fetch();
         return teams.stream().map(StudyTeamMapper::toGetAllResponse).toList();
     }
 
-    public List<StudySliceTeamsResponse> sliceYoungTeamByDate(UUID id, SortType sortType,
-            LocalDateTime dateCursor, int limit, boolean isRecruited, boolean isFinished) {
+    public List<StudySliceTeamsResponse> sliceYoungTeamByDate(
+            UUID id,
+            SortType sortType,
+            LocalDateTime dateCursor,
+            int limit,
+            boolean isRecruited,
+            boolean isFinished) {
         return List.of();
     }
 }

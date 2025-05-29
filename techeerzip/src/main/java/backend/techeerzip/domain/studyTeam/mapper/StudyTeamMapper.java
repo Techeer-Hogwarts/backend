@@ -18,6 +18,9 @@ public class StudyTeamMapper {
                 .isFinished(studyTeam.getIsFinished())
                 .isRecruited(studyTeam.getIsRecruited())
                 .recruitNum(studyTeam.getRecruitNum())
+                .viewCount(studyTeam.getViewCount())
+                .likeCount(studyTeam.getLikeCount())
+                .updatedAt(studyTeam.getUpdatedAt())
                 .createdAt(studyTeam.getCreatedAt())
                 .build();
     }
