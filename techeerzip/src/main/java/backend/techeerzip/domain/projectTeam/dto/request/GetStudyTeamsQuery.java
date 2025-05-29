@@ -1,8 +1,8 @@
 package backend.techeerzip.domain.projectTeam.dto.request;
 
-import backend.techeerzip.domain.projectTeam.type.SortType;
-import jakarta.validation.constraints.Min;
 import java.time.LocalDateTime;
+
+import backend.techeerzip.domain.projectTeam.type.SortType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +15,6 @@ public class GetStudyTeamsQuery {
     private final LocalDateTime dateCursor;
     private final Integer countCursor;
 
-    @Min(1)
     private final int limit;
 
     private final SortType sortType;
