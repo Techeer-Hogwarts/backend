@@ -35,10 +35,12 @@ import backend.techeerzip.domain.session.repository.SessionRepository;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
 import backend.techeerzip.domain.user.dto.request.CreateUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
+import backend.techeerzip.domain.user.dto.request.GetUserProfileListRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserInfoRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserWithExperienceRequest;
 import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
+import backend.techeerzip.domain.user.dto.response.GetUserProfileListResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.user.entity.User;
@@ -455,5 +457,40 @@ public class UserService {
         logger.info("닉네임 업데이트 요청 처리 중 - userId: {}, newNickname: {}", userId, nickname, CONTEXT);
         user.setNickname(nickname);
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public GetUserProfileListResponse getAllProfiles(
+            GetUserProfileListRequest getUserProfileListRequest) {
+        int limit =
+                getUserProfileListRequest.getLimit() != null
+                        ? getUserProfileListRequest.getLimit()
+                        : 10;
+        String sortBy =
+                getUserProfileListRequest.getSortBy() != null
+                        ? getUserProfileListRequest.getSortBy()
+                        : "year";
+
+        List<User> users =
+                userRepository.findUsersWithCursor(
+                        getUserProfileListRequest.getCursorId(),
+                        getUserProfileListRequest.getPosition(),
+                        getUserProfileListRequest.getYear(),
+                        getUserProfileListRequest.getUniversity(),
+                        getUserProfileListRequest.getGrade(),
+                        limit,
+                        sortBy);
+
+        boolean hasNext = users.size() > limit;
+        if (hasNext) {
+            users = users.subList(0, limit);
+        }
+
+        Long nextCursor = hasNext ? users.get(users.size() - 1).getId() : null;
+
+        List<GetUserResponse> responses =
+                users.stream().map(userMapper::toGetUserResponse).toList();
+
+        return new GetUserProfileListResponse(responses, hasNext, nextCursor);
     }
 }

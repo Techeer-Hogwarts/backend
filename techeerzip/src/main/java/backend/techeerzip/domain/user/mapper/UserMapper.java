@@ -93,7 +93,11 @@ public class UserMapper {
                                                         .position(exp.getPosition())
                                                         .companyName(exp.getCompanyName())
                                                         .startDate(exp.getStartDate().toString())
-                                                        .endDate(exp.getEndDate().toString())
+                                                        .endDate(
+                                                                exp.getEndDate() != null
+                                                                        ? exp.getEndDate()
+                                                                                .toString()
+                                                                        : null)
                                                         .category(exp.getCategory())
                                                         .isFinished(exp.isFinished())
                                                         .build())

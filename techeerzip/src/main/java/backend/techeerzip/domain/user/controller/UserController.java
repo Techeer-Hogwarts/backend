@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
+import backend.techeerzip.domain.user.dto.request.GetUserProfileListRequest;
 import backend.techeerzip.domain.user.dto.request.ResetUserPasswordRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserNicknameRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserPermissionRequest;
@@ -27,6 +29,7 @@ import backend.techeerzip.domain.user.dto.request.UpdateUserProfileImgRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserWithExperienceRequest;
 import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
+import backend.techeerzip.domain.user.dto.response.GetUserProfileListResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.service.UserService;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -169,5 +172,14 @@ public class UserController {
         userService.updateNickname(userId, updateUserNicknameRequest.getNickname());
         logger.info("닉네임 업데이트 요청 처리 완료 - userId: {}", userId, CONTEXT);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "모든 프로필 조회",
+            description = "조건에 맞는 모든 유저 프로필을 조회합니다. sortBy: 기본 정렬 값 -> year(기수+이름 순), name(이름 순)")
+    @GetMapping("/profiles")
+    public ResponseEntity<GetUserProfileListResponse> getAllProfiles(
+            @ModelAttribute GetUserProfileListRequest getUserProfileListRequest) {
+        return ResponseEntity.ok(userService.getAllProfiles(getUserProfileListRequest));
     }
 }
