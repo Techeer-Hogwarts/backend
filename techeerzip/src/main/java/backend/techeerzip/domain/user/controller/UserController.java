@@ -54,9 +54,13 @@ public class UserController {
             @RequestPart("file") MultipartFile file,
             @RequestPart("createUserWithResumeRequest") @Valid
                     CreateUserWithResumeRequest createUserWithResumeRequest) {
+        logger.info(
+                "회원가입 요청 처리 중 - email: {}",
+                createUserWithResumeRequest.getCreateUserRequest().getEmail(),
+                CONTEXT);
         userService.signUp(createUserWithResumeRequest, file);
         logger.info(
-                "회원가입 처리 완료 - email: {}",
+                "회원가입 요청 처리 완료 - email: {}",
                 createUserWithResumeRequest.getCreateUserRequest().getEmail(),
                 CONTEXT);
         return ResponseEntity.ok().build();
@@ -66,8 +70,9 @@ public class UserController {
     @DeleteMapping(value = "")
     public ResponseEntity<Void> deleteUser(
             @Valid @Parameter(hidden = true) @UserId Long userId, HttpServletResponse response) {
+        logger.info("회원 탈퇴 요청 처리 중 - userId: {}", userId, CONTEXT);
         userService.deleteUser(userId, response);
-        logger.info("회원 탈퇴 처리 완료 - userId: {}", userId, CONTEXT);
+        logger.info("회원 탈퇴 요청 처리 완료 - userId: {}", userId, CONTEXT);
         return ResponseEntity.ok().build();
     }
 
@@ -79,6 +84,7 @@ public class UserController {
         String code = userResetPasswordRequest.getCode();
         String newPassword = userResetPasswordRequest.getNewPassword();
 
+        logger.info("비밀번호 재설정 요청 처리 중 - email: {}", userResetPasswordRequest.getEmail(), CONTEXT);
         userService.resetPassword(email, code, newPassword);
         logger.info("비밀번호 재설정 요청 처리 완료 - email: {}", userResetPasswordRequest.getEmail(), CONTEXT);
         return ResponseEntity.ok().build();
@@ -88,8 +94,9 @@ public class UserController {
     @GetMapping("")
     public ResponseEntity<GetUserResponse> getUser(
             @Valid @Parameter(hidden = true) @UserId Long userId) {
+        logger.info("유저 정보 조회 요청 처리 중 - userId: {}", userId, CONTEXT);
         GetUserResponse response = userService.getUserInfo(userId);
-        logger.info("유저 정보 조회 완료 - userId: {}", userId, CONTEXT);
+        logger.info("유저 정보 조회 요청 처리 완료 - userId: {}", userId, CONTEXT);
         return ResponseEntity.ok(response);
     }
 
@@ -98,8 +105,10 @@ public class UserController {
     public ResponseEntity<GetProfileImgResponse> updateProfileImage(
             @Valid @RequestBody UpdateUserProfileImgRequest updateUserProfileImgRequest) {
         String email = updateUserProfileImgRequest.getEmail();
+
+        logger.info("프로필 사진 동기화 요청 처리 중 - email: {}", email, CONTEXT);
         GetProfileImgResponse response = userService.updateProfileImg(email);
-        logger.info("프로필 사진 동기화 완료 - email: {}", email, CONTEXT);
+        logger.info("프로필 사진 동기화 요청 처리 완료 - email: {}", email, CONTEXT);
         return ResponseEntity.ok(response);
     }
 
@@ -108,8 +117,17 @@ public class UserController {
     public ResponseEntity<Void> requestPermission(
             @Valid @Parameter(hidden = true) @UserId Long userId,
             @RequestBody CreateUserPermissionRequest createUserPermissionRequest) {
+        logger.info(
+                "권한 요청 처리 중 - userId: {}, newRoleId: {}",
+                userId,
+                createUserPermissionRequest.getRoleId(),
+                CONTEXT);
         userService.createUserPermissionRequest(userId, createUserPermissionRequest.getRoleId());
-        logger.info("권한 요청 완료 - userId: {}", userId, CONTEXT);
+        logger.info(
+                "권한 요청 처리 완료 - userId: {}",
+                userId,
+                createUserPermissionRequest.getRoleId(),
+                CONTEXT);
         return ResponseEntity.ok().build();
     }
 
@@ -117,8 +135,9 @@ public class UserController {
     @GetMapping("/permission/request")
     public ResponseEntity<List<GetPermissionResponse>> getPermissionRequests(
             @Valid @Parameter(hidden = true) @UserId Long userId) {
+        logger.info("권한 요청 목록 조회 요청 처리 중", CONTEXT);
         List<GetPermissionResponse> response = userService.getAllPendingPermissionRequests(userId);
-        logger.info("권한 요청 목록 조회 완료 - userId: {}", userId, CONTEXT);
+        logger.info("권한 요청 목록 조회 요청 처리 완료", CONTEXT);
         return ResponseEntity.ok(response);
     }
 
@@ -127,12 +146,17 @@ public class UserController {
     public ResponseEntity<Void> approvePermission(
             @Valid @Parameter(hidden = true) @UserId Long userId,
             @RequestBody UpdateUserPermissionRequest updateUserPermissionRequest) {
+        logger.info(
+                "권한 승인 요청 처리 중 - userId: {}, newRoleId: {}",
+                updateUserPermissionRequest.getUserId(),
+                updateUserPermissionRequest.getNewRoleId(),
+                CONTEXT);
         userService.approveUserPermission(
                 userId,
                 updateUserPermissionRequest.getUserId(),
                 updateUserPermissionRequest.getNewRoleId());
         logger.info(
-                "권한 승인 완료 - userId: {}, newRoleId: {}",
+                "권한 승인 요청 처리 완료 - userId: {}, newRoleId: {}",
                 updateUserPermissionRequest.getUserId(),
                 updateUserPermissionRequest.getNewRoleId(),
                 CONTEXT);
@@ -142,7 +166,9 @@ public class UserController {
     @Operation(summary = "특정 프로필 조회", description = "userId로 특정 유저 프로필을 조회합니다.")
     @GetMapping("/{userId}")
     public ResponseEntity<GetUserResponse> getProfile(@PathVariable Long userId) {
+        logger.info("특정 프로필 조회 요청 처리 중 - profileUserId: {}", userId, CONTEXT);
         GetUserResponse response = userService.getUserInfo(userId);
+        logger.info("특정 프로필 조회 요청 처리 완료 - profileUserId: {}", userId, CONTEXT);
         return ResponseEntity.ok(response);
     }
 
@@ -151,16 +177,18 @@ public class UserController {
     public ResponseEntity<Void> updateProfile(
             @Valid @Parameter(hidden = true) @UserId Long userId,
             @RequestBody UpdateUserWithExperienceRequest updateUserWithExperienceRequest) {
+        logger.info("프로필 업데이트 요청 처리 중 - userId: {}", userId, CONTEXT);
         userService.updateProfile(userId, updateUserWithExperienceRequest);
-        logger.info("프로필 업데이트 완료 - userId: {}", userId, CONTEXT);
+        logger.info("프로필 업데이트 요청 처리 완료 - userId: {}", userId, CONTEXT);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "경력 삭제", description = "경력 정보를 삭제합니다.")
     @DeleteMapping("/experience/{experienceId}")
     public ResponseEntity<Void> deleteExperience(@PathVariable Long experienceId) {
+        logger.info("경력 삭제 요청 처리 중 - experienceId: {}", experienceId, CONTEXT);
         userService.deleteExperience(experienceId);
-        logger.info("경력 삭제 완료 - experienceId: {}", experienceId, CONTEXT);
+        logger.info("경력 삭제 요청 처리 완료 - experienceId: {}", experienceId, CONTEXT);
         return ResponseEntity.ok().build();
     }
 
@@ -169,8 +197,17 @@ public class UserController {
     public ResponseEntity<Void> updateNickname(
             @Valid @Parameter(hidden = true) @UserId Long userId,
             @RequestBody UpdateUserNicknameRequest updateUserNicknameRequest) {
+        logger.info(
+                "닉네임 업데이트 요청 처리 중 - userId: {}, newNickname: {}",
+                userId,
+                updateUserNicknameRequest.getNickname(),
+                CONTEXT);
         userService.updateNickname(userId, updateUserNicknameRequest.getNickname());
-        logger.info("닉네임 업데이트 요청 처리 완료 - userId: {}", userId, CONTEXT);
+        logger.info(
+                "닉네임 업데이트 요청 처리 완료 - userId: {}, newNickname: {}",
+                userId,
+                updateUserNicknameRequest.getNickname(),
+                CONTEXT);
         return ResponseEntity.ok().build();
     }
 
@@ -180,6 +217,10 @@ public class UserController {
     @GetMapping("/profiles")
     public ResponseEntity<GetUserProfileListResponse> getAllProfiles(
             @ModelAttribute GetUserProfileListRequest getUserProfileListRequest) {
-        return ResponseEntity.ok(userService.getAllProfiles(getUserProfileListRequest));
+        logger.info("모든 프로필 조회 요청 처리 중 - sort: {}", getUserProfileListRequest.getSortBy(), CONTEXT);
+        GetUserProfileListResponse profiles = userService.getAllProfiles(getUserProfileListRequest);
+        logger.info(
+                "모든 프로필 조회 요청 처리 완료 - sort: {}", getUserProfileListRequest.getSortBy(), CONTEXT);
+        return ResponseEntity.ok(profiles);
     }
 }

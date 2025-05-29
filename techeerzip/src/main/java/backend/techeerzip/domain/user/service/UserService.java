@@ -2,7 +2,6 @@ package backend.techeerzip.domain.user.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -44,7 +43,6 @@ import backend.techeerzip.domain.user.dto.response.GetUserProfileListResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.user.entity.User;
-import backend.techeerzip.domain.user.exception.UserAlreadyExistsException;
 import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.exception.UserNotResumeException;
 import backend.techeerzip.domain.user.exception.UserProfileImgFailException;
@@ -107,12 +105,12 @@ public class UserService {
                 createUserWithResumeRequest.getCreateUserExperienceRequest().getExperiences();
 
         if (!authService.checkEmailverified(createUserRequest.getEmail())) {
-            logger.error("이메일 인증 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
+            logger.warn("이메일 인증 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
             throw new AuthNotVerifiedEmailException();
         }
 
         if (file == null || file.isEmpty()) {
-            logger.error("이력서 파일 첨부 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
+            logger.warn("이력서 파일 첨부 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
             throw new UserNotResumeException();
         }
 
@@ -123,58 +121,30 @@ public class UserService {
         String password = createUserRequest.getPassword();
         String hashedPassword = passwordEncoder.encode(password);
 
-        Optional<User> existingUserOpt = userRepository.findByEmail(createUserRequest.getEmail());
-
         User savedUser;
 
-        if (existingUserOpt.isPresent()) {
-            User existingUser = existingUserOpt.get();
+        User newUser =
+                User.builder()
+                        .email(createUserRequest.getEmail())
+                        .password(hashedPassword)
+                        .name(createUserRequest.getName())
+                        .mainPosition(createUserRequest.getMainPosition())
+                        .subPosition(createUserRequest.getSubPosition())
+                        .grade(createUserRequest.getGrade())
+                        .githubUrl(createUserRequest.getGithubUrl())
+                        .tistoryUrl(createUserRequest.getTistoryUrl())
+                        .velogUrl(createUserRequest.getVelogUrl())
+                        .mediumUrl(createUserRequest.getMediumUrl())
+                        .school(createUserRequest.getSchool())
+                        .year(createUserRequest.getYear())
+                        .isLft(createUserRequest.getIsLft())
+                        .profileImage(profileImage)
+                        .isAuth(true)
+                        .role(defaultRole)
+                        .build();
 
-            if (!existingUser.isDeleted()) {
-                throw new UserAlreadyExistsException();
-            }
-
-            existingUser.setDeleted(false);
-            existingUser.setPassword(hashedPassword);
-            existingUser.setName(createUserRequest.getName());
-            existingUser.setMainPosition(createUserRequest.getMainPosition());
-            existingUser.setSubPosition(createUserRequest.getSubPosition());
-            existingUser.setGrade(createUserRequest.getGrade());
-            existingUser.setGithubUrl(createUserRequest.getGithubUrl());
-            existingUser.setTistoryUrl(createUserRequest.getTistoryUrl());
-            existingUser.setVelogUrl(createUserRequest.getVelogUrl());
-            existingUser.setMediumUrl(createUserRequest.getMediumUrl());
-            existingUser.setSchool(createUserRequest.getSchool());
-            existingUser.setYear(createUserRequest.getYear());
-            existingUser.setLft(createUserRequest.getIsLft());
-            existingUser.setProfileImage(profileImage);
-            existingUser.setAuth(true);
-            existingUser.setRole(defaultRole);
-
-            savedUser = userRepository.save(existingUser);
-        } else {
-            User newUser =
-                    User.builder()
-                            .email(createUserRequest.getEmail())
-                            .password(hashedPassword)
-                            .name(createUserRequest.getName())
-                            .mainPosition(createUserRequest.getMainPosition())
-                            .subPosition(createUserRequest.getSubPosition())
-                            .grade(createUserRequest.getGrade())
-                            .githubUrl(createUserRequest.getGithubUrl())
-                            .tistoryUrl(createUserRequest.getTistoryUrl())
-                            .velogUrl(createUserRequest.getVelogUrl())
-                            .mediumUrl(createUserRequest.getMediumUrl())
-                            .school(createUserRequest.getSchool())
-                            .year(createUserRequest.getYear())
-                            .isLft(createUserRequest.getIsLft())
-                            .profileImage(profileImage)
-                            .isAuth(true)
-                            .role(defaultRole)
-                            .build();
-
-            savedUser = userRepository.save(newUser);
-        }
+        savedUser = userRepository.save(newUser);
+        logger.info("신규 회원 정보 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
 
         // 블로그 크롤링 실행
         // 이력서 저장
@@ -196,6 +166,7 @@ public class UserService {
                         .toList();
 
         userExperienceRepository.saveAll(experiencesData);
+        logger.info("신규 회원 경력 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
     }
 
     @Transactional
@@ -216,7 +187,7 @@ public class UserService {
 
         user.delete();
         userRepository.delete(user);
-        logger.info("유저 삭제 완료 - userId: {}", userId, CONTEXT);
+        logger.info("유저 정보 삭제 완료 - userId: {}", userId, CONTEXT);
 
         ResponseCookie expiredAccessToken =
                 ResponseCookie.from("access_token", "")
@@ -285,20 +256,19 @@ public class UserService {
             if (response.getStatusCode().is2xxSuccessful()
                     && responseBody != null
                     && responseBody.containsKey("image")) {
+                logger.info("최신 슬랙 이미지 불러오기 완료 - email: {}", email, CONTEXT);
                 return (String) responseBody.get("image");
             }
 
-            logger.error("슬랙 이미지 요청 실패 - email: {}", email, CONTEXT);
+            logger.warn("슬랙 이미지 요청 실패 - email: {}", email, CONTEXT);
             throw new UserProfileImgFailException();
         } catch (Exception e) {
-            logger.error("슬랙 이미지 요청 실패 - email: {}", email, CONTEXT);
+            logger.warn("슬랙 이미지 요청 실패 - email: {}", email, CONTEXT);
             throw new UserProfileImgFailException();
         }
     }
 
     public PermissionRequest createUserPermissionRequest(Long userId, Long roleId) {
-        logger.info("권한 요청 - userId: {} newRoleId: - {}", CONTEXT);
-
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         PermissionRequest permissionRequest =
@@ -317,8 +287,6 @@ public class UserService {
             logger.warn("권한 없음 - userId: {}", currentUserId);
             throw new UserUnauthorizedAdminException();
         }
-
-        logger.info("권한 요청 목록 조회", CONTEXT);
 
         return permissionRequestRepository.findByStatus(StatusCategory.PENDING).stream()
                 .map(
@@ -351,15 +319,12 @@ public class UserService {
 
         userRepository.save(user);
 
-        logger.info("사용자 권한 요청 승인 완료 - userId:{}", userId, CONTEXT);
-
         permissionRequestRepository.updateStatusByUserId(userId, StatusCategory.APPROVED);
     }
 
     public void updateProfile(
             Long userId, UpdateUserWithExperienceRequest updateUserWithExperienceRequest) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        logger.info("유저 프로필 업데이트 요청 - userId: {}", userId, CONTEXT);
 
         UpdateUserInfoRequest updateUserInfoRequest =
                 updateUserWithExperienceRequest.getUpdateUserInfoRequest();
@@ -441,7 +406,6 @@ public class UserService {
                 userExperienceRepository
                         .findById(experienceId)
                         .orElseThrow(UserExperienceNotFoundException::new);
-        logger.info("경력 삭제 요청 처리 중 - experienceId: {}", experienceId, CONTEXT);
         userExperienceRepository.delete(experience);
     }
 
@@ -454,7 +418,6 @@ public class UserService {
             throw new UserUnauthorizedAdminException();
         }
 
-        logger.info("닉네임 업데이트 요청 처리 중 - userId: {}, newNickname: {}", userId, nickname, CONTEXT);
         user.setNickname(nickname);
         userRepository.save(user);
     }

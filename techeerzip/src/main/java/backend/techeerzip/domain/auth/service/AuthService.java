@@ -63,14 +63,15 @@ public class AuthService {
     // 이메일 인증 코드 전송
     public void sendVerificationEmail(String email) {
         if (!checkTecheer(email)) {
-            logger.error("테커 회원이 아닙니다.", CONTEXT);
             throw new AuthNotTecheerException();
         }
 
-        logger.info("이메일 인증 코드 생성 중 - email: {}", email, CONTEXT);
         String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
+        logger.info("이메일 인증 코드 생성 완료 - email: {}", email, CONTEXT);
 
         redisTemplate.opsForValue().set(email, code, Duration.ofMinutes(5));
+        logger.info("redis 인증 코드 저장 완료 - email: {}", email, CONTEXT);
+
         sendMail(email, code);
     }
 
@@ -109,7 +110,7 @@ public class AuthService {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             return Boolean.TRUE.equals(response.getBody().get("isTecheer"));
         } catch (Exception e) {
-            logger.error("해당 사용자 테커 여부 조회 실패", CONTEXT);
+            logger.warn("테커 회원이 아닙니다. - email: {}", email, CONTEXT);
             throw new AuthNotTecheerException();
         }
     }
@@ -119,10 +120,12 @@ public class AuthService {
         String cached = redisTemplate.opsForValue().get(email);
 
         if (cached == null) {
+            logger.warn("이메일 인증 필요 - email: {}", email, CONTEXT);
             throw new AuthNotVerifiedEmailException();
         }
 
         if (!cached.equals(code)) {
+            logger.warn("이메일 인증 코드 불일치 - email: {}", email, CONTEXT);
             throw new InvalidVerificationCodeException();
         }
 
@@ -136,7 +139,6 @@ public class AuthService {
 
     public TokenPair login(HttpServletResponse response, LoginRequest loginRequest) {
         String email = loginRequest.getEmail();
-        logger.info("로그인 요청 - email: {}", email, CONTEXT);
 
         try {
             User user =
@@ -162,6 +164,8 @@ public class AuthService {
                             .sameSite("None")
                             .build();
 
+            logger.info("액세스 토큰 생성 완료 - email: {}", email, CONTEXT);
+
             ResponseCookie refreshToken =
                     ResponseCookie.from("refresh_token", tokenPair.getRefreshToken())
                             .httpOnly(true)
@@ -170,6 +174,8 @@ public class AuthService {
                             .maxAge(60 * 60 * 24 * 7)
                             .sameSite("None")
                             .build();
+
+            logger.info("리프레시 토큰 생성 완료 - email: {}", email, CONTEXT);
 
             response.addHeader("Set-Cookie", accessToken.toString());
             response.addHeader("Set-Cookie", refreshToken.toString());
