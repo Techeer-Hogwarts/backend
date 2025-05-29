@@ -16,23 +16,20 @@ import backend.techeerzip.domain.auth.dto.token.TokenPair;
 import backend.techeerzip.domain.auth.service.AuthService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.global.resolver.UserId;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "auth", description = "Auth API")
 @RestController
 @RequestMapping("/api/v3/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController implements AuthSwagger {
 
     private final AuthService authService;
     private final CustomLogger logger;
     private static final String CONTEXT = "AuthController";
 
-    @Operation(summary = "이메일 인증 코드 전송", description = "사용자의 이메일로 인증 코드를 전송합니다.")
     @PostMapping("/email")
+    @Override
     public ResponseEntity<Void> sendVerificationEmail(
             @Valid @RequestBody SendEmailRequest sendEmailRequest) {
         String email = sendEmailRequest.getEmail();
@@ -43,8 +40,8 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "이메일 인증 코드 확인", description = "전송된 이메일 인증 코드를 확인합니다.")
     @PostMapping("/code")
+    @Override
     public ResponseEntity<Void> verifyCode(
             @Valid @RequestBody VerifyCodeRequest verifyCodeRequest) {
         String email = verifyCodeRequest.getEmail();
@@ -56,8 +53,8 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "로그인", description = "로그인을 진행합니다.")
     @PostMapping("/login")
+    @Override
     public ResponseEntity<TokenPair> login(
             @Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         logger.info("로그인 요청 처리 중 - email: {}", loginRequest.getEmail(), CONTEXT);
@@ -66,8 +63,8 @@ public class AuthController {
         return ResponseEntity.ok(tokenPair);
     }
 
-    @Operation(summary = "로그아웃", description = "로그아웃을 진행합니다.")
     @PostMapping("/logout")
+    @Override
     public ResponseEntity<Void> logout(
             @Valid @Parameter(hidden = true) @UserId Long userId, HttpServletResponse response) {
         logger.info("로그아웃 처리 중 - userId: {}", userId, CONTEXT);
