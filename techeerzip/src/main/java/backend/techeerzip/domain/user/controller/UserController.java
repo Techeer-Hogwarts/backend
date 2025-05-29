@@ -22,6 +22,7 @@ import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserProfileImgRequest;
+import backend.techeerzip.domain.user.dto.request.UpdateUserWithExperienceRequest;
 import backend.techeerzip.domain.user.dto.request.UserResetPasswordRequest;
 import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
@@ -139,5 +140,15 @@ public class UserController {
     public ResponseEntity<GetUserResponse> getProfile(@PathVariable Long userId) {
         GetUserResponse response = userService.getUserInfo(userId);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "프로필 업데이트", description = "사용자의 프로필 정보를 업데이트합니다.")
+    @PatchMapping("")
+    public ResponseEntity<Void> updateProfile(
+            @Valid @Parameter(hidden = true) @UserId Long userId,
+            @RequestBody UpdateUserWithExperienceRequest updateUserWithExperienceRequest) {
+        userService.updateProfile(userId, updateUserWithExperienceRequest);
+        logger.info("프로필 업데이트 완료 - userId: {}", userId, CONTEXT);
+        return ResponseEntity.ok().build();
     }
 }

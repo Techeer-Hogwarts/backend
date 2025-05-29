@@ -33,9 +33,10 @@ import backend.techeerzip.domain.role.exception.RoleNotFoundException;
 import backend.techeerzip.domain.role.repository.RoleRepository;
 import backend.techeerzip.domain.session.repository.SessionRepository;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
-import backend.techeerzip.domain.user.dto.request.CreateUserExperienceRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
+import backend.techeerzip.domain.user.dto.request.UpdateUserInfoRequest;
+import backend.techeerzip.domain.user.dto.request.UpdateUserWithExperienceRequest;
 import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
@@ -49,7 +50,9 @@ import backend.techeerzip.domain.user.exception.UserUnauthorizedAdminException;
 import backend.techeerzip.domain.user.mapper.UserMapper;
 import backend.techeerzip.domain.user.repository.PermissionRequestRepository;
 import backend.techeerzip.domain.user.repository.UserRepository;
+import backend.techeerzip.domain.userExperience.dto.request.CreateUserExperienceRequest;
 import backend.techeerzip.domain.userExperience.entity.UserExperience;
+import backend.techeerzip.domain.userExperience.exception.UserExperienceNotFoundException;
 import backend.techeerzip.domain.userExperience.repository.UserExperienceRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -350,9 +353,82 @@ public class UserService {
         permissionRequestRepository.updateStatusByUserId(userId, StatusCategory.APPROVED);
     }
 
-    public GetUserResponse getProfile(Long userId) {
+    public void updateProfile(
+            Long userId, UpdateUserWithExperienceRequest updateUserWithExperienceRequest) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        logger.info("유저 프로필 업데이트 요청 - userId: {}", userId, CONTEXT);
 
-        return userMapper.toGetUserResponse(user);
+        UpdateUserInfoRequest updateUserInfoRequest =
+                updateUserWithExperienceRequest.getUpdateUserInfoRequest();
+
+        if (updateUserInfoRequest != null) {
+            if (updateUserInfoRequest.getMainPosition() != null)
+                user.setMainPosition(updateUserInfoRequest.getMainPosition());
+            if (updateUserInfoRequest.getSubPosition() != null)
+                user.setSubPosition(updateUserInfoRequest.getSubPosition());
+            if (updateUserInfoRequest.getGithubUrl() != null)
+                user.setGithubUrl(updateUserInfoRequest.getGithubUrl());
+            if (updateUserInfoRequest.getTistoryUrl() != null)
+                user.setTistoryUrl(updateUserInfoRequest.getTistoryUrl());
+            if (updateUserInfoRequest.getIsLft() != null)
+                user.setLft(updateUserInfoRequest.getIsLft());
+            if (updateUserInfoRequest.getSchool() != null)
+                user.setSchool(updateUserInfoRequest.getSchool());
+            if (updateUserInfoRequest.getGrade() != null)
+                user.setGrade(updateUserInfoRequest.getGrade());
+            if (updateUserInfoRequest.getMediumUrl() != null)
+                user.setMediumUrl(updateUserInfoRequest.getMediumUrl());
+            if (updateUserInfoRequest.getVelogUrl() != null)
+                user.setVelogUrl(updateUserInfoRequest.getVelogUrl());
+            if (updateUserInfoRequest.getYear() != null)
+                user.setYear(updateUserInfoRequest.getYear());
+        }
+
+        // 경력 ID 있으면 경력 수정, 없으면 추가
+        if (updateUserWithExperienceRequest.getUpdateUserExperienceRequest() != null
+                && updateUserWithExperienceRequest.getUpdateUserExperienceRequest().getExperiences()
+                        != null) {
+
+            updateUserWithExperienceRequest
+                    .getUpdateUserExperienceRequest()
+                    .getExperiences()
+                    .forEach(
+                            e -> {
+                                if (e.getExperienceId() != null) {
+                                    UserExperience existingExp =
+                                            userExperienceRepository
+                                                    .findById(e.getExperienceId())
+                                                    .orElseThrow(
+                                                            UserExperienceNotFoundException::new);
+
+                                    existingExp.setPosition(e.getPosition());
+                                    existingExp.setCompanyName(e.getCompanyName());
+                                    existingExp.setStartDate(e.getStartDate());
+                                    existingExp.setEndDate(e.getEndDate());
+                                    existingExp.setCategory(e.getCategory());
+                                    existingExp.setIsFinished(
+                                            Boolean.TRUE.equals(e.getIsFinished()));
+                                    existingExp.setDescription(e.getDescription());
+
+                                    userExperienceRepository.save(existingExp);
+                                } else {
+                                    UserExperience newExp =
+                                            UserExperience.builder()
+                                                    .userId(user.getId())
+                                                    .position(e.getPosition())
+                                                    .companyName(e.getCompanyName())
+                                                    .startDate(e.getStartDate())
+                                                    .endDate(e.getEndDate())
+                                                    .category(e.getCategory())
+                                                    .isFinished(
+                                                            Boolean.TRUE.equals(e.getIsFinished()))
+                                                    .description(e.getDescription())
+                                                    .build();
+
+                                    userExperienceRepository.save(newExp);
+                                }
+                            });
+        }
+        userRepository.save(user);
     }
 }

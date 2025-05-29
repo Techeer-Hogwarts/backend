@@ -31,6 +31,9 @@ public enum ErrorCode {
     USER_INVALID_POSITION(HttpStatus.BAD_REQUEST, "U006", "유효하지 않은 포지션 입력입니다."),
     USER_INVALID_GRADE(HttpStatus.BAD_REQUEST, "U007", "유효하지 않은 학년 입력입니다."),
 
+    // UserExperience
+    USER_EXPERIENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "UE001", "해당 경력을 찾을 수 없습니다."),
+
     // Blog
     BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "블로그를 찾을 수 없습니다."),
     BLOG_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "B002", "이미 존재하는 블로그입니다."),

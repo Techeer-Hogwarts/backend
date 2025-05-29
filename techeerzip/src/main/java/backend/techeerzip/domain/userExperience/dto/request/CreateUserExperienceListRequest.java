@@ -1,4 +1,4 @@
-package backend.techeerzip.domain.user.dto.request;
+package backend.techeerzip.domain.userExperience.dto.request;
 
 import java.util.List;
 

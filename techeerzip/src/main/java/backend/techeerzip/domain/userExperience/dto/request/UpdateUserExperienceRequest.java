@@ -1,4 +1,4 @@
-package backend.techeerzip.domain.user.dto.request;
+package backend.techeerzip.domain.userExperience.dto.request;
 
 import java.time.LocalDateTime;
 
@@ -6,15 +6,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Schema(name = "CreateUserExperienceRequest", description = "경력 요청 DTO")
-public class CreateUserExperienceRequest {
+@Setter
+@Schema(name = "UpdateUserExperienceRequest", description = "경력 수정 DTO")
+public class UpdateUserExperienceRequest {
+
+    @Schema(description = "경력 ID", example = "1")
+    private Long experienceId;
 
     @NotBlank
     @Schema(description = "포지션", example = "BACKEND")
