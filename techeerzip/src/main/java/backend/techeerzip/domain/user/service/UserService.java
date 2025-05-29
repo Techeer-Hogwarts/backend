@@ -208,6 +208,7 @@ public class UserService {
         resumeRepository.updateIsDeletedByUserId(userId);
         sessionRepository.updateIsDeletedByUserId(userId);
         studyMemberRepository.updateIsDeletedByUserId(userId);
+        userExperienceRepository.updateIsDeletedByUserId(userId);
 
         logger.info("해당 유저 연관 데이터 삭제 완료 - userId: {}", userId, CONTEXT);
 
