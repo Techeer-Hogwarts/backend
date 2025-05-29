@@ -1,29 +1,29 @@
-//package backend.techeerzip.domain.projectMember.repository;
+// package backend.techeerzip.domain.projectMember.repository;
 //
-//import java.util.List;
+// import java.util.List;
 //
-//import org.junit.jupiter.api.Assertions;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.autoconfigure.domain.EntityScan;
-//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-//import org.springframework.test.context.ActiveProfiles;
+// import org.junit.jupiter.api.Assertions;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.autoconfigure.domain.EntityScan;
+// import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+// import org.springframework.test.context.ActiveProfiles;
 //
-//import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-//import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-//import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
-//import backend.techeerzip.domain.projectTeam.type.TeamRole;
-//import backend.techeerzip.domain.role.entity.Role;
-//import backend.techeerzip.domain.role.repository.RoleRepository;
-//import backend.techeerzip.domain.user.entity.User;
-//import backend.techeerzip.domain.user.repository.UserRepository;
-//import backend.techeerzip.global.entity.StatusCategory;
+// import backend.techeerzip.domain.projectMember.entity.ProjectMember;
+// import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+// import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
+// import backend.techeerzip.domain.projectTeam.type.TeamRole;
+// import backend.techeerzip.domain.role.entity.Role;
+// import backend.techeerzip.domain.role.repository.RoleRepository;
+// import backend.techeerzip.domain.user.entity.User;
+// import backend.techeerzip.domain.user.repository.UserRepository;
+// import backend.techeerzip.global.entity.StatusCategory;
 //
-//@ActiveProfiles("test")
-//@DataJpaTest
-//@EntityScan(basePackages = "backend.techeerzip.domain")
-//class ProjectMemberRepositoryTest {
+// @ActiveProfiles("test")
+// @DataJpaTest
+// @EntityScan(basePackages = "backend.techeerzip.domain")
+// class ProjectMemberRepositoryTest {
 //
 //    @Autowired private ProjectMemberRepository projectMemberRepository;
 //    @Autowired private ProjectTeamRepository projectTeamRepository;
@@ -145,4 +145,4 @@
 //                        user.getId(), savedTeam.getId(), StatusCategory.APPROVED);
 //        Assertions.assertTrue(isMember);
 //    }
-//}
+// }

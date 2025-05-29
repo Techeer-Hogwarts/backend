@@ -1,18 +1,18 @@
-//package backend.techeerzip.domain.projectTeam.repository;
+// package backend.techeerzip.domain.projectTeam.repository;
 //
-//import org.junit.jupiter.api.BeforeEach;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-//import org.springframework.test.context.ActiveProfiles;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+// import org.springframework.test.context.ActiveProfiles;
 //
-//import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-//import backend.techeerzip.domain.stack.entity.Stack;
-//import backend.techeerzip.domain.stack.entity.StackCategory;
-//import backend.techeerzip.domain.stack.repository.StackRepository;
+// import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+// import backend.techeerzip.domain.stack.entity.Stack;
+// import backend.techeerzip.domain.stack.entity.StackCategory;
+// import backend.techeerzip.domain.stack.repository.StackRepository;
 //
-//@ActiveProfiles("test")
-//@DataJpaTest
-//class ProjectTeamStackRepositoryTest {
+// @ActiveProfiles("test")
+// @DataJpaTest
+// class ProjectTeamStackRepositoryTest {
 //
 //    @Autowired ProjectTeamStackRepository projectTeamStackRepository;
 //    @Autowired ProjectTeamRepository projectTeamRepository;
@@ -43,4 +43,4 @@
 //                stackRepository.save(
 //                        Stack.builder().category(StackCategory.BACKEND).name("").build());
 //    }
-//}
+// }

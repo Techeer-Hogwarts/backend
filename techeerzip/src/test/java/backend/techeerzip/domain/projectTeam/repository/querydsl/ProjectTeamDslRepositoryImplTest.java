@@ -1,8 +1,8 @@
-//package backend.techeerzip.domain.projectTeam.repository.querydsl;
+// package backend.techeerzip.domain.projectTeam.repository.querydsl;
 //
-//import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.Test;
 //
-//class ProjectTeamDslRepositoryImplTest {
+// class ProjectTeamDslRepositoryImplTest {
 //
 //    @Test
 //    void sliceYoungTeam() {}
@@ -15,4 +15,4 @@
 //
 //    @Test
 //    void findAllTeamsByUserId() {}
-//}
+// }

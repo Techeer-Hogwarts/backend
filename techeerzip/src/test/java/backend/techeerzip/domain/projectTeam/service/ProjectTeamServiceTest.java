@@ -1,78 +1,78 @@
-//package backend.techeerzip.domain.projectTeam.service;
+// package backend.techeerzip.domain.projectTeam.service;
 //
-//import static org.assertj.core.api.Assertions.assertThat;
-//import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.junit.jupiter.api.Assertions.assertNotNull;
-//import static org.junit.jupiter.api.Assertions.assertThrows;
-//import static org.mockito.Mockito.any;
-//import static org.mockito.Mockito.doThrow;
-//import static org.mockito.Mockito.mock;
-//import static org.mockito.Mockito.verify;
-//import static org.mockito.Mockito.when;
+// import static org.assertj.core.api.Assertions.assertThat;
+// import static org.junit.jupiter.api.Assertions.assertEquals;
+// import static org.junit.jupiter.api.Assertions.assertNotNull;
+// import static org.junit.jupiter.api.Assertions.assertThrows;
+// import static org.mockito.Mockito.any;
+// import static org.mockito.Mockito.doThrow;
+// import static org.mockito.Mockito.mock;
+// import static org.mockito.Mockito.verify;
+// import static org.mockito.Mockito.when;
 //
-//import java.util.List;
-//import java.util.Optional;
+// import java.util.List;
+// import java.util.Optional;
 //
-//import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.Assertions;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Nested;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.MockedStatic;
-//import org.mockito.Mockito;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.core.io.ClassPathResource;
+// import org.junit.jupiter.api.AfterEach;
+// import org.junit.jupiter.api.Assertions;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.DisplayName;
+// import org.junit.jupiter.api.Nested;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
+// import org.mockito.InjectMocks;
+// import org.mockito.Mock;
+// import org.mockito.MockedStatic;
+// import org.mockito.Mockito;
+// import org.mockito.junit.jupiter.MockitoExtension;
+// import org.springframework.core.io.ClassPathResource;
 //
-//import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
-//import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-//import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
-//import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
-//import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
-//import backend.techeerzip.domain.projectMember.service.ProjectMemberService;
-//import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
-//import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
-//import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
-//import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
-//import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
-//import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
-//import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
-//import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
-//import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo.WithStack;
-//import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
-//import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-//import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
-//import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
-//import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
-//import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-//import backend.techeerzip.domain.projectTeam.exception.ProjectDuplicateTeamName;
-//import backend.techeerzip.domain.projectTeam.exception.ProjectExceededResultImageException;
-//import backend.techeerzip.domain.projectTeam.exception.ProjectInvalidProjectMemberException;
-//import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingLeaderException;
-//import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateMemberException;
-//import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
-//import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
-//import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
-//import backend.techeerzip.domain.projectTeam.mapper.ProjectIndexMapper;
-//import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
-//import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
-//import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
-//import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
-//import backend.techeerzip.domain.projectTeam.type.TeamRole;
-//import backend.techeerzip.domain.projectTeam.type.TeamType;
-//import backend.techeerzip.domain.role.entity.Role;
-//import backend.techeerzip.domain.stack.entity.Stack;
-//import backend.techeerzip.domain.stack.entity.StackCategory;
-//import backend.techeerzip.domain.user.entity.User;
-//import backend.techeerzip.domain.user.repository.UserRepository;
-//import backend.techeerzip.global.entity.StatusCategory;
-//import backend.techeerzip.global.logger.CustomLogger;
+// import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
+// import backend.techeerzip.domain.projectMember.entity.ProjectMember;
+// import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
+// import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
+// import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
+// import backend.techeerzip.domain.projectMember.service.ProjectMemberService;
+// import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
+// import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
+// import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
+// import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
+// import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
+// import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
+// import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
+// import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
+// import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo.WithStack;
+// import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
+// import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
+// import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
+// import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
+// import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
+// import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+// import backend.techeerzip.domain.projectTeam.exception.ProjectDuplicateTeamName;
+// import backend.techeerzip.domain.projectTeam.exception.ProjectExceededResultImageException;
+// import backend.techeerzip.domain.projectTeam.exception.ProjectInvalidProjectMemberException;
+// import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingLeaderException;
+// import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateMemberException;
+// import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
+// import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
+// import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
+// import backend.techeerzip.domain.projectTeam.mapper.ProjectIndexMapper;
+// import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
+// import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
+// import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
+// import backend.techeerzip.domain.projectTeam.repository.querydsl.ProjectTeamDslRepository;
+// import backend.techeerzip.domain.projectTeam.type.TeamRole;
+// import backend.techeerzip.domain.projectTeam.type.TeamType;
+// import backend.techeerzip.domain.role.entity.Role;
+// import backend.techeerzip.domain.stack.entity.Stack;
+// import backend.techeerzip.domain.stack.entity.StackCategory;
+// import backend.techeerzip.domain.user.entity.User;
+// import backend.techeerzip.domain.user.repository.UserRepository;
+// import backend.techeerzip.global.entity.StatusCategory;
+// import backend.techeerzip.global.logger.CustomLogger;
 //
-//@ExtendWith(MockitoExtension.class)
-//class ProjectTeamServiceTest {
+// @ExtendWith(MockitoExtension.class)
+// class ProjectTeamServiceTest {
 //
 //    @Mock private ProjectMemberService projectMemberService;
 //    @Mock private ProjectTeamRepository projectTeamRepository;
@@ -413,7 +413,8 @@
 //            when(resultImageRepository.countByProjectTeamId(any())).thenReturn(1);
 //            Mockito.when(spyPm.isDeleted()).thenReturn(true);
 //            Mockito.when(spyPm.getId()).thenReturn(3L);
-//            when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
+//
+// when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
 //
 //            assertThrows(
 //                    ProjectMemberNotFoundException.class,
@@ -449,7 +450,8 @@
 //            when(resultImageRepository.countByProjectTeamId(any())).thenReturn(1);
 //            Mockito.when(spyPm.isDeleted()).thenReturn(true);
 //            Mockito.when(spyPm.getId()).thenReturn(1L);
-//            when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
+//
+// when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
 //
 //            assertThrows(
 //                    ProjectMemberNotFoundException.class,
@@ -485,7 +487,8 @@
 //            when(projectTeamRepository.findById(any())).thenReturn(Optional.of(mockTeam));
 //            when(resultImageRepository.countByProjectTeamId(any())).thenReturn(1);
 //            Mockito.when(spyPm.getId()).thenReturn(1L);
-//            when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
+//
+// when(projectMemberRepository.findAllByProjectTeamId(any())).thenReturn(List.of(spyPm));
 //
 //            assertThrows(
 //                    ProjectTeamMissingUpdateMemberException.class,
@@ -725,7 +728,8 @@
 //                    .when(
 //                            () ->
 //                                    ProjectSlackMapper.toDmRequest(
-//                                            team, leaders, "applicantEmail", StatusCategory.REJECT))
+//                                            team, leaders, "applicantEmail",
+// StatusCategory.REJECT))
 //                    .thenReturn(expectedSlackMessages);
 //
 //            Assertions.assertDoesNotThrow(
@@ -758,7 +762,8 @@
 //            mockTeam = mock(ProjectTeam.class);
 //            when(projectTeamRepository.findById(1L)).thenReturn(Optional.of(mockTeam));
 //
-//            ProjectTeamDetailResponse response = projectTeamService.updateViewCountAndGetDetail(1L);
+//            ProjectTeamDetailResponse response =
+// projectTeamService.updateViewCountAndGetDetail(1L);
 //            assertNotNull(response);
 //            verify(mockTeam).increaseViewCount();
 //        }
@@ -766,7 +771,8 @@
 //        @Test
 //        void notFoundThenThrow() {
 //            when(projectTeamRepository.findById(1L)).thenReturn(Optional.empty());
-//            assertThrows(Exception.class, () -> projectTeamService.updateViewCountAndGetDetail(1L));
+//            assertThrows(Exception.class, () ->
+// projectTeamService.updateViewCountAndGetDetail(1L));
 //        }
 //    }
 //
@@ -860,4 +866,4 @@
 //                    () -> projectTeamService.softDelete(1L, 10L));
 //        }
 //    }
-//}
+// }

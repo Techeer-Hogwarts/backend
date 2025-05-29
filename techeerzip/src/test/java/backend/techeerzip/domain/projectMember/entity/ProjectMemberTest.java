@@ -1,7 +1,7 @@
-//package backend.techeerzip.domain.projectMember.entity;
+// package backend.techeerzip.domain.projectMember.entity;
 //
-//@SpringBootTest
-//class ProjectMemberTest {
+// @SpringBootTest
+// class ProjectMemberTest {
 //    private ProjectMember pm;
 //
 //    @BeforeEach
@@ -55,4 +55,4 @@
 //        pm.softDelete();
 //        Assertions.assertTrue(pm.isDeleted());
 //    }
-//}
+// }

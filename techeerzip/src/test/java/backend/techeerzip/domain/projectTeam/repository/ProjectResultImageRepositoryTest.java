@@ -1,20 +1,20 @@
-//package backend.techeerzip.domain.projectTeam.repository;
+// package backend.techeerzip.domain.projectTeam.repository;
 //
-//import java.util.List;
+// import java.util.List;
 //
-//import org.junit.jupiter.api.Assertions;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-//import org.springframework.test.context.ActiveProfiles;
+// import org.junit.jupiter.api.Assertions;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+// import org.springframework.test.context.ActiveProfiles;
 //
-//import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
-//import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+// import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
+// import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 //
-//@ActiveProfiles("test")
-//@DataJpaTest
-//class ProjectResultImageRepositoryTest {
+// @ActiveProfiles("test")
+// @DataJpaTest
+// class ProjectResultImageRepositoryTest {
 //
 //    @Autowired private ProjectTeamRepository projectTeamRepository;
 //    @Autowired private ProjectResultImageRepository projectResultImageRepository;
@@ -53,4 +53,4 @@
 //        Assertions.assertEquals(
 //                projectResultImageRepository.countByProjectTeamId(savedTeam.getId()), 2);
 //    }
-//}
+// }

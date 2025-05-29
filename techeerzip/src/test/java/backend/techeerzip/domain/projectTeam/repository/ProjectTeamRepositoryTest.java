@@ -1,21 +1,21 @@
-//package backend.techeerzip.domain.projectTeam.repository;
+// package backend.techeerzip.domain.projectTeam.repository;
 //
-//import jakarta.persistence.EntityManager;
+// import jakarta.persistence.EntityManager;
 //
-//import org.assertj.core.api.Assertions;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Nested;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-//import org.springframework.test.context.ActiveProfiles;
-//import org.springframework.transaction.annotation.Transactional;
+// import org.assertj.core.api.Assertions;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Nested;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+// import org.springframework.test.context.ActiveProfiles;
+// import org.springframework.transaction.annotation.Transactional;
 //
-//import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+// import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 //
-//@ActiveProfiles("test")
-//@DataJpaTest
-//class ProjectTeamRepositoryTest {
+// @ActiveProfiles("test")
+// @DataJpaTest
+// class ProjectTeamRepositoryTest {
 //
 //    @Autowired private ProjectTeamRepository projectTeamRepository;
 //
@@ -90,4 +90,4 @@
 //            Assertions.assertThat(savedTeam.getId()).isEqualTo(find.getId());
 //        }
 //    }
-//}
+// }
