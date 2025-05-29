@@ -1,15 +1,17 @@
 package backend.techeerzip.domain.resume.dto.request;
 
-import backend.techeerzip.domain.resume.entity.ResumeCategory;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.URL;
+
+import backend.techeerzip.domain.resume.entity.ResumeCategory;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minidev.json.annotate.JsonIgnore;
-import org.hibernate.validator.constraints.URL;
 
 @Getter
 @NoArgsConstructor

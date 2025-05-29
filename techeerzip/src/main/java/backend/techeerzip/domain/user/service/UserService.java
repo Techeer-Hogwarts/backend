@@ -441,4 +441,18 @@ public class UserService {
         logger.info("경력 삭제 요청 처리 중 - experienceId: {}", experienceId, CONTEXT);
         userExperienceRepository.delete(experience);
     }
+
+    public void updateNickname(Long userId, String nickname) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        Long roleId = user.getRole().getId();
+        if (roleId == 3) {
+            logger.warn("권한 없음 - userId: {}", userId);
+            throw new UserUnauthorizedAdminException();
+        }
+
+        logger.info("닉네임 업데이트 요청 처리 중 - userId: {}, newNickname: {}", userId, nickname, CONTEXT);
+        user.setNickname(nickname);
+        userRepository.save(user);
+    }
 }

@@ -1,25 +1,8 @@
 package backend.techeerzip.domain.user.controller;
 
-import java.util.List;
-
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
+import backend.techeerzip.domain.user.dto.request.UpdateUserNicknameRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserProfileImgRequest;
 import backend.techeerzip.domain.user.dto.request.UpdateUserWithExperienceRequest;
@@ -33,7 +16,22 @@ import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "user", description = "유저 API")
 @RestController
@@ -157,6 +155,16 @@ public class UserController {
     public ResponseEntity<Void> deleteExperience(@PathVariable Long experienceId) {
         userService.deleteExperience(experienceId);
         logger.info("경력 삭제 완료 - experienceId: {}", experienceId, CONTEXT);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "닉네임 업데이트", description = "멘토 이상의 권한을 가진 사람만 닉네임을 수정할 수 있습니다.")
+    @PatchMapping("/nickname")
+    public ResponseEntity<Void> updateNickname(
+            @Valid @Parameter(hidden = true) @UserId Long userId,
+            @RequestBody UpdateUserNicknameRequest updateUserNicknameRequest) {
+        userService.updateNickname(userId, updateUserNicknameRequest.getNickname());
+        logger.info("닉네임 업데이트 요청 처리 완료 - userId: {}", userId, CONTEXT);
         return ResponseEntity.ok().build();
     }
 }
