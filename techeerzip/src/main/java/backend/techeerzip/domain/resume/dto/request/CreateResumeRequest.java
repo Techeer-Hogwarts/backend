@@ -1,17 +1,15 @@
 package backend.techeerzip.domain.resume.dto.request;
 
+import backend.techeerzip.domain.resume.entity.ResumeCategory;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.URL;
-
-import backend.techeerzip.domain.resume.entity.ResumeCategory;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minidev.json.annotate.JsonIgnore;
+import org.hibernate.validator.constraints.URL;
 
 @Getter
 @NoArgsConstructor
@@ -30,7 +28,7 @@ public class CreateResumeRequest {
     private ResumeCategory category;
 
     @NotBlank
-    @Schema(description = "이력서 포지션", example = "Backend")
+    @Schema(description = "이력서 포지션", example = "BACKEND")
     private String position;
 
     @Schema(description = "이력서 제목에 추가할 부가 설명", example = "스타트업")
