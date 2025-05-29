@@ -13,6 +13,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findAllByOrderByStartDateDesc();
 
     @Modifying
-    @Query("UPDATE Event e SET e.isDeleted = true WHERE e.user.id = :userId")
+    @Query("DELETE Event e WHERE e.user.id = :userId")
     void updateIsDeletedByUserId(@Param("userId") Long userId);
 }

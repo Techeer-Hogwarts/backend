@@ -24,6 +24,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
             Long teamId, Long applicantId, StatusCategory statusCategory);
 
     @Modifying
-    @Query("UPDATE ProjectMember p SET p.isDeleted = true WHERE p.user.id = :userId")
+    @Query("DELETE ProjectMember p WHERE p.user.id = :userId")
     void updateIsDeletedByUserId(@Param("userId") Long userId);
 }

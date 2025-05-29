@@ -15,6 +15,6 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
     List<StudyMember> findByUserId(Long userId);
 
     @Modifying
-    @Query("UPDATE StudyMember s SET s.isDeleted = true WHERE s.user.id = :userId")
+    @Query("DELETE StudyMember s WHERE s.user.id = :userId")
     void updateIsDeletedByUserId(@Param("userId") Long userId);
 }
