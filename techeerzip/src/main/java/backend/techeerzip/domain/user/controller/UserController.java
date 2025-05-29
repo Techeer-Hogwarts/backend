@@ -34,22 +34,19 @@ import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.service.UserService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.global.resolver.UserId;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "user", description = "유저 API")
 @RestController
 @RequestMapping("/api/v3/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserSwagger {
     private final UserService userService;
     private final CustomLogger logger;
     private static final String CONTEXT = "UserController";
 
-    @Operation(summary = "회원가입", description = "새로운 회원을 생성합니다.")
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Override
     public ResponseEntity<Void> signup(
             @RequestPart("file") MultipartFile file,
             @RequestPart("createUserWithResumeRequest") @Valid
@@ -66,8 +63,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "회원 탈퇴", description = "회원을 삭제합니다.")
     @DeleteMapping(value = "")
+    @Override
     public ResponseEntity<Void> deleteUser(
             @Valid @Parameter(hidden = true) @UserId Long userId, HttpServletResponse response) {
         logger.info("회원 탈퇴 요청 처리 중 - userId: {}", userId, CONTEXT);
@@ -76,8 +73,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "비밀번호 재설정", description = "이메일 인증 후 비밀번호를 재설정합니다.")
     @PatchMapping("/findPwd")
+    @Override
     public ResponseEntity<Void> resetPassword(
             @Valid @RequestBody ResetUserPasswordRequest userResetPasswordRequest) {
         String email = userResetPasswordRequest.getEmail();
@@ -90,8 +87,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "유저 조회", description = "토큰으로 유저 정보를 조회합니다.")
     @GetMapping("")
+    @Override
     public ResponseEntity<GetUserResponse> getUser(
             @Valid @Parameter(hidden = true) @UserId Long userId) {
         logger.info("유저 정보 조회 요청 처리 중 - userId: {}", userId, CONTEXT);
@@ -100,8 +97,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "프로필 사진 동기화", description = "슬랙 프로필 이미지를 동기화합니다.")
     @PatchMapping("/profileImage")
+    @Override
     public ResponseEntity<GetProfileImgResponse> updateProfileImage(
             @Valid @RequestBody UpdateUserProfileImgRequest updateUserProfileImgRequest) {
         String email = updateUserProfileImgRequest.getEmail();
@@ -112,8 +109,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "권한 요청", description = "유저가 권한 요청을 보냅니다.")
     @PostMapping("/permission/request")
+    @Override
     public ResponseEntity<Void> requestPermission(
             @Valid @Parameter(hidden = true) @UserId Long userId,
             @RequestBody CreateUserPermissionRequest createUserPermissionRequest) {
@@ -131,8 +128,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "권한 요청 목록 조회", description = "관리자가 권한 요청 목록을 조회합니다.")
     @GetMapping("/permission/request")
+    @Override
     public ResponseEntity<List<GetPermissionResponse>> getPermissionRequests(
             @Valid @Parameter(hidden = true) @UserId Long userId) {
         logger.info("권한 요청 목록 조회 요청 처리 중", CONTEXT);
@@ -141,8 +138,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "권한 승인", description = "관리자가 권한 요청을 승인합니다.")
     @PatchMapping("/permission/approve")
+    @Override
     public ResponseEntity<Void> approvePermission(
             @Valid @Parameter(hidden = true) @UserId Long userId,
             @RequestBody UpdateUserPermissionRequest updateUserPermissionRequest) {
@@ -163,8 +160,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "특정 프로필 조회", description = "userId로 특정 유저 프로필을 조회합니다.")
     @GetMapping("/{userId}")
+    @Override
     public ResponseEntity<GetUserResponse> getProfile(@PathVariable Long userId) {
         logger.info("특정 프로필 조회 요청 처리 중 - profileUserId: {}", userId, CONTEXT);
         GetUserResponse response = userService.getUserInfo(userId);
@@ -172,8 +169,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "프로필 업데이트", description = "사용자의 프로필 정보를 업데이트합니다.")
     @PatchMapping("")
+    @Override
     public ResponseEntity<Void> updateProfile(
             @Valid @Parameter(hidden = true) @UserId Long userId,
             @RequestBody UpdateUserWithExperienceRequest updateUserWithExperienceRequest) {
@@ -183,8 +180,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "경력 삭제", description = "경력 정보를 삭제합니다.")
     @DeleteMapping("/experience/{experienceId}")
+    @Override
     public ResponseEntity<Void> deleteExperience(@PathVariable Long experienceId) {
         logger.info("경력 삭제 요청 처리 중 - experienceId: {}", experienceId, CONTEXT);
         userService.deleteExperience(experienceId);
@@ -192,8 +189,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "닉네임 업데이트", description = "멘토 이상의 권한을 가진 사람만 닉네임을 수정할 수 있습니다.")
     @PatchMapping("/nickname")
+    @Override
     public ResponseEntity<Void> updateNickname(
             @Valid @Parameter(hidden = true) @UserId Long userId,
             @RequestBody UpdateUserNicknameRequest updateUserNicknameRequest) {
@@ -211,10 +208,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(
-            summary = "모든 프로필 조회",
-            description = "조건에 맞는 모든 유저 프로필을 조회합니다. sortBy: 기본 정렬 값 -> year(기수+이름 순), name(이름 순)")
     @GetMapping("/profiles")
+    @Override
     public ResponseEntity<GetUserProfileListResponse> getAllProfiles(
             @ModelAttribute GetUserProfileListRequest getUserProfileListRequest) {
         logger.info("모든 프로필 조회 요청 처리 중 - sort: {}", getUserProfileListRequest.getSortBy(), CONTEXT);
