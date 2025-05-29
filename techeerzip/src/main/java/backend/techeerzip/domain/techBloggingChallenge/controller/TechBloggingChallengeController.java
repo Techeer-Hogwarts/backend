@@ -19,6 +19,7 @@ import backend.techeerzip.domain.techBloggingChallenge.dto.response.TermDetailRe
 import backend.techeerzip.domain.techBloggingChallenge.dto.response.TermRoundsSummaryResponse;
 import backend.techeerzip.domain.techBloggingChallenge.dto.response.TermSummaryResponse;
 import backend.techeerzip.domain.techBloggingChallenge.service.TechBloggingChallengeService;
+import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TechBloggingChallengeController implements TechBloggingChallengeSwagger {
     private final TechBloggingChallengeService challengeService;
+    private final CustomLogger logger;
 
     // 특정 분기(연도/반기) 챌린지 지원 (일반 유저용 API)
     @PostMapping("/apply")
@@ -120,7 +122,11 @@ public class TechBloggingChallengeController implements TechBloggingChallengeSwa
     // 회차별 블로그 커서 기반 조회
     @GetMapping("/rounds/blogs")
     public ResponseEntity<BlogChallengeListResponse> getBlogsByRoundCursor(
-            BlogChallengeCursorRequest request) {
+            @RequestParam(required = false) Long termId,
+            @RequestParam(required = false) Long roundId,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(required = false, defaultValue = "10") int limit) {
+        BlogChallengeCursorRequest request = new BlogChallengeCursorRequest(termId, roundId, cursorId, limit);
         BlogChallengeListResponse response = challengeService.getBlogsByRoundCursor(request);
         return ResponseEntity.ok(response);
     }
