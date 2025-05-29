@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(name = "ResetPasswordRequest", description = "비밀번호 재설정 DTO")
-public class UserResetPasswordRequest {
+@Schema(name = "ResetUserPasswordRequest", description = "비밀번호 재설정 DTO")
+public class ResetUserPasswordRequest {
 
     @Email
     @NotBlank
