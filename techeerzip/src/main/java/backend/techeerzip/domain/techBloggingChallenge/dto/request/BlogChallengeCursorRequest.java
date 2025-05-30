@@ -22,4 +22,7 @@ public class BlogChallengeCursorRequest {
 
     @Schema(description = "조회할 개수", example = "10")
     private int limit = 10;
+
+    @Schema(description = "정렬 옵션(latest, viewCount, name)", example = "latest")
+    private String sortBy = "latest";
 }
