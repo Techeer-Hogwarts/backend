@@ -133,7 +133,7 @@ public class AuthService {
         redisTemplate.opsForValue().set("verified_" + email, "true", Duration.ofMinutes(10));
     }
 
-    public boolean checkEmailverified(String email) {
+    public boolean checkEmailVerified(String email) {
         return "true".equals(redisTemplate.opsForValue().get("verified_" + email));
     }
 

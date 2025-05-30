@@ -104,7 +104,7 @@ public class UserService {
         List<CreateUserExperienceRequest> experiences =
                 createUserWithResumeRequest.getCreateUserExperienceRequest().getExperiences();
 
-        if (!authService.checkEmailverified(createUserRequest.getEmail())) {
+        if (!authService.checkEmailVerified(createUserRequest.getEmail())) {
             logger.warn("이메일 인증 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
             throw new AuthNotVerifiedEmailException();
         }
