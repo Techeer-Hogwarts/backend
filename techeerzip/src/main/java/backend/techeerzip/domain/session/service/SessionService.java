@@ -69,9 +69,8 @@ public class SessionService {
                 request.category(),
                 request.position()
         );
-        Session updatedSession = sessionRepository.save(session);
         eventPublisher.publishEvent(
-                new IndexEvent.Create<>("session", SessionMapper.toIndexDto(updatedSession)));
+                new IndexEvent.Create<>("session", SessionMapper.toIndexDto(session)));
     }
 
     public SessionListResponse<SessionResponse> getAllSessions(SessionListQueryRequest request) {
