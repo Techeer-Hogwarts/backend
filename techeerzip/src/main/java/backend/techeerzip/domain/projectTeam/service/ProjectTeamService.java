@@ -689,14 +689,15 @@ public class ProjectTeamService {
     public List<ProjectSlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
         final ProjectMember pm =
                 projectMemberRepository
-                        .findByProjectTeamIdAndUserId(teamId, applicantId)
+                        .findByProjectTeamIdAndUserIdAndStatus(teamId, applicantId, StatusCategory.PENDING)
                         .orElseThrow(ProjectMemberNotFoundException::new);
-        final String applicantEmail = pm.getUser().getEmail();
-        projectMemberRepository.delete(pm);
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
+        final String applicantEmail = pm.getUser().getEmail();
+        pt.remove(pm);
+
         final List<LeaderInfo> leaders = pt.getLeaders();
         return ProjectSlackMapper.toDmRequest(
                 pt, leaders, applicantEmail, StatusCategory.CANCELLED);

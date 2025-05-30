@@ -320,15 +320,16 @@ public class StudyTeamService {
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.PENDING);
     }
 
+    @Transactional
     public List<StudySlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
         final StudyMember sm =
                 studyMemberRepository
                         .findByStudyTeamIdAndUserId(teamId, applicantId)
                         .orElseThrow(StudyMemberNotFoundException::new);
         final String applicantEmail = sm.getUser().getEmail();
-        studyMemberRepository.delete(sm);
         final StudyTeam st =
                 studyTeamRepository.findById(teamId).orElseThrow(StudyTeamNotFoundException::new);
+        st.remove(sm);
         final List<LeaderInfo> leaders = st.getLeaders();
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.CANCELLED);
     }

@@ -226,4 +226,8 @@ public class ProjectTeam extends BaseEntity {
     public boolean isRecruitPosition(TeamRole teamRole) {
         return teamRole.getCount(this) > 0;
     }
+
+    public void remove(ProjectMember pm) {
+        this.projectMembers.remove(pm);
+    }
 }

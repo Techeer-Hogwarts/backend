@@ -194,4 +194,8 @@ public class StudyTeam extends BaseEntity {
     public List<StudyResultImage> getResultImages() {
         return this.studyResultImages;
     }
+
+    public void remove(StudyMember sm) {
+        this.studyMembers.remove(sm);
+    }
 }
