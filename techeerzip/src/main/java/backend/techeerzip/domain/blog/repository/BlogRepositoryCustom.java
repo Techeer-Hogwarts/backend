@@ -31,7 +31,8 @@ public interface BlogRepositoryCustom {
      * @param blogIds 조회할 블로그 ID 목록
      * @param cursorBlog 커서 블로그
      * @param limit 조회할 개수
+     * @param sortBy 정렬 기준 (latest/viewCount/name)
      * @return 블로그 목록
      */
-    List<Blog> findBlogsForChallenge(List<Long> blogIds, Blog cursorBlog, int limit);
+    List<Blog> findBlogsForChallenge(List<Long> blogIds, Blog cursorBlog, int limit, String sortBy);
 }

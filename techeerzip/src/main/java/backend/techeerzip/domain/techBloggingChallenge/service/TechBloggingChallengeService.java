@@ -427,26 +427,47 @@ public class TechBloggingChallengeService {
     public BlogChallengeListResponse getBlogsByRoundCursor(BlogChallengeCursorRequest request) {
         Long termId = request.getTermId();
         Long roundId = request.getRoundId();
+
+        // roundId는 있는데 termId가 없는 경우 검증
+        if (roundId != null && termId == null) {
+            throw new IllegalArgumentException("회차 ID만으로는 조회할 수 없습니다. 챌린지 기간(termId)을 함께 입력해주세요.");
+        }
+
         logger.info(
-                "Request: termId={}, roundId={}, cursorId={}, limit={}",
+                "Request: termId={}, roundId={}, cursorId={}, limit={}, sortBy={}",
                 request.getTermId(),
                 request.getRoundId(),
                 request.getCursorId(),
-                request.getLimit());
+                request.getLimit(),
+                request.getSortBy());
+
         // 1. termId가 없으면 현재 진행중인 termId 사용
         if (termId == null) {
             termId = findCurrentTermId();
             logger.info("termId not provided, using current term: {}", termId);
         }
 
-        // 2. Attendance에서 조건에 맞는 blogId 추출
+        // 2. roundId가 있으면 해당 round가 termId에 속하는지 검증
+        if (roundId != null) {
+            TechBloggingRound round =
+                    roundRepository
+                            .findById(roundId)
+                            .orElseThrow(() -> new TechBloggingRoundNotFoundException());
+
+            if (!round.getTerm().getId().equals(termId)) {
+                throw new IllegalArgumentException(
+                        String.format("회차 ID %d는 챌린지 기간 ID %d에 속하지 않습니다.", roundId, termId));
+            }
+        }
+
+        // 3. Attendance에서 조건에 맞는 blogId 추출
         // - termId만 있으면: 해당 term의 모든 round의 blog
         // - roundId도 있으면: 해당 round의 blog만
         // - 둘 다 없으면: 모든 blog
         List<Long> validBlogIds = attendanceRepository.getValidBlogIds(termId, roundId);
         logger.info("Found {} valid blogIds", validBlogIds.size());
 
-        // 3. 커서 blogId가 조건에 맞는지 확인
+        // 4. 커서 blogId가 조건에 맞는지 확인
         Blog cursorBlog = null;
         if (request.getCursorId() != null) {
             if (!validBlogIds.contains(request.getCursorId())) {
@@ -458,10 +479,10 @@ public class TechBloggingChallengeService {
                             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 blogId입니다."));
         }
 
-        // 4. Blog 테이블에서 최신순 정렬/커서 조건 적용해서 조회
+        // 5. Blog 테이블에서 정렬/커서 조건 적용해서 조회
         List<Blog> blogs =
                 blogRepository.findBlogsForChallenge(
-                        validBlogIds, cursorBlog, request.getLimit() + 1);
+                        validBlogIds, cursorBlog, request.getLimit() + 1, request.getSortBy());
 
         List<BlogChallengeSummaryResponse> blogResponses =
                 blogs.stream()
