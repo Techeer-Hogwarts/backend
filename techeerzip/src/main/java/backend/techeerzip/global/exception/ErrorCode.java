@@ -114,7 +114,7 @@ public enum ErrorCode {
     REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found"),
 
     // Role
-    ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "해당 권한을 찾을 수 없습니다.");
+    ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "RL001", "해당 권한을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
