@@ -6,13 +6,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-import backend.techeerzip.domain.projectMember.exception.TeamMemberNotFoundException;
+import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
+import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberDslRepository;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
@@ -26,10 +26,19 @@ public class ProjectMemberService {
     private final ProjectMemberRepository projectMemberRepository;
     private final ProjectMemberDslRepository projectMemberDslRepository;
     private final UserRepository userRepository;
-    private final ProjectTeamRepository projectTeamRepository;
 
-    public boolean checkActiveMemberByTeamAndUser(Long projectTeamId, Long userId) {
-        return projectMemberRepository.existsByProjectTeamIdAndUserId(projectTeamId, userId);
+    public void checkActive(Long projectTeamId, Long userId) {
+        final boolean isMember =
+                projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
+                        userId, projectTeamId, StatusCategory.APPROVED);
+        if (!isMember) {
+            throw new ProjectInvalidActiveRequester();
+        }
+    }
+
+    public boolean isActive(Long projectTeamId, Long userId) {
+        return projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
+                userId, projectTeamId, StatusCategory.APPROVED);
     }
 
     @Transactional
@@ -38,7 +47,7 @@ public class ProjectMemberService {
         final ProjectMember pm =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserId(team.getId(), applicantId)
-                        .orElseGet(() -> createApplicant(team, applicantId, teamRole, summary));
+                        .orElse(createApplicant(team, applicantId, teamRole, summary));
         if (pm.isPending()) {
             pm.toApplicant();
         }
@@ -59,7 +68,7 @@ public class ProjectMemberService {
         return projectMemberRepository.save(pm);
     }
 
-    public List<ProjectApplicantResponse> getApplicants(Long teamId) {
+    public List<ProjectMemberApplicantResponse> getApplicants(Long teamId) {
         return projectMemberDslRepository.findManyApplicants(teamId);
     }
 
@@ -69,8 +78,10 @@ public class ProjectMemberService {
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(TeamMemberNotFoundException::new);
-        projectMember.toActive();
+                        .orElseThrow(ProjectMemberNotFoundException::new);
+        if (!projectMember.isActive()) {
+            projectMember.toActive();
+        }
         return projectMember.getUser().getEmail();
     }
 
@@ -80,8 +91,10 @@ public class ProjectMemberService {
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(TeamMemberNotFoundException::new);
-        projectMember.toReject();
+                        .orElseThrow(ProjectMemberNotFoundException::new);
+        if (!projectMember.isRejected()) {
+            projectMember.toReject();
+        }
         return projectMember.getUser().getEmail();
     }
 

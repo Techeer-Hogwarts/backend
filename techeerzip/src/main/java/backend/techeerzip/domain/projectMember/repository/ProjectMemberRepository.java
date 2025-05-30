@@ -17,8 +17,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     boolean existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
             Long userId, Long projectTeamId, StatusCategory statusCategory);
 
-    boolean existsByProjectTeamIdAndUserId(Long teamId, Long userId);
-
     Optional<ProjectMember> findByProjectTeamIdAndUserId(Long teamId, Long userId);
 
     Optional<ProjectMember> findByProjectTeamIdAndUserIdAndStatus(

@@ -12,8 +12,8 @@ import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamGetAllResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
 import backend.techeerzip.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -50,7 +50,7 @@ public interface ProjectTeamSwagger {
                                     @Content(
                                             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                                             schema = @Schema(type = "string", format = "binary")))
-                    @RequestPart(value = "mainImages", required = false)
+                    @RequestPart(value = "mainImage", required = false)
                     MultipartFile mainImage,
             @Parameter(
                             description = "결과 이미지 파일 목록",
@@ -91,7 +91,7 @@ public interface ProjectTeamSwagger {
                                     @Content(
                                             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                                             schema = @Schema(type = "string", format = "binary")))
-                    @RequestPart(value = "mainImages", required = false)
+                    @RequestPart(value = "mainImage", required = false)
                     MultipartFile mainImage,
             @Parameter(
                             description = "결과 이미지 파일 목록",
@@ -120,7 +120,7 @@ public interface ProjectTeamSwagger {
     @ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = TeamGetAllResponse.class)))
+            content = @Content(schema = @Schema(implementation = SliceTeamsResponse.class)))
     default void getAllTeams() {}
 
     @Operation(summary = "프로젝트 모집 마감", description = "프로젝트 팀의 모집 상태를 마감합니다.")
@@ -148,7 +148,10 @@ public interface ProjectTeamSwagger {
     @ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = ProjectApplicantResponse.class)))
+            content =
+                    @Content(
+                            schema =
+                                    @Schema(implementation = ProjectMemberApplicantResponse.class)))
     default void getApplicants() {}
 
     @Operation(summary = "프로젝트 지원 취소", description = "해당 프로젝트에 대한 자신의 지원을 취소합니다.")

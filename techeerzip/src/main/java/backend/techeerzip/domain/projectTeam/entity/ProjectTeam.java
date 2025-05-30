@@ -14,7 +14,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
+import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
@@ -38,7 +39,7 @@ public class ProjectTeam extends BaseEntity {
     private final List<ProjectMainImage> mainImages = new ArrayList<>();
 
     @OneToMany(mappedBy = "projectTeam", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TeamStack> teamStacks = new ArrayList<>();
+    private final List<TeamStack> teamStacks = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -119,7 +120,7 @@ public class ProjectTeam extends BaseEntity {
         this.viewCount = 0;
     }
 
-    public void update(projectTeamData teamData, Boolean isRecruited) {
+    public void update(TeamData teamData, Boolean isRecruited) {
         this.name = teamData.getName();
         this.projectExplain = teamData.getProjectExplain();
         this.isRecruited = isRecruited;
@@ -206,6 +207,16 @@ public class ProjectTeam extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public List<LeaderInfo> getLeaders() {
+        List<LeaderInfo> leaders = new ArrayList<>();
+        for (ProjectMember m : this.projectMembers) {
+            if (m.isLeader()) {
+                leaders.add(new LeaderInfo(m.getUser().getName(), m.getUser().getEmail()));
+            }
+        }
+        return leaders;
     }
 
     public boolean isRecruited() {

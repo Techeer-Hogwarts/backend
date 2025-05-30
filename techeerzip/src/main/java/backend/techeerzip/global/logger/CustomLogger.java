@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +18,6 @@ public class CustomLogger {
     // ANSI 색상 상수
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_RED = "\u001B[31m";
-    private static final String ANSI_GREEN = "\u001B[32m";
     private static final String ANSI_YELLOW = "\u001B[33m";
     private static final String ANSI_BLUE = "\u001B[34m";
     private static final String ANSI_CYAN = "\u001B[36m";
@@ -29,73 +27,69 @@ public class CustomLogger {
     private static final String MDC_CONTEXT = "context";
     private static final String MDC_TRACE = "trace";
 
-    // 기타 상수
-    private static final String REDACTED = "[REDACTED]";
-    private static final String LEVEL_ERROR = "error";
-    private static final String LEVEL_WARN = "warn";
-    private static final String LEVEL_INFO = "info";
-
+    // 민감 필드
     private static final List<String> SENSITIVE_FIELDS =
             List.of("password", "token", "secret", "authorization");
 
-    private final Logger logger;
-    private final String logLevel;
+    // SLF4J Logger
+    private final Logger logger = LoggerFactory.getLogger(CustomLogger.class);
 
-    public CustomLogger(@Value("${LOGGER_LEVEL:production}") String logLevel) {
-        this.logger = LoggerFactory.getLogger(CustomLogger.class);
-        this.logLevel = logLevel;
-    }
+    // -------------------------------------------------------------------------------
+    // 기본 메시지 로깅 (색상 + SLF4J 플레이스홀더 지원)
+    // -------------------------------------------------------------------------------
 
-    public void info(String message) {
-        if (shouldLog(LEVEL_INFO) && logger.isInfoEnabled()) {
-            logger.info(getColoredMessage("INFO", ANSI_CYAN, message));
+    public void info(String format, Object... args) {
+        if (logger.isInfoEnabled()) {
+            logger.info(getColoredMessage("INFO", ANSI_CYAN, format), args);
         }
     }
 
-    public void error(String message) {
-        if (shouldLog(LEVEL_ERROR) && logger.isErrorEnabled()) {
-            logger.error(getColoredMessage("ERROR", ANSI_RED, message));
+    public void warn(String format, Object... args) {
+        if (logger.isWarnEnabled()) {
+            logger.warn(getColoredMessage("WARN", ANSI_YELLOW, format), args);
         }
     }
 
-    public void warn(String message) {
-        if (shouldLog(LEVEL_WARN) && logger.isWarnEnabled()) {
-            logger.warn(getColoredMessage("WARN", ANSI_YELLOW, message));
+    public void error(String format, Object... args) {
+        if (logger.isErrorEnabled()) {
+            logger.error(getColoredMessage("ERROR", ANSI_RED, format), args);
         }
     }
 
-    public void debug(String message) {
-        if (shouldLog("debug") && logger.isDebugEnabled()) {
-            logger.debug(getColoredMessage("DEBUG", ANSI_BLUE, message));
+    public void debug(String format, Object... args) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(getColoredMessage("DEBUG", ANSI_BLUE, format), args);
         }
     }
 
-    public void fatal(String message) {
-        if (shouldLog("fatal") && logger.isErrorEnabled()) {
-            logger.error(getColoredMessage("FATAL", ANSI_PURPLE, message));
+    public void fatal(String format, Object... args) {
+        if (logger.isErrorEnabled()) {
+            logger.error(getColoredMessage("FATAL", ANSI_PURPLE, format), args);
         }
     }
 
+    /** HTTP 요청 바디를 포함한 에러 로깅. 민감 데이터는 REDACTED 처리됩니다. */
     public void bodyError(
             Exception e,
             String errorCode,
             String errorMessage,
             int statusCode,
             HttpServletRequest request) {
-        if (shouldLog(LEVEL_ERROR) && logger.isErrorEnabled()) {
+
+        if (logger.isErrorEnabled()) {
             String logMessage =
                     String.format(
                             """
-                            %s[ERROR] %s%s
-                            %s* ERROR CODE:    %s%s
-                            %s* ERROR MESSAGE: %s%s
-                            %s* STATUS CODE:   %d%s
-                            %s* PATH:          %s%s
-                            %s* METHOD:        %s%s
-                            %s* BODY:          %s%s
-                            %s* STACK TRACE:   %s%s
-                            %s━━━━━━━━━━━━━━━━
-                            """,
+                    %s[ERROR] %s%s
+                    %s* ERROR CODE:    %s%s
+                    %s* ERROR MESSAGE: %s%s
+                    %s* STATUS CODE:   %d%s
+                    %s* PATH:          %s%s
+                    %s* METHOD:        %s%s
+                    %s* BODY:          %s%s
+                    %s* STACK TRACE:   %s%s
+                    %s━━━━━━━━━━━━━━━━
+                    """,
                             ANSI_RED,
                             new Date(),
                             ANSI_RESET,
@@ -125,35 +119,9 @@ public class CustomLogger {
         }
     }
 
-    private boolean shouldLog(String level) {
-        if ("production".equalsIgnoreCase(logLevel)) {
-            return List.of(LEVEL_ERROR, LEVEL_WARN, LEVEL_INFO).contains(level);
-        }
-        return true; // development 환경에서는 모든 로그 허용
-    }
-
-    private String getColoredMessage(String level, String color, String message) {
-        return String.format("%s[%s]%s %s", color, level, ANSI_RESET, message);
-    }
-
-    private String sanitizeRequestBody(HttpServletRequest request) {
-        try {
-            String body = request.getReader().lines().collect(Collectors.joining());
-            return body.isEmpty() ? "{}" : sanitizeSensitiveData(body);
-        } catch (IOException e) {
-            return "{}";
-        }
-    }
-
-    private String sanitizeSensitiveData(String body) {
-        for (String field : SENSITIVE_FIELDS) {
-            body =
-                    body.replaceAll(
-                            "(?i)\"" + field + "\":\"[^\"]*\"",
-                            "\"" + field + "\":\"" + REDACTED + "\"");
-        }
-        return body;
-    }
+    // -------------------------------------------------------------------------------
+    // MDC 활용 로그 (context, trace)
+    // -------------------------------------------------------------------------------
 
     public void log(String message, String context) {
         if (logger.isInfoEnabled()) {
@@ -205,11 +173,32 @@ public class CustomLogger {
         }
     }
 
-    private boolean isSensitiveField(String fieldName) {
-        return SENSITIVE_FIELDS.stream().anyMatch(field -> fieldName.toLowerCase().contains(field));
+    // -------------------------------------------------------------------------------
+    // 내부 헬퍼 메서드
+    // -------------------------------------------------------------------------------
+
+    /** 로그 메시지에 ANSI 컬러를 붙여서 반환 */
+    private String getColoredMessage(String level, String color, String format) {
+        return String.format("%s[%s]%s %s", color, level, ANSI_RESET, format);
     }
 
-    public void error(String format, Object... args) {
-        logger.debug(format, args);
+    /** HTTP 요청 바디를 읽어서 민감 필드를 마스킹 */
+    private String sanitizeRequestBody(HttpServletRequest request) {
+        try {
+            String body = request.getReader().lines().collect(Collectors.joining());
+            return body.isEmpty() ? "{}" : sanitizeSensitiveData(body);
+        } catch (IOException e) {
+            return "{}";
+        }
+    }
+
+    /** 민감 필드를 REDACTED 처리 */
+    private String sanitizeSensitiveData(String body) {
+        for (String field : SENSITIVE_FIELDS) {
+            body =
+                    body.replaceAll(
+                            "(?i)\"" + field + "\":\"[^\"]*\"", "\"" + field + "\":\"[REDACTED]\"");
+        }
+        return body;
     }
 }

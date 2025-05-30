@@ -4,6 +4,8 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.URL;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +22,12 @@ public class projectTeamData {
     @NotNull private Boolean isRecruited;
     @NotNull private Boolean isFinished;
     @Nullable private String recruitExplain;
-    @Nullable private String githubLink;
-    @Nullable private String notionLink;
+
+    @Nullable
+    @URL(message = "올바른 Github URL 형식이 아닙니다")
+    private String githubLink;
+
+    @Nullable
+    @URL(message = "올바른 Notion URL 형식이 아닙니다")
+    private String notionLink;
 }

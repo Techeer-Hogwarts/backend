@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.function.Function;
 
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamInvalidTeamRoleException;
 
 public enum TeamRole {
     BACKEND("Backend", ProjectTeam::getBackendNum),
@@ -25,7 +26,10 @@ public enum TeamRole {
     }
 
     public static TeamRole setType(String type) {
-        return Arrays.stream(values()).filter(t -> t.type.equals(type)).findFirst().orElseThrow();
+        return Arrays.stream(values())
+                .filter(t -> t.type.equals(type))
+                .findFirst()
+                .orElseThrow(ProjectTeamInvalidTeamRoleException::new);
     }
 
     public int getCount(ProjectTeam pt) {

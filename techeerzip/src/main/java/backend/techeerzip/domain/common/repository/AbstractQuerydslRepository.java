@@ -2,10 +2,10 @@ package backend.techeerzip.domain.common.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import jakarta.persistence.EntityManager;
 
-import org.springframework.cglib.core.internal.Function;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.Querydsl;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.PathBuilderFactory;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -23,11 +24,13 @@ public abstract class AbstractQuerydslRepository {
 
     private final Querydsl querydsl;
     private final JPAQueryFactory queryFactory;
+    private final PathBuilder<?> pathBuilder;
 
     protected AbstractQuerydslRepository(
             final Class<?> domainClass, EntityManager em, JPAQueryFactory factory) {
         this.queryFactory = factory;
         this.querydsl = new Querydsl(em, new PathBuilderFactory().create(domainClass));
+        this.pathBuilder = new PathBuilderFactory().create(domainClass);
     }
 
     protected <T> JPAQuery<T> select(final Expression<T> expr) {
@@ -36,6 +39,10 @@ public abstract class AbstractQuerydslRepository {
 
     protected <T> JPAQuery<T> selectFrom(final EntityPath<T> from) {
         return queryFactory.selectFrom(from);
+    }
+
+    protected PathBuilder<?> getPathBuilder() {
+        return this.pathBuilder;
     }
 
     protected <T> Page<T> applyPagination(

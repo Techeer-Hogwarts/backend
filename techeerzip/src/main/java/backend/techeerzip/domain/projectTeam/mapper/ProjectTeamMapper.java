@@ -2,38 +2,22 @@ package backend.techeerzip.domain.projectTeam.mapper;
 
 import java.util.List;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-import backend.techeerzip.domain.projectTeam.dto.request.ImageRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
-import backend.techeerzip.domain.projectTeam.dto.request.projectTeamData;
+import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
+import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamGetAllResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.exception.ProjectImageException;
 
 public class ProjectTeamMapper {
 
     private ProjectTeamMapper() {}
 
-    public static ProjectTeamCreateRequest toUpdateRequest(String body) {
-        try {
-            return new ObjectMapper().readValue(body, ProjectTeamCreateRequest.class);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     public static ProjectTeam toEntity(
-            projectTeamData teamData, RecruitCounts recruitCounts, Boolean isRecruited) {
+            TeamData teamData, RecruitCounts recruitCounts, Boolean isRecruited) {
         return ProjectTeam.builder()
                 .name(teamData.getName())
                 .githubLink(teamData.getGithubLink())
@@ -43,15 +27,15 @@ public class ProjectTeamMapper {
                 .isFinished(teamData.getIsFinished())
                 .isRecruited(isRecruited)
                 .backendNum(recruitCounts.getBackendNum())
-                .frontendNum(recruitCounts.getFrontedNum())
+                .frontendNum(recruitCounts.getFrontendNum())
                 .fullStackNum(recruitCounts.getFullStackNum())
                 .devopsNum(recruitCounts.getDevOpsNum())
                 .dataEngineerNum(recruitCounts.getDataEngineerNum())
                 .build();
     }
 
-    public static ProjectTeamGetAllResponse toGetAllResponse(ProjectTeam projectTeam) {
-        return ProjectTeamGetAllResponse.builder()
+    public static ProjectSliceTeamsResponse toGetAllResponse(ProjectTeam projectTeam) {
+        return ProjectSliceTeamsResponse.builder()
                 .id(projectTeam.getId())
                 .name(projectTeam.getName())
                 .projectExplain(projectTeam.getProjectExplain())
@@ -70,6 +54,9 @@ public class ProjectTeamMapper {
                 .teamStacks(
                         projectTeam.getTeamStacks().stream().map(TeamStackMapper::toDto).toList())
                 .createdAt(projectTeam.getCreatedAt())
+                .updatedAt(projectTeam.getUpdatedAt())
+                .likeCount(projectTeam.getLikeCount())
+                .viewCount(projectTeam.getViewCount())
                 .build();
     }
 
@@ -164,25 +151,15 @@ public class ProjectTeamMapper {
         return ProjectTeamUpdateResponse.builder()
                 .id(projectTeamId)
                 .slackRequest(ProjectSlackMapper.toChannelRequest(team, leaders))
-                .indexRequest(TeamIndexMapper.toProjectRequest(team))
+                .indexRequest(ProjectIndexMapper.toIndexRequest(team))
                 .build();
     }
 
-    public static ProjectTeamUpdateResponse toIndexOnlyUpdateResponse(
+    public static ProjectTeamUpdateResponse toNoneSlackUpdateResponse(
             Long projectTeamId, ProjectTeam team) {
         return ProjectTeamUpdateResponse.builder()
                 .id(projectTeamId)
-                .indexRequest(TeamIndexMapper.toProjectRequest(team))
+                .indexRequest(ProjectIndexMapper.toIndexRequest(team))
                 .build();
-    }
-
-    public static ImageRequest separateImages(List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
-            throw new ProjectImageException();
-        }
-        if (files.size() == 1) {
-            return new ImageRequest(files.getFirst(), List.of());
-        }
-        return new ImageRequest(files.getFirst(), files.subList(1, files.size()));
     }
 }

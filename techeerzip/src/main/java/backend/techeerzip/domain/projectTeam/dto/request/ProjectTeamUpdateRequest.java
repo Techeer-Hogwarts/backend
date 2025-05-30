@@ -22,10 +22,10 @@ public class ProjectTeamUpdateRequest {
     @NotNull @Valid @Builder.Default
     private final List<ProjectMemberInfoRequest> projectMember = List.of();
 
-    @Builder.Default private final List<TeamStackInfo.WithName> teamStacks = List.of();
-    @Builder.Default private final List<Long> deleteMembers = List.of();
-    @Builder.Default private final List<Long> deleteMainImages = List.of();
-    @Builder.Default private final List<Long> deleteResultImages = List.of();
-    @NotNull @Valid @JsonUnwrapped private projectTeamData teamData;
+    @Builder.Default private List<TeamStackInfo.WithName> teamStacks = List.of();
+    @Builder.Default private List<Long> deleteMembers = List.of();
+    @Builder.Default private List<Long> deleteMainImages = List.of();
+    @Builder.Default private List<Long> deleteResultImages = List.of();
+    @NotNull @Valid @JsonUnwrapped private TeamData teamData;
     @NotNull @Valid @JsonUnwrapped private RecruitCounts recruitCounts;
 }

@@ -36,9 +36,14 @@ public class ProjectMemberMapper {
             Map<Long, User> users) {
         return incomingMembersInfo.stream()
                 .map(
-                        m ->
-                                ProjectMemberMapper.toEntity(
-                                        m, currentTeam, users.get(m.userId()), "신규 회원 입니다."))
+                        m -> {
+                            User user = users.get(m.userId());
+                            if (user == null) {
+                                throw new IllegalArgumentException(
+                                        "User not found with ID: " + m.userId());
+                            }
+                            return ProjectMemberMapper.toEntity(m, currentTeam, user, "신규 회원 입니다.");
+                        })
                 .toList();
     }
 }

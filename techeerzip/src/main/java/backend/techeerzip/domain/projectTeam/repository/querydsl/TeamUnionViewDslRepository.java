@@ -1,9 +1,9 @@
 package backend.techeerzip.domain.projectTeam.repository.querydsl;
 
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
-import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionSliceYoungInfo;
+import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionSliceResult;
 
 public interface TeamUnionViewDslRepository {
 
-    TeamUnionSliceYoungInfo fetchSliceBeforeCreatedAtDescCursor(GetTeamsQuery query);
+    TeamUnionSliceResult fetchSliceTeams(GetTeamsQuery query);
 }
