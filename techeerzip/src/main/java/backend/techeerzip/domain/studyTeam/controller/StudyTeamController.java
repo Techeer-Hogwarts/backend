@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.studyTeam.controller;
 
-import backend.techeerzip.global.resolver.UserId;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,6 +28,7 @@ import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamDetailResponse;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamUpdateResponse;
 import backend.techeerzip.domain.studyTeam.service.StudyTeamFacadeService;
 import backend.techeerzip.global.logger.CustomLogger;
+import backend.techeerzip.global.resolver.UserId;
 import backend.techeerzip.infra.slack.SlackEvent;
 import lombok.RequiredArgsConstructor;
 
@@ -68,29 +68,27 @@ public class StudyTeamController implements StudyTeamSwagger {
     }
 
     @PatchMapping("/close/{studyTeamId}")
-    public ResponseEntity<Void> closeRecruit(@PathVariable Long studyTeamId,
-            @UserId Long userId) {
+    public ResponseEntity<Void> closeRecruit(@PathVariable Long studyTeamId, @UserId Long userId) {
         studyTeamFacadeService.closeRecruit(studyTeamId, userId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/delete/{studyTeamId}")
-    public ResponseEntity<Void> deleteStudyTeam(@PathVariable Long studyTeamId,
-            @UserId Long userId) {
+    public ResponseEntity<Void> deleteStudyTeam(
+            @PathVariable Long studyTeamId, @UserId Long userId) {
         studyTeamFacadeService.softDeleteTeam(studyTeamId, userId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/{studyTeamId}/applicants")
     public ResponseEntity<List<StudyApplicantResponse>> getApplicants(
-            @PathVariable Long studyTeamId,
-            @UserId Long userId) {
+            @PathVariable Long studyTeamId, @UserId Long userId) {
         return ResponseEntity.ok(studyTeamFacadeService.getApplicants(studyTeamId, userId));
     }
 
     @PostMapping("/apply")
-    public ResponseEntity<Void> applyToStudyTeam(@RequestBody StudyTeamApplyRequest request,
-            @UserId Long userId) {
+    public ResponseEntity<Void> applyToStudyTeam(
+            @RequestBody StudyTeamApplyRequest request, @UserId Long userId) {
         List<StudySlackRequest.DM> slackRequest =
                 studyTeamFacadeService.applyToStudy(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
@@ -99,8 +97,8 @@ public class StudyTeamController implements StudyTeamSwagger {
     }
 
     @PatchMapping("/{studyTeamId}/cancel")
-    public ResponseEntity<Void> cancelApplication(@PathVariable Long studyTeamId,
-            @UserId Long userId) {
+    public ResponseEntity<Void> cancelApplication(
+            @PathVariable Long studyTeamId, @UserId Long userId) {
         List<StudySlackRequest.DM> slackRequest =
                 studyTeamFacadeService.cancelApplication(studyTeamId, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
@@ -109,8 +107,8 @@ public class StudyTeamController implements StudyTeamSwagger {
     }
 
     @PatchMapping("/applicants/accept")
-    public ResponseEntity<Void> acceptApplicant(@RequestBody StudyApplicantRequest request,
-            @UserId Long userId) {
+    public ResponseEntity<Void> acceptApplicant(
+            @RequestBody StudyApplicantRequest request, @UserId Long userId) {
         List<StudySlackRequest.DM> slackRequest =
                 studyTeamFacadeService.acceptApplicant(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
@@ -119,8 +117,8 @@ public class StudyTeamController implements StudyTeamSwagger {
     }
 
     @PatchMapping("/applicants/reject")
-    public ResponseEntity<Void> rejectApplicant(@RequestBody StudyApplicantRequest request,
-            @UserId Long userId) {
+    public ResponseEntity<Void> rejectApplicant(
+            @RequestBody StudyApplicantRequest request, @UserId Long userId) {
         List<StudySlackRequest.DM> slackRequest =
                 studyTeamFacadeService.rejectApplicant(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
@@ -129,8 +127,8 @@ public class StudyTeamController implements StudyTeamSwagger {
     }
 
     @PostMapping("/members")
-    public ResponseEntity<Void> addStudyMembers(@RequestBody StudyAddMembersRequest request,
-            @UserId Long userId) {
+    public ResponseEntity<Void> addStudyMembers(
+            @RequestBody StudyAddMembersRequest request, @UserId Long userId) {
         studyTeamFacadeService.addMemberToStudyTeam(
                 request.studyTeamId(), userId, request.studyMemberId(), request.isLeader());
         return ResponseEntity.status(HttpStatus.OK).build();
