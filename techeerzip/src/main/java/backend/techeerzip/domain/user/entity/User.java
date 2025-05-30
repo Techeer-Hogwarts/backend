@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import backend.techeerzip.domain.event.entity.Event;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +26,6 @@ import org.hibernate.type.SqlTypes;
 
 import backend.techeerzip.domain.blog.entity.Blog;
 import backend.techeerzip.domain.bookmark.entity.Bookmark;
-import backend.techeerzip.domain.event.entity.Event;
 import backend.techeerzip.domain.like.entity.Like;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.resume.entity.Resume;
