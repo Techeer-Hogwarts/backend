@@ -2,12 +2,14 @@ package backend.techeerzip.domain.event.dto.response;
 
 import backend.techeerzip.domain.event.entity.Event;
 import backend.techeerzip.domain.user.entity.User;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-public class GetEventResponse {
+public class EventGetResponse {
     private final Long id;
     private final Long userId;
     private final String category;
@@ -17,7 +19,7 @@ public class GetEventResponse {
     private final String url;
     private final UserInfo user;
 
-    public GetEventResponse(Event event) {
+    public EventGetResponse(Event event) {
         User eventUser = event.getUser();
 
         this.id = event.getId();
@@ -35,15 +37,11 @@ public class GetEventResponse {
     }
 
     @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class UserInfo {
-        private final String name;
-        private final String nickname;
-        private final String profileImage;
-
-        public UserInfo(String name, String nickname, String profileImage) {
-            this.name = name;
-            this.nickname = nickname;
-            this.profileImage = profileImage;
-        }
+        private String name;
+        private String nickname;
+        private String profileImage;
     }
 }
