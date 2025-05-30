@@ -151,7 +151,7 @@ public class ProjectTeamMapper {
         return ProjectTeamUpdateResponse.builder()
                 .id(projectTeamId)
                 .slackRequest(ProjectSlackMapper.toChannelRequest(team, leaders))
-                .indexRequest(ProjectIndexMapper.toIndexRequest(team))
+                .indexRequest(TeamIndexMapper.toProjectRequest(team))
                 .build();
     }
 
@@ -159,7 +159,7 @@ public class ProjectTeamMapper {
             Long projectTeamId, ProjectTeam team) {
         return ProjectTeamUpdateResponse.builder()
                 .id(projectTeamId)
-                .indexRequest(ProjectIndexMapper.toIndexRequest(team))
+                .indexRequest(TeamIndexMapper.toProjectRequest(team))
                 .build();
     }
 }

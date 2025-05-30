@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.service;
 
-import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -8,15 +7,16 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQuery;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectSlackRequest.DM;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest.DM;
 import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
@@ -26,7 +26,7 @@ import backend.techeerzip.domain.projectTeam.dto.response.SliceNextCursor;
 import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.TeamUnionSliceResult;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMainImageException;
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamResultImageException;
+import backend.techeerzip.domain.projectTeam.exception.TeamResultImageException;
 import backend.techeerzip.domain.projectTeam.mapper.TeamQueryMapper;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepository;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
@@ -46,9 +46,6 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
     private final S3Service s3Service;
     private final CustomLogger log;
 
-    // slack 은 애바?
-    // index
-
     private static boolean validateMainImage(MultipartFile mainImage, List<Long> deleteMainImages) {
         if ((mainImage == null || mainImage.isEmpty()) && deleteMainImages.isEmpty()) {
             return false;
@@ -59,14 +56,14 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         throw new ProjectTeamMainImageException();
     }
 
-    private static boolean validateResultImages(
+    public static boolean validateResultImages(
             List<MultipartFile> resultImages, List<Long> deleteResultImages) {
         if (resultImages == null || resultImages.isEmpty()) {
             return false;
         }
         int count = resultImages.size() - deleteResultImages.size();
         if (count > 10 || count < 0) {
-            throw new ProjectTeamResultImageException();
+            throw new TeamResultImageException();
         }
         return count != 0;
     }
@@ -87,8 +84,7 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
             MultipartFile mainImage,
             List<MultipartFile> resultImages,
             ProjectTeamCreateRequest request) {
-        // S3 upload
-        // 롤백 구현 필요
+
         final List<String> uploadedUrl = new ArrayList<>();
         try {
             final List<String> mainUrl =
@@ -101,7 +97,6 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
             uploadedUrl.addAll(resultUrls);
             log.debug("ProjectTeam Create: s3 result 업로드 완료");
 
-            // Transaction
             return projectTeamService.create(mainUrl, resultUrls, request);
         } catch (Exception e) {
             s3Service.deleteMany(uploadedUrl);
@@ -116,13 +111,10 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
             MultipartFile mainImage,
             List<MultipartFile> resultImages,
             ProjectTeamUpdateRequest request) {
-        // If S3 upload
-        /* 5. MainImage 개수 검증 */
+
         final boolean isMain = validateMainImage(mainImage, request.getDeleteMainImages());
-        /* 6. ResultImage 개수 검증 */
         final boolean isResult =
                 validateResultImages(resultImages, request.getDeleteResultImages());
-        /* 8. S3 이미지 업로드 */
         final List<String> mainImagesUrl = new ArrayList<>();
         final List<String> resultImageUrls = new ArrayList<>();
         try {

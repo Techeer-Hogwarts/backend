@@ -1,14 +1,14 @@
 package backend.techeerzip.domain.projectMember.service;
 
-import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
 import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
+import backend.techeerzip.domain.projectMember.exception.TeamInvalidActiveRequester;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberDslRepository;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
@@ -32,7 +32,7 @@ public class ProjectMemberService {
                 projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
                         userId, projectTeamId, StatusCategory.APPROVED);
         if (!isMember) {
-            throw new ProjectInvalidActiveRequester();
+            throw new TeamInvalidActiveRequester();
         }
     }
 

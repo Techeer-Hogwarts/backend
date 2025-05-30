@@ -1,7 +1,5 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
-import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
-import backend.techeerzip.global.resolver.UserId;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,25 +16,27 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectSlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamApplyRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamCreateRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectTeamUpdateRequest;
-import backend.techeerzip.domain.projectTeam.dto.request.SlackRequest;
 import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import backend.techeerzip.domain.projectTeam.service.ProjectTeamFacadeService;
 import backend.techeerzip.global.logger.CustomLogger;
+import backend.techeerzip.global.resolver.UserId;
 import backend.techeerzip.infra.index.IndexEvent;
 import backend.techeerzip.infra.slack.SlackEvent;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/projectTeams")
+@RequestMapping("/api/v3/projectTeams")
 @RequiredArgsConstructor
 public class ProjectTeamController implements ProjectTeamSwagger {
 
@@ -94,39 +94,38 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/close/{projectTeamId}")
-    public ResponseEntity<Void> closeRecruit(@PathVariable Long projectTeamId,
-            @UserId Long userId) {
+    public ResponseEntity<Void> closeRecruit(
+            @PathVariable Long projectTeamId, @UserId Long userId) {
         projectTeamFacadeService.closeRecruit(projectTeamId, userId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/delete/{projectTeamId}")
-    public ResponseEntity<Void> deleteProjectTeam(@PathVariable Long projectTeamId,
-            @UserId Long userId) {
+    public ResponseEntity<Void> deleteProjectTeam(
+            @PathVariable Long projectTeamId, @UserId Long userId) {
         projectTeamFacadeService.softDeleteTeam(projectTeamId, userId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/{projectTeamId}/applicants")
     public ResponseEntity<List<ProjectMemberApplicantResponse>> getApplicants(
-            @PathVariable Long projectTeamId,
-            @UserId Long userId) {
+            @PathVariable Long projectTeamId, @UserId Long userId) {
         return ResponseEntity.ok(projectTeamFacadeService.getApplicants(projectTeamId, userId));
     }
 
     @PostMapping("/apply")
-    public ResponseEntity<Void> applyToProject(@RequestBody ProjectTeamApplyRequest request,
-            @UserId Long userId) {
-        final List<SlackRequest.DM> slackRequest =
+    public ResponseEntity<Void> applyToProject(
+            @RequestBody ProjectTeamApplyRequest request, @UserId Long userId) {
+        final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamFacadeService.applyToProject(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/{projectTeamId}/cancel")
-    public ResponseEntity<EmptyResponse> cancelApplication(@PathVariable Long projectTeamId,
-            @UserId Long userId) {
-        final List<SlackRequest.DM> slackRequest =
+    public ResponseEntity<EmptyResponse> cancelApplication(
+            @PathVariable Long projectTeamId, @UserId Long userId) {
+        final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamFacadeService.cancelApplication(projectTeamId, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -134,9 +133,8 @@ public class ProjectTeamController implements ProjectTeamSwagger {
 
     @PatchMapping("/accept")
     public ResponseEntity<EmptyResponse> acceptApplicant(
-            @RequestBody ProjectApplicantRequest request,
-            @UserId Long userId) {
-        final List<SlackRequest.DM> slackRequest =
+            @RequestBody ProjectApplicantRequest request, @UserId Long userId) {
+        final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamFacadeService.acceptApplicant(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -144,9 +142,8 @@ public class ProjectTeamController implements ProjectTeamSwagger {
 
     @PatchMapping("/reject")
     public ResponseEntity<EmptyResponse> rejectApplicant(
-            @RequestBody ProjectApplicantRequest request,
-            @UserId Long userId) {
-        final List<SlackRequest.DM> slackRequest =
+            @RequestBody ProjectApplicantRequest request, @UserId Long userId) {
+        final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamFacadeService.rejectApplicant(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
         return ResponseEntity.status(HttpStatus.OK).build();
