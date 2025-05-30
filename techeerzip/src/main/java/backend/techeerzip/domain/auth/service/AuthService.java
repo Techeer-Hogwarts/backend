@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.auth.service;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Map;
 
@@ -50,6 +51,7 @@ public class AuthService {
     private static final String CONTEXT = "AuthService";
     private final UserRepository userRepository;
     private final CustomUserDetailsService customUserDetailsService;
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     @Value("${PROFILE_IMG_URL}")
     private String profileImgUrl;
@@ -66,7 +68,7 @@ public class AuthService {
             throw new AuthNotTecheerException();
         }
 
-        String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
+        String code = String.format("%06d", secureRandom.nextInt(1000000));
         logger.info("이메일 인증 코드 생성 완료 - email: {}", email, CONTEXT);
 
         redisTemplate.opsForValue().set(email, code, Duration.ofMinutes(5));
