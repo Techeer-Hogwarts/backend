@@ -229,12 +229,13 @@ public class UserService {
         return userMapper.toGetUserResponse(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public GetProfileImgResponse updateProfileImg(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 
         String latestProfileImg = fetchProfileImg(user.getEmail());
         user.setProfileImage(latestProfileImg);
+        userRepository.save(user);
 
         return new GetProfileImgResponse(user.getProfileImage());
     }
