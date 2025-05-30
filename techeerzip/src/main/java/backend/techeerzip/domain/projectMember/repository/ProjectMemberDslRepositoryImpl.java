@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectMember.repository;
 
+import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
@@ -13,7 +14,6 @@ import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.entity.QProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectApplicantResponse;
 import backend.techeerzip.global.entity.StatusCategory;
 
 @Repository
@@ -26,11 +26,11 @@ public class ProjectMemberDslRepositoryImpl extends AbstractQuerydslRepository
         super(ProjectMember.class, em, factory);
     }
 
-    public List<ProjectApplicantResponse> findManyApplicants(Long teamId) {
+    public List<ProjectMemberApplicantResponse> findManyApplicants(Long teamId) {
         return select(PM)
                 .select(
                         Projections.constructor(
-                                ProjectApplicantResponse.class,
+                                ProjectMemberApplicantResponse.class,
                                 PM.id,
                                 PM.teamRole,
                                 PM.summary,

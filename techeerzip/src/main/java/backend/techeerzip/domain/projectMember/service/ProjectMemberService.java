@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.projectMember.service;
 
+import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -11,7 +12,6 @@ import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundEx
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberDslRepository;
 import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepository;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.domain.user.repository.UserRepository;

@@ -3,9 +3,9 @@ package backend.techeerzip.domain.projectMember.exception;
 import backend.techeerzip.global.exception.BusinessException;
 import backend.techeerzip.global.exception.ErrorCode;
 
-public class TeamMemberNotFoundException extends BusinessException {
+public class ProjectMemberNotFoundException extends BusinessException {
 
-    public TeamMemberNotFoundException() {
+    public ProjectMemberNotFoundException() {
         super(ErrorCode.PROJECT_MEMBER_NOT_FOUND);
     }
 }
