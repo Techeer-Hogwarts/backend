@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import backend.techeerzip.domain.projectMember.exception.TeamMemberNotFoundException;
+import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberDslRepository;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
@@ -56,7 +56,7 @@ public class StudyMemberService {
                 studyMemberRepository
                         .findByStudyTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(TeamMemberNotFoundException::new);
+                        .orElseThrow(ProjectMemberNotFoundException::new);
         sm.toActive();
         return sm.getUser().getEmail();
     }
@@ -66,7 +66,7 @@ public class StudyMemberService {
                 studyMemberRepository
                         .findByStudyTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(TeamMemberNotFoundException::new);
+                        .orElseThrow(ProjectMemberNotFoundException::new);
         sm.toReject();
         return sm.getUser().getEmail();
     }

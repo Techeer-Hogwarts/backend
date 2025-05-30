@@ -1,16 +1,11 @@
 package backend.techeerzip.domain.studyTeam.service;
 
-import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.checkDuplicateDeleteMembers;
-import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.checkDuplicateUpdateMembers;
-import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.extractIncomingMembers;
-import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.toUserIdAndMemberInfoRequest;
-import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.validateLeaderExists;
-
-import java.util.HashSet;
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
+import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.*;
 import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.getNextInfo;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,17 +13,22 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import backend.techeerzip.domain.projectMember.exception.ProjectInvalidActiveRequester;
-import backend.techeerzip.domain.projectMember.exception.TeamMemberNotFoundException;
+import backend.techeerzip.domain.projectMember.exception.TeamInvalidActiveRequester;
+import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
+import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.StudyTeamGetAllResponse;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceNextCursor;
+import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
 import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
+import backend.techeerzip.domain.projectTeam.type.SortType;
 import backend.techeerzip.domain.studyMember.StudyMemberMapper;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import backend.techeerzip.domain.studyMember.exception.StudyMemberNotFoundException;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
 import backend.techeerzip.domain.studyMember.service.StudyMemberService;
+import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyData;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyMemberInfoRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudySlackRequest;
@@ -50,14 +50,6 @@ import backend.techeerzip.domain.studyTeam.mapper.StudyImageMapper;
 import backend.techeerzip.domain.studyTeam.mapper.StudySlackMapper;
 import backend.techeerzip.domain.studyTeam.mapper.StudyTeamMapper;
 import backend.techeerzip.domain.studyTeam.repository.StudyImageRepository;
-import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
-import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.SliceNextCursor;
-import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
-import backend.techeerzip.domain.projectTeam.type.SortType;
-import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
-import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
-import backend.techeerzip.domain.studyTeam.mapper.StudyTeamMapper;
 import backend.techeerzip.domain.studyTeam.repository.StudyTeamRepository;
 import backend.techeerzip.domain.studyTeam.repository.querydsl.StudyTeamDslRepository;
 import backend.techeerzip.domain.user.entity.User;
@@ -85,7 +77,6 @@ public class StudyTeamService {
         checkUniqueStudyName(studyData.getName());
         boolean isRecruited = checkRecruit(studyData.getIsRecruited(), studyData.getRecruitNum());
         validateLeaderExists(membersInfo, StudyMemberInfoRequest::getIsLeader);
-
         final Map<Long, User> users =
                 userService.getIdAndUserMap(membersInfo, StudyMemberInfoRequest::getUserId);
         final StudyTeam team =
@@ -228,7 +219,7 @@ public class StudyTeamService {
                 studyMemberRepository.existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(
                         userId, studyTeamId, StatusCategory.APPROVED);
         if (!isMember) {
-            throw new ProjectInvalidActiveRequester();
+            throw new TeamInvalidActiveRequester();
         }
     }
 
@@ -269,7 +260,7 @@ public class StudyTeamService {
 
             if (markedForDelete) {
                 if (member.isDeleted()) {
-                    throw new TeamMemberNotFoundException();
+                    throw new StudyMemberNotFoundException();
                 }
                 if (updateInfo != null) {
                     throw new TeamDuplicateDeleteUpdateException();
@@ -296,7 +287,7 @@ public class StudyTeamService {
     public void close(Long teamId, Long userId) {
         boolean isExisted = studyMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
         if (!isExisted) {
-            throw new ProjectInvalidActiveRequester();
+            throw new TeamInvalidActiveRequester();
         }
         final StudyTeam st =
                 studyTeamRepository.findById(teamId).orElseThrow(StudyTeamNotFoundException::new);
@@ -333,7 +324,7 @@ public class StudyTeamService {
         final StudyMember sm =
                 studyMemberRepository
                         .findByStudyTeamIdAndUserId(teamId, applicantId)
-                        .orElseThrow(TeamMemberNotFoundException::new);
+                        .orElseThrow(StudyMemberNotFoundException::new);
         final String applicantEmail = sm.getUser().getEmail();
         studyMemberRepository.delete(sm);
         final StudyTeam st =
@@ -376,7 +367,7 @@ public class StudyTeamService {
                         .findById(studyTeamId)
                         .orElseThrow(StudyTeamNotFoundException::new);
         study.increaseViewCount();
-        final List<StudyMember> sm = study.getProjectMembers();
+        final List<StudyMember> sm = study.getStudyMembers();
         return StudyTeamMapper.toDetailResponse(study, sm);
     }
 }

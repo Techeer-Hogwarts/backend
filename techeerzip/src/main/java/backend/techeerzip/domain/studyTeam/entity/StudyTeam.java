@@ -191,10 +191,6 @@ public class StudyTeam extends BaseEntity {
         return isRecruited || recruitNum > 0;
     }
 
-    public List<StudyMember> getProjectMembers() {
-        return this.studyMembers;
-    }
-
     public List<StudyResultImage> getResultImages() {
         return this.studyResultImages;
     }

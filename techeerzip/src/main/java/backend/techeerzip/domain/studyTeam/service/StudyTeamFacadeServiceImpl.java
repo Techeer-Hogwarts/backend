@@ -1,6 +1,6 @@
 package backend.techeerzip.domain.studyTeam.service;
 
-import static backend.techeerzip.domain.projectTeam.service.ProjectTeamFacedServiceImpl.validateResultImages;
+import static backend.techeerzip.domain.projectTeam.service.ProjectTeamFacadeServiceImpl.validateResultImages;
 
 import java.util.ArrayList;
 import java.util.List;
