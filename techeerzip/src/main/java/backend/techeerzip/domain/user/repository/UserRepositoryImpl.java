@@ -14,6 +14,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.exception.CursorException;
 
 @Repository
 public class UserRepositoryImpl extends QuerydslRepositorySupport implements UserRepositoryCustom {
@@ -56,9 +57,10 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
 
         if (cursorId != null) {
             User cursorUser = queryFactory.selectFrom(user).where(user.id.eq(cursorId)).fetchOne();
-            if (cursorUser != null) {
-                whereClause.and(getCursorCondition(sortBy, cursorUser));
+            if (cursorUser == null) {
+                throw new CursorException();
             }
+            whereClause.and(getCursorCondition(sortBy, cursorUser));
         }
 
         return queryFactory
