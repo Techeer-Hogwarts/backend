@@ -1,14 +1,16 @@
 package backend.techeerzip.domain.resume.dto.request;
 
-import backend.techeerzip.domain.resume.entity.ResumeCategory;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import backend.techeerzip.domain.resume.entity.ResumeCategory;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minidev.json.annotate.JsonIgnore;
 
 @Getter
 @NoArgsConstructor
