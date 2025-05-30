@@ -16,5 +16,5 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
 
     @Modifying
     @Query("DELETE StudyMember s WHERE s.user.id = :userId")
-    void updateIsDeletedByUserId(@Param("userId") Long userId);
+    void deletedByUserId(@Param("userId") Long userId);
 }

@@ -10,5 +10,5 @@ import backend.techeerzip.domain.userExperience.entity.UserExperience;
 public interface UserExperienceRepository extends JpaRepository<UserExperience, Long> {
     @Modifying
     @Query("DELETE UserExperience ue WHERE ue.user.id = :userId")
-    void updateIsDeletedByUserId(@Param("userId") Long userId);
+    void deletedByUserId(@Param("userId") Long userId);
 }

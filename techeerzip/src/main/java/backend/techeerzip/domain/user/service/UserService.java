@@ -173,15 +173,15 @@ public class UserService {
     public void deleteUser(Long userId, HttpServletResponse response) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        blogRepository.updateIsDeletedByUserId(userId);
-        bookmarkRepository.updateIsDeletedByUserId(userId);
-        eventRepository.updateIsDeletedByUserId(userId);
-        likeRepository.updateIsDeletedByUserId(userId);
-        projectMemberRepository.updateIsDeletedByUserId(userId);
-        resumeRepository.updateIsDeletedByUserId(userId);
-        sessionRepository.updateIsDeletedByUserId(userId);
-        studyMemberRepository.updateIsDeletedByUserId(userId);
-        userExperienceRepository.updateIsDeletedByUserId(userId);
+        blogRepository.deletedByUserId(userId);
+        bookmarkRepository.deletedByUserId(userId);
+        eventRepository.deletedByUserId(userId);
+        likeRepository.deletedByUserId(userId);
+        projectMemberRepository.deletedByUserId(userId);
+        resumeRepository.deletedByUserId(userId);
+        sessionRepository.deletedByUserId(userId);
+        studyMemberRepository.deletedByUserId(userId);
+        userExperienceRepository.deletedByUserId(userId);
 
         logger.info("해당 유저 연관 데이터 삭제 완료 - userId: {}", userId, CONTEXT);
 

@@ -17,5 +17,5 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
 
     @Modifying
     @Query("DELETE Resume r WHERE r.user.id = :userId")
-    void updateIsDeletedByUserId(@Param("userId") Long userId);
+    void deletedByUserId(@Param("userId") Long userId);
 }

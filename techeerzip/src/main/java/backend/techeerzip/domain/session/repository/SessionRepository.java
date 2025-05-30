@@ -19,5 +19,5 @@ public interface SessionRepository
 
     @Modifying
     @Query("DELETE Session s WHERE s.user.id = :userId")
-    void updateIsDeletedByUserId(@Param("userId") Long userId);
+    void deletedByUserId(@Param("userId") Long userId);
 }

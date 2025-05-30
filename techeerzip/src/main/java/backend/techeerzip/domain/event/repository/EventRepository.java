@@ -14,5 +14,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Modifying
     @Query("DELETE Event e WHERE e.user.id = :userId")
-    void updateIsDeletedByUserId(@Param("userId") Long userId);
+    void deletedByUserId(@Param("userId") Long userId);
 }
