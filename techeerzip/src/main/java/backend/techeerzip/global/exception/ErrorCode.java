@@ -104,7 +104,8 @@ public enum ErrorCode {
     REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found"),
 
     // Event
-    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "Event not found");
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "이벤트를 찾을 수 없습니다."),
+    EVENT_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "E002", "이벤트에 대한 권한이 없습니다.");
 
     private final HttpStatus status;
     private final String code;
