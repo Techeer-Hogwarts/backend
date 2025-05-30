@@ -85,5 +85,6 @@ public class GetUserResponse {
         private final String endDate;
         private final String category;
         private final boolean isFinished;
+        private final String description;
     }
 }
