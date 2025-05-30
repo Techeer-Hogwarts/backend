@@ -100,6 +100,7 @@ public class UserMapper {
                                                                         : null)
                                                         .category(exp.getCategory())
                                                         .isFinished(exp.isFinished())
+                                                        .description(exp.getDescription())
                                                         .build())
                                 .toList())
                 .build();
