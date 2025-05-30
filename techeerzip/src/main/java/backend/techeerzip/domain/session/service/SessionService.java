@@ -55,7 +55,7 @@ public class SessionService {
     }
 
     @Transactional
-    public void updateSession(SessionCreateRequest request, Long sessionId, Long userId) {
+    public Session updateSession(SessionCreateRequest request, Long sessionId, Long userId) {
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(SessionNotFoundException::new);
         validateSessionAuthor(userId, session);
@@ -69,8 +69,7 @@ public class SessionService {
                 request.category(),
                 request.position()
         );
-        eventPublisher.publishEvent(
-                new IndexEvent.Create<>("session", SessionMapper.toIndexDto(session)));
+        return session;
     }
 
     public SessionListResponse<SessionResponse> getAllSessions(SessionListQueryRequest request) {

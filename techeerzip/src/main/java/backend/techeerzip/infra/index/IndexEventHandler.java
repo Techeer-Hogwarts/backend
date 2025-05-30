@@ -1,10 +1,9 @@
 package backend.techeerzip.infra.index;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.client.RestTemplate;
 
 import backend.techeerzip.global.logger.CustomLogger;
@@ -21,7 +20,7 @@ public class IndexEventHandler {
     private final CustomLogger log;
 
     @Async("defaultExecutor")
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleCreate(IndexEvent.Create<?> event) {
         final String url = indexApiUrl + "/index/" + event.getIndex();
         try {
@@ -33,7 +32,7 @@ public class IndexEventHandler {
     }
 
     @Async("defaultExecutor")
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleDelete(IndexEvent.Delete event) {
         final String url =
                 String.format(
