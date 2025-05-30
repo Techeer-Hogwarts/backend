@@ -1,9 +1,10 @@
 package backend.techeerzip.domain.projectTeam.mapper;
 
+import java.util.List;
+
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectIndexRequest;
 import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import java.util.List;
 
 public class ProjectIndexMapper {
 

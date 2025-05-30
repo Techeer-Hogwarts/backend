@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectMember.repository;
 
-import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
@@ -11,6 +10,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
+import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectMember.entity.QProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
