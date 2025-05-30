@@ -2,6 +2,12 @@ package backend.techeerzip.domain.projectTeam.service;
 
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
 
+import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamDuplicateDeleteUpdateException;
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateMemberException;
+import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
+import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
+import backend.techeerzip.domain.projectTeam.mapper.ProjectIndexMapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -33,7 +40,6 @@ import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectMemberApplicantResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamCreateResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailResponse;
@@ -47,14 +53,11 @@ import backend.techeerzip.domain.projectTeam.entity.TeamStack;
 import backend.techeerzip.domain.projectTeam.exception.ProjectDuplicateTeamName;
 import backend.techeerzip.domain.projectTeam.exception.ProjectExceededResultImageException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectInvalidProjectMemberException;
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamDuplicateDeleteUpdateException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingLeaderException;
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectImageMapper;
-import backend.techeerzip.domain.projectTeam.mapper.ProjectIndexMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamMapper;
 import backend.techeerzip.domain.projectTeam.mapper.TeamStackMapper;
@@ -97,12 +100,12 @@ public class ProjectTeamService {
         }
     }
 
-    private static void validateLeaderExists(List<ProjectMemberInfoRequest> membersInfo) {
-        if (membersInfo.stream().noneMatch(ProjectMemberInfoRequest::isLeader)) {
+    public static  <T> void validateLeaderExists(List<T> membersInfo, Predicate<T> isLeaderPredicate) {
+        boolean hasLeader = membersInfo.stream().anyMatch(isLeaderPredicate);
+        if (!hasLeader) {
             throw new ProjectTeamMissingLeaderException();
         }
     }
-
     private static List<ProjectMember> mapToProjectMemberEntities(
             List<ProjectMemberInfoRequest> membersInfo,
             ProjectTeam teamEntity,
@@ -118,12 +121,12 @@ public class ProjectTeamService {
                 .toList();
     }
 
-    private static Map<Long, ProjectMemberInfoRequest> toUserIdAndMemberInfoRequest(
-            List<ProjectMemberInfoRequest> updateMember) {
+    public static <T> Map<Long, T> toUserIdAndMemberInfoRequest(
+            List<T> updateMember, Function<T, Long> function) {
         return updateMember.stream()
                 .collect(
                         Collectors.toMap(
-                                ProjectMemberInfoRequest::userId,
+                                function,
                                 Function.identity(),
                                 (oldVal, newVal) -> newVal));
     }
@@ -294,7 +297,7 @@ public class ProjectTeamService {
         /* 1. 수정 권한이 있는 멤버인지 검증 */
         verifyUserIsActiveProjectMember(userId, projectTeamId);
         /* 2. TeamRole 검증 */
-        validateLeaderExists(updateMembersInfo);
+        validateLeaderExists(updateMembersInfo, ProjectMemberInfoRequest::isLeader);
         final ProjectTeam team =
                 projectTeamRepository
                         .findById(projectTeamId)
@@ -373,7 +376,7 @@ public class ProjectTeamService {
             List<Long> deleteMemberIds) {
         // 요청 중 수정하려는 유저 ID → 요청 정보 Map
         final Map<Long, ProjectMemberInfoRequest> updateMap =
-                toUserIdAndMemberInfoRequest(updateMember);
+                toUserIdAndMemberInfoRequest(updateMember, ProjectMemberInfoRequest::userId);
         final Set<Long> deleteIdSet = new HashSet<>(deleteMemberIds);
         checkDuplicateUpdateMembers(updateMap, updateMember);
         checkDuplicateDeleteMembers(deleteIdSet, deleteMemberIds);
@@ -389,9 +392,9 @@ public class ProjectTeamService {
      * @param deleteMemberIds 원본 삭제 ID 리스트
      * @throws ProjectInvalidProjectMemberException 삭제 대상에 중복이 있을 경우
      */
-    private void checkDuplicateDeleteMembers(Set<Long> deleteIdSet, List<Long> deleteMemberIds) {
+    public static void checkDuplicateDeleteMembers(Set<Long> deleteIdSet, List<Long> deleteMemberIds) {
         if (deleteIdSet.size() != deleteMemberIds.size()) {
-            throw new ProjectInvalidProjectMemberException();
+            throw new TeamDuplicateDeleteUpdateException();
         }
     }
 
@@ -402,11 +405,11 @@ public class ProjectTeamService {
      * @param updateMember 원본 업데이트 요청 리스트
      * @throws ProjectInvalidProjectMemberException userId 기준 중복이 있는 경우
      */
-    private void checkDuplicateUpdateMembers(
-            Map<Long, ProjectMemberInfoRequest> updateMap,
-            List<ProjectMemberInfoRequest> updateMember) {
+    public static <T> void checkDuplicateUpdateMembers(
+            Map<Long, T> updateMap,
+            List<T> updateMember) {
         if (updateMap.size() != updateMember.size()) {
-            throw new ProjectInvalidProjectMemberException();
+            throw new TeamMissingUpdateMemberException();
         }
     }
 
@@ -462,8 +465,7 @@ public class ProjectTeamService {
      * @param remainingUpdateMap 기존 멤버에 없던 userId → 요청 정보
      * @return 신규 멤버 요청 리스트
      */
-    private List<ProjectMemberInfoRequest> extractIncomingMembers(
-            Map<Long, ProjectMemberInfoRequest> remainingUpdateMap) {
+    public static <T> List<T> extractIncomingMembers(Map<Long, T> remainingUpdateMap) {
         return List.copyOf(remainingUpdateMap.values());
     }
 
@@ -515,8 +517,6 @@ public class ProjectTeamService {
      * 주어진 ID 목록에 해당하는 팀들을 최신 순으로 조회합니다.
      *
      * @param keys 조회할 프로젝트 팀 ID 리스트
-     * @param isRecruited 모집 여부 필터
-     * @param isFinished 종료 여부 필터
      * @return 프로젝트 팀 목록
      */
     @Transactional(readOnly = true)
