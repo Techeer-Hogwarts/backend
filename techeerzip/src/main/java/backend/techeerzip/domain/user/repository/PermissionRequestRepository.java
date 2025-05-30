@@ -15,6 +15,6 @@ public interface PermissionRequestRepository extends JpaRepository<PermissionReq
 
     @Modifying
     @Query(
-            "UPDATE PermissionRequest p SET p.status = :status WHERE p.user.id = :userId AND p.status = 'PENDING'")
+            "UPDATE PermissionRequest p SET p.status = :status WHERE p.user.id = :userId AND p.status = backend.techeerzip.global.entity.StatusCategory.PENDING")
     int updateStatusByUserId(@Param("userId") Long userId, @Param("status") StatusCategory status);
 }
