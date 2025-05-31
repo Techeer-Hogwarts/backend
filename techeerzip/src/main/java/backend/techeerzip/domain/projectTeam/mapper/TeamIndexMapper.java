@@ -24,7 +24,7 @@ public class TeamIndexMapper {
                 .projectExplain(team.getProjectExplain())
                 .resultImages(resultImages)
                 .teamStacks(teamStacks)
-                .name(team.getName())
+                .title(team.getName())
                 .build();
     }
 
@@ -37,7 +37,7 @@ public class TeamIndexMapper {
                 .name(team.getName())
                 .studyExplain(team.getStudyExplain())
                 .resultImages(resultImages)
-                .name(team.getName())
+                .title(team.getName())
                 .build();
     }
 }

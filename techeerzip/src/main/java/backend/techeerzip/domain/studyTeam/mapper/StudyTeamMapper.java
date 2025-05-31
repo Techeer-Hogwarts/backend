@@ -5,7 +5,7 @@ import java.util.List;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
-import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
+import backend.techeerzip.domain.studyTeam.dto.response.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyData;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamDetailResponse;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamUpdateResponse;
@@ -81,7 +81,7 @@ public class StudyTeamMapper {
                 .isRecruited(team.getIsRecruited())
                 .isFinished(team.getIsFinished())
                 .resultImages(
-                        team.getResultImages().stream()
+                        team.getStudyResultImages().stream()
                                 .map(StudyTeamMapper::mapToResultImageInfo)
                                 .toList())
                 .studyMember(
