@@ -1,5 +1,7 @@
 package backend.techeerzip.domain.projectTeam.mapper;
 
+import java.util.List;
+
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
 import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
@@ -9,7 +11,6 @@ import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailRespo
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import java.util.List;
 
 public class ProjectTeamMapper {
 
