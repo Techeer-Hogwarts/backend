@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.user.service;
 
+import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -25,7 +26,7 @@ public class UserService {
                 users.stream().collect(Collectors.toMap(User::getId, user -> user));
         for (Long id : usersId) {
             if (!userMap.containsKey(id)) {
-                throw new IllegalArgumentException();
+                throw new UserNotFoundException();
             }
         }
         return userMap;

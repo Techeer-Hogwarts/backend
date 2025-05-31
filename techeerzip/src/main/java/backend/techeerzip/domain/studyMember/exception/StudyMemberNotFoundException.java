@@ -6,6 +6,6 @@ import backend.techeerzip.global.exception.ErrorCode;
 public class StudyMemberNotFoundException extends BusinessException {
 
     public StudyMemberNotFoundException() {
-        super(ErrorCode.STUDY_TEAM_NOT_FOUND);
+        super(ErrorCode.STUDY_MEMBER_NOT_FOUND);
     }
 }
