@@ -42,9 +42,83 @@ public class UserMapper {
                 .isLft(user.isLft())
                 .year(user.getYear())
                 .stack(user.getStack())
-                .projectTeams(projectTeamMapper.toUserProjectTeamDTOList(user.getProjectMembers()))
-                .studyTeams(studyTeamMapper.toUserStudyTeamDTOList(user.getStudyMembers()))
-                .experiences(userExperienceMapper.toDtoList(user.getExperiences()))
+                .projectTeams(
+                        user.getProjectMembers().stream()
+                                .filter(pm -> pm.getProjectTeam() != null)
+                                .map(
+                                        pm ->
+                                                GetUserResponse.ProjectTeamDTO.builder()
+                                                        .id(pm.getProjectTeam().getId())
+                                                        .name(pm.getProjectTeam().getName())
+                                                        .resultImages(
+                                                                pm
+                                                                        .getProjectTeam()
+                                                                        .getResultImages()
+                                                                        .stream()
+                                                                        .map(
+                                                                                img ->
+                                                                                        img
+                                                                                                .getImageUrl())
+                                                                        .toList())
+                                                        .mainImage(
+                                                                pm.getProjectTeam()
+                                                                                .getMainImages()
+                                                                                .isEmpty()
+                                                                        ? ""
+                                                                        : pm.getProjectTeam()
+                                                                                .getMainImages()
+                                                                                .get(0)
+                                                                                .getImageUrl())
+                                                        .build())
+                                .toList())
+                .studyTeams(
+                        user.getStudyMembers().stream()
+                                .filter(sm -> sm.getStudyTeam() != null)
+                                .map(
+                                        sm ->
+                                                GetUserResponse.StudyTeamDTO.builder()
+                                                        .id(sm.getStudyTeam().getId())
+                                                        .name(sm.getStudyTeam().getName())
+                                                        .resultImages(
+                                                                sm
+                                                                        .getStudyTeam()
+                                                                        .getStudyResultImages()
+                                                                        .stream()
+                                                                        .map(
+                                                                                img ->
+                                                                                        img
+                                                                                                .getImageUrl())
+                                                                        .toList())
+                                                        .mainImage(
+                                                                sm.getStudyTeam()
+                                                                                .getStudyResultImages()
+                                                                                .isEmpty()
+                                                                        ? ""
+                                                                        : sm.getStudyTeam()
+                                                                                .getStudyResultImages()
+                                                                                .get(0)
+                                                                                .getImageUrl())
+                                                        .build())
+                                .toList())
+                .experiences(
+                        user.getExperiences().stream()
+                                .map(
+                                        exp ->
+                                                GetUserResponse.ExperienceDTO.builder()
+                                                        .id(exp.getId())
+                                                        .position(exp.getPosition())
+                                                        .companyName(exp.getCompanyName())
+                                                        .startDate(exp.getStartDate().toString())
+                                                        .endDate(
+                                                                exp.getEndDate() != null
+                                                                        ? exp.getEndDate()
+                                                                                .toString()
+                                                                        : null)
+                                                        .category(exp.getCategory())
+                                                        .isFinished(exp.isFinished())
+                                                        .description(exp.getDescription())
+                                                        .build())
+                                .toList())
                 .build();
     }
 }

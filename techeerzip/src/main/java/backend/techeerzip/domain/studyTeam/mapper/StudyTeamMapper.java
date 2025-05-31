@@ -9,13 +9,8 @@ import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamDetailResponse;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamUpdateResponse;
 import backend.techeerzip.domain.studyTeam.entity.StudyResultImage;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
-import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import org.springframework.stereotype.Component;
 
-@Component
 public class StudyTeamMapper {
 
     private StudyTeamMapper() {
@@ -36,32 +31,6 @@ public class StudyTeamMapper {
                 .updatedAt(studyTeam.getUpdatedAt())
                 .createdAt(studyTeam.getCreatedAt())
                 .build();
-    }
-
-    public GetUserResponse.StudyTeamDTO toUserStudyTeamDTO(StudyMember sm) {
-        if (sm.getStudyTeam() == null) return null;
-
-        StudyTeam studyTeam = sm.getStudyTeam();
-
-        return GetUserResponse.StudyTeamDTO.builder()
-                .id(studyTeam.getId())
-                .name(studyTeam.getName())
-                .resultImages(
-                        studyTeam.getStudyResultImages().stream()
-                                .map(img -> img.getImageUrl())
-                                .collect(Collectors.toList()))
-                .mainImage(
-                        studyTeam.getStudyResultImages().isEmpty()
-                                ? ""
-                                : studyTeam.getStudyResultImages().get(0).getImageUrl())
-                .build();
-    }
-
-    public List<GetUserResponse.StudyTeamDTO> toUserStudyTeamDTOList(List<StudyMember> members) {
-        return members.stream()
-                .map(this::toUserStudyTeamDTO)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
     }
 
     public static StudyTeam toEntity(StudyData studyData, Boolean isRecruited) {
