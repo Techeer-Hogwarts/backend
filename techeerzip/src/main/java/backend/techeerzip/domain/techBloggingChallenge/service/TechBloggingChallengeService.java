@@ -235,7 +235,7 @@ public class TechBloggingChallengeService {
 
         // 2. 유저 조회
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
-
+        logger.info("user: {}", user);
         // 3. 이미 참여했는지 확인
         boolean alreadyJoined =
                 term.getParticipants().stream()
@@ -243,12 +243,13 @@ public class TechBloggingChallengeService {
         if (alreadyJoined) {
             throw new TechBloggingTermAlreadyJoinedException();
         }
-
+        logger.info("alreadyJoined: {}", alreadyJoined);
         // 4. 참여자 저장
         TechBloggingTermParticipant participant = TechBloggingTermParticipant.create(term, user);
         term.getParticipants().add(participant);
         // CascadeType.ALL이므로 term 저장 시 participant도 저장됨
         termRepository.save(term);
+        logger.info("term: {}", term);
     }
 
     // 출석 현황 조회
