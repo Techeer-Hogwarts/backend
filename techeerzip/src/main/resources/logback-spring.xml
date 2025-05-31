@@ -36,14 +36,20 @@
     </appender>
 
     <springProfile name="development">
-        <root level="DEBUG">
+        <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
         </root>
-        <logger name="backend.techeerzip" level="DEBUG" additivity="false">
+        <logger name="backend.techeerzip" level="INFO" additivity="false">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
+        </logger>
+        <logger name="org.hibernate.SQL" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
         </logger>
     </springProfile>
 
