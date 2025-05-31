@@ -36,12 +36,12 @@ public class StudyTeamFacadeServiceImpl implements StudyTeamFacadeService {
             final List<String> resultUrls =
                     s3Service.uploadMany(resultImages, "project-teams/result", "project-team");
             uploadedUrl.addAll(resultUrls);
-            log.debug("ProjectTeam Create: s3 result 업로드 완료");
-            // Transaction
+            log.debug("StudyTeam Create: s3 result 업로드 완료");
+
             return studyTeamService.create(resultUrls, request);
         } catch (Exception e) {
             s3Service.deleteMany(uploadedUrl);
-            log.error("ProjectTeam Create: s3 롤백", uploadedUrl);
+            log.error("StudyTeam Create: s3 롤백", uploadedUrl);
             throw e;
         }
     }
@@ -58,7 +58,7 @@ public class StudyTeamFacadeServiceImpl implements StudyTeamFacadeService {
         try {
             if (isResult) {
                 final List<String> result =
-                        s3Service.uploadMany(resultImages, "study-teams/main", "study-team");
+                        s3Service.uploadMany(resultImages, "study-teams/result", "study-team");
                 resultImageUrls.addAll(result);
             }
             return studyTeamService.update(studyTeamId, userId, resultImageUrls, request);

@@ -46,6 +46,7 @@ public class StudyTeamController implements StudyTeamSwagger {
         return ResponseEntity.ok(studyTeamFacadeService.getDetail(studyTeamId));
     }
 
+    @Override
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Long> createStudyTeam(
             @RequestPart(value = "resultImages", required = false) List<MultipartFile> resultImages,

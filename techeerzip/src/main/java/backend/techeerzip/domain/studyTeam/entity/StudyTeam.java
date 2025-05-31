@@ -26,6 +26,20 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "StudyTeam")
+/**
+ * 스터디 팀 엔티티입니다.
+ *
+ * <p>처리 내용:
+ * <ol>
+ *     <li>스터디 팀의 기본 정보 관리</li>
+ *     <li>팀원 및 이미지 등의 연관 관계 관리</li>
+ *     <li>스터디 모집 상태 및 진행 상태 관리</li>
+ * </ol>
+ *
+ * @see StudyMember 스터디 팀원 정보
+ * @see StudyMainImage 스터디 메인 이미지
+ * @see StudyResultImage 스터디 결과 이미지
+ */
 public class StudyTeam extends BaseEntity {
 
     @OneToMany(mappedBy = "studyTeam", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -128,7 +142,7 @@ public class StudyTeam extends BaseEntity {
     }
 
     public boolean isSameName(String name) {
-        return this.name.equals(name);
+        return this.name != null && this.name.equals(name);
     }
 
     public void increaseLikeCount() {
@@ -165,6 +179,7 @@ public class StudyTeam extends BaseEntity {
         this.githubLink = studyData.getGithubLink();
         this.notionLink = studyData.getNotionLink();
         this.recruitNum = studyData.getRecruitNum();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public List<LeaderInfo> getLeaders() {
@@ -189,10 +204,6 @@ public class StudyTeam extends BaseEntity {
 
     public boolean isRecruited() {
         return isRecruited || recruitNum > 0;
-    }
-
-    public List<StudyResultImage> getResultImages() {
-        return this.studyResultImages;
     }
 
     public void remove(StudyMember sm) {

@@ -4,6 +4,7 @@ import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnio
 import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.*;
 import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.getNextInfo;
 
+import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,12 +24,12 @@ import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdate
 import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
 import backend.techeerzip.domain.projectTeam.type.SortType;
-import backend.techeerzip.domain.studyMember.StudyMemberMapper;
+import backend.techeerzip.domain.studyMember.mapper.StudyMemberMapper;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.studyMember.exception.StudyMemberNotFoundException;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
 import backend.techeerzip.domain.studyMember.service.StudyMemberService;
-import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
+import backend.techeerzip.domain.studyTeam.dto.response.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyData;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyMemberInfoRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudySlackRequest;
@@ -43,7 +44,6 @@ import backend.techeerzip.domain.studyTeam.entity.StudyResultImage;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.domain.studyTeam.exception.StudyExceededResultImageException;
 import backend.techeerzip.domain.studyTeam.exception.StudyTeamDuplicateException;
-import backend.techeerzip.domain.studyTeam.exception.StudyTeamInvalidRecruitNumException;
 import backend.techeerzip.domain.studyTeam.exception.StudyTeamNotFoundException;
 import backend.techeerzip.domain.studyTeam.exception.StudyTeamRecruitmentClosedException;
 import backend.techeerzip.domain.studyTeam.mapper.StudyImageMapper;
@@ -60,6 +60,16 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+/**
+ * 스터디 팀 서비스입니다.
+ *
+ * <p>처리 내용:
+ * <ol>
+ *     <li>스터디 팀 생성, 수정, 삭제 등의 기본 CRUD 작업</li>
+ *     <li>팀원 모집 및 관리</li>
+ *     <li>팀 상태 관리 및 조회</li>
+ * </ol>
+ */
 public class StudyTeamService {
 
     private final StudyTeamRepository studyTeamRepository;
@@ -69,6 +79,25 @@ public class StudyTeamService {
     private final StudyMemberRepository studyMemberRepository;
     private final UserService userService;
 
+    /**
+     * 스터디 팀을 생성하고, 이미지 및 멤버 정보를 저장한 후 생성 결과를 반환합니다.
+     *
+     * <p>처리 흐름:
+     * <ol>
+     *     <li>중복된 스터디 이름이 있는지 검증합니다.</li>
+     *     <li>모집 여부 및 인원 수를 확인합니다.</li>
+     *     <li>리더 존재 여부를 확인합니다.</li>
+     *     <li>StudyTeam 엔티티를 저장합니다.</li>
+     *     <li>결과 이미지가 있다면 저장합니다.</li>
+     *     <li>StudyMember를 생성하고 저장합니다.</li>
+     * </ol>
+     *
+     * @param resultUrls 결과 이미지 URL 리스트
+     * @param request 스터디 생성 요청 DTO
+     * @return 생성된 스터디 정보와 슬랙 요청 정보
+     * @throws StudyTeamDuplicateException 스터디 이름이 중복된 경우
+     * @throws TeamInvalidRecruitNumException 모집 인원 수가 유효하지 않은 경우
+     */
     @Transactional
     public StudyTeamCreateResponse create(List<String> resultUrls, StudyTeamCreateRequest request) {
         final StudyData studyData = request.getStudyData();
@@ -109,7 +138,7 @@ public class StudyTeamService {
 
     private static boolean checkRecruit(Boolean isRecruited, Integer recruitNum) {
         if (recruitNum < 0) {
-            throw new StudyTeamInvalidRecruitNumException();
+            throw new TeamInvalidRecruitNumException();
         }
         if (recruitNum == 0) {
             return false;
@@ -124,6 +153,17 @@ public class StudyTeamService {
         }
     }
 
+    /**
+     * 주어진 조회 조건에 따라 스터디 팀 목록을 슬라이스 방식으로 조회합니다.
+     *
+     * 처리 흐름:
+     * 1. 조건에 맞는 스터디 팀을 조회합니다.
+     * 2. next 커서를 계산합니다.
+     * 3. 지정된 limit 수만큼 잘라 응답합니다.
+     *
+     * @param query 조회 조건 DTO
+     * @return 스터디 팀 목록 및 next 커서
+     */
     public GetAllTeamsResponse getSliceTeams(GetStudyTeamsQuery query) {
         final int limit = query.getLimit();
         final SortType sortType = query.getSortType();
@@ -135,7 +175,13 @@ public class StudyTeamService {
         return new GetAllTeamsResponse(responses, next);
     }
 
-    public List<StudySliceTeamsResponse> getYoungTeamsById(List<Long> keys) {
+    /**
+     * ID 리스트에 해당하는 스터디 팀들을 조회하고 간략한 정보를 반환합니다.
+     *
+     * @param keys 스터디 팀 ID 리스트
+     * @return 각 팀의 간략한 응답 DTO 리스트
+     */
+    public List<StudySliceTeamsResponse> getStudyTeamsById(List<Long> keys) {
         final List<StudyTeam> teams = studyTeamRepository.findAllById(keys);
         return teams.stream().map(StudyTeamMapper::toGetAllResponse).toList();
     }
@@ -154,6 +200,36 @@ public class StudyTeamService {
                 last.getLikeCount());
     }
 
+    /**
+     * 스터디 팀의 정보를 수정하고, 이미지/멤버 변경 사항을 반영합니다.
+     *
+     * <p>처리 흐름:
+     * <ol>
+     *     <li>사용자의 멤버 자격 확인</li>
+     *     <li>리더 존재 여부 확인</li>
+     *     <li>결과 이미지 개수 유효성 검사</li>
+     *     <li>팀명 변경 시 중복 여부 확인</li>
+     *     <li>삭제 요청된 이미지 삭제</li>
+     *     <li>새 이미지 추가</li>
+     *     <li>기존 멤버 상태 변경 및 신규 멤버 분리</li>
+     *     <li>팀 정보 업데이트</li>
+     *     <li>리크루트 변경 시 슬랙 요청 포함 응답</li>
+     * </ol>
+     *
+     * @param studyTeamId 수정할 팀 ID
+     * @param userId 요청자 ID
+     * @param resultImageUrls 추가할 결과 이미지 URL
+     * @param request 수정 요청 DTO
+     * @return 변경된 스터디 팀 정보
+     * @throws StudyTeamNotFoundException 팀이 존재하지 않는 경우
+     * @throws StudyTeamDuplicateException 변경할 팀명이 중복된 경우
+     * @throws TeamInvalidActiveRequester 요청자가 승인된 멤버가 아닌 경우
+     * @throws TeamInvalidRecruitNumException 모집 인원 수가 유효하지 않은 경우
+     * @throws StudyExceededResultImageException 최대 이미지 개수를 초과한 경우
+     * @throws StudyMemberNotFoundException 삭제 요청된 멤버가 이미 삭제된 경우
+     * @throws TeamDuplicateDeleteUpdateException 삭제와 수정에 동시에 포함된 멤버가 존재하는 경우
+     * @throws TeamMissingUpdateMemberException 요청 수와 처리 수가 일치하지 않는 경우
+     */
     @Transactional
     public StudyTeamUpdateResponse update(
             Long studyTeamId,
@@ -276,13 +352,23 @@ public class StudyTeamService {
                 updateMap.remove(userId);
             }
         }
-        if (deleteIdSet.size() != toInactive.size()
-                || toActive.size() + updateMap.size() != updateCount
-                || deleteIdSet.size() + toInactive.size() != existingMembers.size()) {
+        final boolean allDeletesProcessed = deleteIdSet.size() == toInactive.size();
+        final boolean allUpdatesAccountedFor = toActive.size() + updateMap.size() == updateCount;
+        final boolean memberCountConsistent = deleteIdSet.size() + toInactive.size() == existingMembers.size();
+
+        if (!allDeletesProcessed || !allUpdatesAccountedFor || !memberCountConsistent) {
             throw new TeamMissingUpdateMemberException();
         }
     }
 
+    /**
+     * 스터디 팀 모집을 종료합니다.
+     *
+     * @param teamId 팀 ID
+     * @param userId 요청자 ID
+     * @throws StudyTeamNotFoundException 팀이 존재하지 않는 경우
+     * @throws TeamInvalidActiveRequester 요청자가 승인된 멤버가 아닌 경우
+     */
     @Transactional
     public void close(Long teamId, Long userId) {
         boolean isExisted = studyMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
@@ -294,6 +380,21 @@ public class StudyTeamService {
         st.close();
     }
 
+    /**
+     * 스터디 팀을 soft delete 처리합니다.
+     *
+     * <p>처리 순서:
+     * <ol>
+     *     <li>삭제 권한 검증</li>
+     *     <li>팀 및 연관 데이터 소프트 삭제</li>
+     *     <li>슬랙/검색 인덱스에서 제거</li>
+     * </ol>
+     *
+     * @param teamId 삭제할 팀 ID
+     * @param userId 삭제 요청자 ID
+     * @throws TeamInvalidActiveRequester 삭제 권한이 없는 경우
+     * @throws StudyTeamNotFoundException 팀이 존재하지 않는 경우
+     */
     @Transactional
     public void softDelete(Long teamId, Long userId) {
         verifyUserIsActiveStudyMember(teamId, userId);
@@ -302,6 +403,15 @@ public class StudyTeamService {
         st.softDelete();
     }
 
+    /**
+     * 사용자가 스터디 팀에 지원합니다.
+     *
+     * @param request 지원 요청 DTO
+     * @param applicantId 지원자 ID
+     * @return 슬랙 메시지 전송을 위한 DM 요청 리스트
+     * @throws StudyTeamNotFoundException 팀이 존재하지 않는 경우
+     * @throws StudyTeamRecruitmentClosedException 팀이 모집 중이 아닌 경우
+     */
     @Transactional
     public List<StudySlackRequest.DM> apply(StudyTeamApplyRequest request, Long applicantId) {
         final Long teamId = request.studyTeamId();
@@ -320,6 +430,15 @@ public class StudyTeamService {
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.PENDING);
     }
 
+    /**
+     * 사용자가 스터디 팀 지원을 취소합니다.
+     *
+     * @param teamId 팀 ID
+     * @param applicantId 지원자 ID
+     * @return 슬랙 메시지 전송을 위한 DM 요청 리스트
+     * @throws StudyTeamNotFoundException 팀이 존재하지 않는 경우
+     * @throws StudyMemberNotFoundException 지원 정보가 존재하지 않는 경우
+     */
     @Transactional
     public List<StudySlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
         final StudyMember sm =
@@ -334,6 +453,17 @@ public class StudyTeamService {
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.CANCELLED);
     }
 
+    /**
+     * 스터디 팀의 지원자를 승인합니다.
+     *
+     * @param teamId 팀 ID
+     * @param userId 요청자 ID
+     * @param applicantId 승인할 사용자 ID
+     * @return 슬랙 메시지 전송을 위한 DM 요청 리스트
+     * @throws StudyTeamNotFoundException 팀이 존재하지 않는 경우
+     * @throws StudyMemberNotFoundException 지원자가 존재하지 않거나 상태가 올바르지 않은 경우
+     * @throws TeamInvalidActiveRequester 요청자가 승인된 멤버가 아닌 경우
+     */
     public List<StudySlackRequest.DM> acceptApplicant(Long teamId, Long userId, Long applicantId) {
         verifyUserIsActiveStudyMember(teamId, userId);
         final String applicantEmail = studyMemberService.acceptApplicant(teamId, applicantId);
@@ -343,6 +473,17 @@ public class StudyTeamService {
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.APPROVED);
     }
 
+    /**
+     * 스터디 팀의 지원자를 거절합니다.
+     *
+     * @param teamId 팀 ID
+     * @param userId 요청자 ID
+     * @param applicantId 거절할 사용자 ID
+     * @return 슬랙 메시지 전송을 위한 DM 요청 리스트
+     * @throws StudyTeamNotFoundException 팀이 존재하지 않는 경우
+     * @throws StudyMemberNotFoundException 지원자가 존재하지 않거나 상태가 올바르지 않은 경우
+     * @throws TeamInvalidActiveRequester 요청자가 승인된 멤버가 아닌 경우
+     */
     public List<StudySlackRequest.DM> rejectApplicant(Long teamId, Long userId, Long applicantId) {
         verifyUserIsActiveStudyMember(teamId, userId);
         final String applicantEmail = studyMemberService.rejectApplicant(teamId, applicantId);
@@ -352,6 +493,13 @@ public class StudyTeamService {
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.REJECT);
     }
 
+    /**
+     * 스터디 팀의 지원자 목록을 조회합니다. (요청자가 팀의 승인된 멤버인 경우에만 응답)
+     *
+     * @param studyTeamId 팀 ID
+     * @param userId 요청자 ID
+     * @return 지원자 응답 리스트, 승인된 멤버가 아니면 빈 리스트 반환
+     */
     public List<StudyApplicantResponse> getApplicants(Long studyTeamId, Long userId) {
         final boolean isActive =
                 studyMemberService.checkActiveMemberByTeamAndUser(studyTeamId, userId);
@@ -361,6 +509,13 @@ public class StudyTeamService {
         return studyMemberService.getApplicants(studyTeamId);
     }
 
+    /**
+     * 스터디 팀의 상세 정보를 조회하고, 조회수를 1 증가시킵니다.
+     *
+     * @param studyTeamId 팀 ID
+     * @return 상세 응답 DTO
+     * @throws StudyTeamNotFoundException 팀이 존재하지 않는 경우
+     */
     @Transactional
     public StudyTeamDetailResponse updateViewCountAndGetDetail(Long studyTeamId) {
         final StudyTeam study =

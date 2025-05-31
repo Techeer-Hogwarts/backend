@@ -1,11 +1,11 @@
 package backend.techeerzip.domain.studyMember.service;
 
+import backend.techeerzip.domain.studyMember.exception.StudyMemberNotFoundException;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import backend.techeerzip.domain.projectMember.exception.ProjectMemberNotFoundException;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberDslRepository;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
@@ -24,9 +24,21 @@ public class StudyMemberService {
     private final UserRepository userRepository;
 
     public boolean checkActiveMemberByTeamAndUser(Long studyTeamId, Long userId) {
-        return studyMemberRepository.existsByStudyTeamIdAndUserId(studyTeamId, userId);
+        return studyMemberRepository.existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(userId, studyTeamId, StatusCategory.APPROVED);
     }
 
+    /**
+     * 주어진 팀과 유저 ID에 대해 지원자를 등록하거나, 기존 지원자의 상태를 갱신합니다.
+     *
+     * <p>기존 지원자가 존재하지 않으면 새로운 지원자를 생성하고,
+     * 이미 존재하지만 상태가 PENDING이 아니라면 상태를 PENDING으로 갱신합니다.
+     *
+     * @param team 스터디 팀 엔티티
+     * @param applicantId 지원자 유저 ID
+     * @param summary 자기소개 요약
+     * @return StudyMember 지원자 엔티티
+     */
+    @Transactional
     public StudyMember applyApplicant(StudyTeam team, Long applicantId, String summary) {
         final StudyMember st =
                 studyMemberRepository
@@ -39,6 +51,14 @@ public class StudyMemberService {
         return st;
     }
 
+    /**
+     * 새로운 지원자를 생성하여 저장합니다.
+     *
+     * @param team 스터디 팀 엔티티
+     * @param applicantId 지원자 유저 ID
+     * @param summary 자기소개 요약
+     * @return 생성된 StudyMember 엔티티
+     */
     private StudyMember createApplicant(StudyTeam team, Long applicantId, String summary) {
         final StudyMember pm =
                 StudyMember.builder()
@@ -51,26 +71,50 @@ public class StudyMemberService {
         return studyMemberRepository.save(pm);
     }
 
+    /**
+     * 특정 지원자를 승인(PENDING → APPROVED) 상태로 변경합니다.
+     *
+     * @param teamId 스터디 팀 ID
+     * @param applicantId 승인할 지원자 ID
+     * @return 승인된 사용자의 이메일
+     * @throws StudyMemberNotFoundException 해당 ID의 PENDING 지원자가 존재하지 않을 경우
+     */
+    @Transactional
     public String acceptApplicant(Long teamId, Long applicantId) {
         final StudyMember sm =
                 studyMemberRepository
                         .findByStudyTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(ProjectMemberNotFoundException::new);
+                        .orElseThrow(StudyMemberNotFoundException::new);
         sm.toActive();
         return sm.getUser().getEmail();
     }
 
+    /**
+     * 특정 지원자를 거절 처리합니다 (상태 변경 또는 삭제).
+     *
+     * @param teamId 스터디 팀 ID
+     * @param applicantId 거절할 지원자 ID
+     * @return 거절된 사용자의 이메일
+     * @throws StudyMemberNotFoundException 해당 ID의 PENDING 지원자가 존재하지 않을 경우
+     */
+    @Transactional
     public String rejectApplicant(Long teamId, Long applicantId) {
         final StudyMember sm =
                 studyMemberRepository
                         .findByStudyTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(ProjectMemberNotFoundException::new);
+                        .orElseThrow(StudyMemberNotFoundException::new);
         sm.toReject();
         return sm.getUser().getEmail();
     }
 
+    /**
+     * 주어진 스터디 팀의 모든 지원자(PENDING 상태)를 조회합니다.
+     *
+     * @param studyTeamId 스터디 팀 ID
+     * @return 지원자 응답 리스트
+     */
     public List<StudyApplicantResponse> getApplicants(Long studyTeamId) {
         return studyMemberDslRepository.findManyApplicants(studyTeamId);
     }
