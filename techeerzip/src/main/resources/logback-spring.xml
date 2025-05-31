@@ -36,12 +36,12 @@
     </appender>
 
     <springProfile name="development">
-        <root level="INFO">
+        <root level="DEBUG">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
         </root>
-        <logger name="backend.techeerzip" level="INFO" additivity="false">
+        <logger name="backend.techeerzip" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
         </logger>
