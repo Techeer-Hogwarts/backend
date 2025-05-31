@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberApplicantResponse;
-import backend.techeerzip.domain.projectTeam.dto.request.EmptyResponse;
 import backend.techeerzip.domain.projectTeam.dto.request.GetTeamsQueryRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectApplicantRequest;
 import backend.techeerzip.domain.projectTeam.dto.request.ProjectSlackRequest;
@@ -123,7 +122,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/{projectTeamId}/cancel")
-    public ResponseEntity<EmptyResponse> cancelApplication(
+    public ResponseEntity<Void> cancelApplication(
             @PathVariable Long projectTeamId, @UserId Long userId) {
         final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamFacadeService.cancelApplication(projectTeamId, userId);
@@ -132,7 +131,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/accept")
-    public ResponseEntity<EmptyResponse> acceptApplicant(
+    public ResponseEntity<Void> acceptApplicant(
             @RequestBody ProjectApplicantRequest request, @UserId Long userId) {
         final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamFacadeService.acceptApplicant(request, userId);
@@ -141,7 +140,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/reject")
-    public ResponseEntity<EmptyResponse> rejectApplicant(
+    public ResponseEntity<Void> rejectApplicant(
             @RequestBody ProjectApplicantRequest request, @UserId Long userId) {
         final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamFacadeService.rejectApplicant(request, userId);

@@ -4,9 +4,9 @@ import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.entity.TeamStack;
 
-public class TeamStackMapper {
+public class ProjectTeamStackMapper {
 
-    private TeamStackMapper() {}
+    private ProjectTeamStackMapper() {}
 
     public static TeamStackInfo.WithName toDto(TeamStack teamStack) {
         return new TeamStackInfo.WithName(teamStack.getStack().getName(), teamStack.isMain());
