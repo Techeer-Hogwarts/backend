@@ -24,8 +24,6 @@ public class ProjectTeamDetailResponse {
     private int fullStackNum;
     private int dataEngineerNum;
     private String recruitExplain;
-    private int likeCount;
-    private int viewCount;
 
     private List<ResultImageInfo> resultImages;
     private List<MainImageInfo> mainImages;

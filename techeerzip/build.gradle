@@ -87,7 +87,7 @@ sourceSets {
     main.java.srcDir querydslDir
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
 }
 

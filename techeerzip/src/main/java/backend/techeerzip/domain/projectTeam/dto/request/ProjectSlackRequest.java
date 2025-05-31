@@ -13,9 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-public class SlackRequest {
+public class ProjectSlackRequest {
 
-    private SlackRequest() {}
+    private ProjectSlackRequest() {}
 
     @Getter
     @AllArgsConstructor
@@ -48,6 +48,7 @@ public class SlackRequest {
         @NotNull private List<String> leader;
         @NotNull private List<String> email;
         @NotBlank private String recruitExplain;
+        private String githubLink;
         private String notionLink;
         private List<String> stack;
     }

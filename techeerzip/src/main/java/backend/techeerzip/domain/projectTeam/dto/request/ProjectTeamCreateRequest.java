@@ -25,5 +25,6 @@ public class ProjectTeamCreateRequest {
     @NotNull @Valid @JsonUnwrapped private RecruitCounts recruitCounts;
 
     @Valid @NotNull private List<ProjectMemberInfoRequest> projectMember;
+
     @Nullable private List<TeamStackInfo.WithName> teamStacks;
 }

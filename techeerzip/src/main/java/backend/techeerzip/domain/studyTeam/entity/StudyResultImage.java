@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -37,6 +38,7 @@ public class StudyResultImage extends BaseEntity {
     @JoinColumn(name = "studyTeamId", nullable = false)
     private StudyTeam studyTeam;
 
+    @Builder
     public StudyResultImage(String imageUrl, StudyTeam studyTeam) {
         this.imageUrl = imageUrl;
         this.studyTeam = studyTeam;

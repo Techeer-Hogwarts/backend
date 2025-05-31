@@ -83,7 +83,7 @@ public class S3Service {
     }
 
     public List<String> uploadMany(List<MultipartFile> files, String folderPath, String urlPrefix) {
-        if (files.isEmpty()) {
+        if (files == null || files.isEmpty()) {
             return List.of();
         }
         final List<CompletableFuture<String>> uploadFuture = new ArrayList<>();
