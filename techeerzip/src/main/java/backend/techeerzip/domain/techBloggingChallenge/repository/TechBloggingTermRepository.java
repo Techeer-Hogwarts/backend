@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.techBloggingChallenge.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,6 @@ public interface TechBloggingTermRepository extends JpaRepository<TechBloggingTe
     boolean existsByYearAndFirstHalfAndIsDeletedFalse(int year, boolean firstHalf);
 
     Optional<TechBloggingTerm> findByYearAndFirstHalfAndIsDeletedFalse(int year, boolean firstHalf);
+
+    List<TechBloggingTerm> findByIsDeletedFalse();
 }

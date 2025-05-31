@@ -111,14 +111,15 @@ public class TechBloggingAttendanceRepositoryImpl
     private OrderSpecifier<?>[] orderSpecifier(String sort) {
         if ("viewCount".equals(sort)) {
             return new OrderSpecifier<?>[] {
-                blog.viewCount.desc(), blog.createdAt.desc() // 조회수가 같을 경우 최신순으로 정렬
+                blog.viewCount.desc(), blog.createdAt.desc(), blog.id.desc() // 조회수가 같을 경우 최신순으로
+                // 정렬
             };
         } else if ("name".equals(sort)) {
             return new OrderSpecifier<?>[] {
-                blog.title.asc(), blog.createdAt.desc() // 제목이 같을 경우 최신순으로 정렬
+                blog.title.asc(), blog.createdAt.desc(), blog.id.desc() // 제목이 같을 경우 최신순으로 정렬
             };
         } else {
-            return new OrderSpecifier<?>[] {blog.createdAt.desc()};
+            return new OrderSpecifier<?>[] {blog.createdAt.desc(), blog.id.desc()};
         }
     }
 }

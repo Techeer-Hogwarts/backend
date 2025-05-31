@@ -11,7 +11,9 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "TechBloggingTermParticipant")
+@Table(
+        name = "TechBloggingTermParticipant",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"termId", "userId"}))
 public class TechBloggingTermParticipant extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "termId", nullable = false)
