@@ -91,14 +91,14 @@ public class StudyMember extends BaseEntity {
     }
 
     public void softDelete() {
-        if (isDeleted()) {
+        if (!isDeleted()) {
             this.isDeleted = true;
             this.updatedAt = LocalDateTime.now();
         }
     }
 
     public void toActive(Boolean isLeader) {
-        if (!isLeader.equals(this.isLeader)) {
+        if (isLeader != null && !isLeader.equals(this.isLeader)) {
             this.isLeader = isLeader;
         }
         if (!isApproved()) {
