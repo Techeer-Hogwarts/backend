@@ -4,7 +4,6 @@ import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnio
 import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.*;
 import static backend.techeerzip.domain.projectTeam.service.ProjectTeamService.getNextInfo;
 
-import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,15 +20,15 @@ import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.SliceNextCursor;
 import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
+import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
 import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
 import backend.techeerzip.domain.projectTeam.type.SortType;
-import backend.techeerzip.domain.studyMember.mapper.StudyMemberMapper;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.studyMember.exception.StudyMemberNotFoundException;
+import backend.techeerzip.domain.studyMember.mapper.StudyMemberMapper;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
 import backend.techeerzip.domain.studyMember.service.StudyMemberService;
-import backend.techeerzip.domain.studyTeam.dto.response.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyData;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyMemberInfoRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudySlackRequest;
@@ -37,6 +36,7 @@ import backend.techeerzip.domain.studyTeam.dto.request.StudyTeamApplyRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyTeamCreateRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyTeamUpdateRequest;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyApplicantResponse;
+import backend.techeerzip.domain.studyTeam.dto.response.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamCreateResponse;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamDetailResponse;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamUpdateResponse;
@@ -64,10 +64,11 @@ import lombok.RequiredArgsConstructor;
  * 스터디 팀 서비스입니다.
  *
  * <p>처리 내용:
+ *
  * <ol>
- *     <li>스터디 팀 생성, 수정, 삭제 등의 기본 CRUD 작업</li>
- *     <li>팀원 모집 및 관리</li>
- *     <li>팀 상태 관리 및 조회</li>
+ *   <li>스터디 팀 생성, 수정, 삭제 등의 기본 CRUD 작업
+ *   <li>팀원 모집 및 관리
+ *   <li>팀 상태 관리 및 조회
  * </ol>
  */
 public class StudyTeamService {
@@ -83,13 +84,14 @@ public class StudyTeamService {
      * 스터디 팀을 생성하고, 이미지 및 멤버 정보를 저장한 후 생성 결과를 반환합니다.
      *
      * <p>처리 흐름:
+     *
      * <ol>
-     *     <li>중복된 스터디 이름이 있는지 검증합니다.</li>
-     *     <li>모집 여부 및 인원 수를 확인합니다.</li>
-     *     <li>리더 존재 여부를 확인합니다.</li>
-     *     <li>StudyTeam 엔티티를 저장합니다.</li>
-     *     <li>결과 이미지가 있다면 저장합니다.</li>
-     *     <li>StudyMember를 생성하고 저장합니다.</li>
+     *   <li>중복된 스터디 이름이 있는지 검증합니다.
+     *   <li>모집 여부 및 인원 수를 확인합니다.
+     *   <li>리더 존재 여부를 확인합니다.
+     *   <li>StudyTeam 엔티티를 저장합니다.
+     *   <li>결과 이미지가 있다면 저장합니다.
+     *   <li>StudyMember를 생성하고 저장합니다.
      * </ol>
      *
      * @param resultUrls 결과 이미지 URL 리스트
@@ -156,10 +158,7 @@ public class StudyTeamService {
     /**
      * 주어진 조회 조건에 따라 스터디 팀 목록을 슬라이스 방식으로 조회합니다.
      *
-     * 처리 흐름:
-     * 1. 조건에 맞는 스터디 팀을 조회합니다.
-     * 2. next 커서를 계산합니다.
-     * 3. 지정된 limit 수만큼 잘라 응답합니다.
+     * <p>처리 흐름: 1. 조건에 맞는 스터디 팀을 조회합니다. 2. next 커서를 계산합니다. 3. 지정된 limit 수만큼 잘라 응답합니다.
      *
      * @param query 조회 조건 DTO
      * @return 스터디 팀 목록 및 next 커서
@@ -204,16 +203,17 @@ public class StudyTeamService {
      * 스터디 팀의 정보를 수정하고, 이미지/멤버 변경 사항을 반영합니다.
      *
      * <p>처리 흐름:
+     *
      * <ol>
-     *     <li>사용자의 멤버 자격 확인</li>
-     *     <li>리더 존재 여부 확인</li>
-     *     <li>결과 이미지 개수 유효성 검사</li>
-     *     <li>팀명 변경 시 중복 여부 확인</li>
-     *     <li>삭제 요청된 이미지 삭제</li>
-     *     <li>새 이미지 추가</li>
-     *     <li>기존 멤버 상태 변경 및 신규 멤버 분리</li>
-     *     <li>팀 정보 업데이트</li>
-     *     <li>리크루트 변경 시 슬랙 요청 포함 응답</li>
+     *   <li>사용자의 멤버 자격 확인
+     *   <li>리더 존재 여부 확인
+     *   <li>결과 이미지 개수 유효성 검사
+     *   <li>팀명 변경 시 중복 여부 확인
+     *   <li>삭제 요청된 이미지 삭제
+     *   <li>새 이미지 추가
+     *   <li>기존 멤버 상태 변경 및 신규 멤버 분리
+     *   <li>팀 정보 업데이트
+     *   <li>리크루트 변경 시 슬랙 요청 포함 응답
      * </ol>
      *
      * @param studyTeamId 수정할 팀 ID
@@ -354,7 +354,8 @@ public class StudyTeamService {
         }
         final boolean allDeletesProcessed = deleteIdSet.size() == toInactive.size();
         final boolean allUpdatesAccountedFor = toActive.size() + updateMap.size() == updateCount;
-        final boolean memberCountConsistent = deleteIdSet.size() + toInactive.size() == existingMembers.size();
+        final boolean memberCountConsistent =
+                deleteIdSet.size() + toInactive.size() == existingMembers.size();
 
         if (!allDeletesProcessed || !allUpdatesAccountedFor || !memberCountConsistent) {
             throw new TeamMissingUpdateMemberException();
@@ -384,10 +385,11 @@ public class StudyTeamService {
      * 스터디 팀을 soft delete 처리합니다.
      *
      * <p>처리 순서:
+     *
      * <ol>
-     *     <li>삭제 권한 검증</li>
-     *     <li>팀 및 연관 데이터 소프트 삭제</li>
-     *     <li>슬랙/검색 인덱스에서 제거</li>
+     *   <li>삭제 권한 검증
+     *   <li>팀 및 연관 데이터 소프트 삭제
+     *   <li>슬랙/검색 인덱스에서 제거
      * </ol>
      *
      * @param teamId 삭제할 팀 ID

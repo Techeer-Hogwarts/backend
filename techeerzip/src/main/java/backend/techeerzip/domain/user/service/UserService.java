@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.user.service;
 
-import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 

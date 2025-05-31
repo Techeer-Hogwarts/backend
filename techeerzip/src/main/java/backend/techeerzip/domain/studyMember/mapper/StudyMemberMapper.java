@@ -1,11 +1,12 @@
 package backend.techeerzip.domain.studyMember.mapper;
 
-import backend.techeerzip.domain.studyMember.exception.StudyMemberBadRequestException;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.constraints.NotNull;
+
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import backend.techeerzip.domain.studyMember.exception.StudyMemberBadRequestException;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyMemberInfoRequest;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.domain.user.entity.User;
@@ -13,6 +14,7 @@ import backend.techeerzip.global.entity.StatusCategory;
 
 public class StudyMemberMapper {
     private static final String DEFAULT_MEMBER_SUMMARY = "스터디 멤버입니다.";
+
     private StudyMemberMapper() {}
 
     public static StudyMember toEntity(StudyMemberInfoRequest info, StudyTeam team, User user) {

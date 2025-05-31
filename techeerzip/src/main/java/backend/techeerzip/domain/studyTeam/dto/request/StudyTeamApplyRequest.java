@@ -5,5 +5,4 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record StudyTeamApplyRequest(
-        @NotNull@Positive Long studyTeamId,
-        @NotBlank String summary) {}
+        @NotNull @Positive Long studyTeamId, @NotBlank String summary) {}

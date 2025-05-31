@@ -2,7 +2,6 @@ package backend.techeerzip.domain.studyTeam.repository.querydsl;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import jakarta.persistence.EntityManager;
 
@@ -43,8 +42,7 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
     }
 
     /**
-     * 날짜 기반 커서 조건을 적용하여 스터디 팀을 조회합니다.
-     * 정렬 기준: updatedAt DESC, id DESC
+     * 날짜 기반 커서 조건을 적용하여 스터디 팀을 조회합니다. 정렬 기준: updatedAt DESC, id DESC
      *
      * @param query 요청 필터 및 커서 정보
      * @return 커서 기준 정렬된 StudyTeam 리스트 (limit + 1개)
@@ -68,8 +66,7 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
     }
 
     /**
-     * 조회수 또는 좋아요 수 기반 커서 조건을 적용하여 스터디 팀을 조회합니다.
-     * 정렬 기준: viewCount DESC or likeCount DESC, 이후 id DESC
+     * 조회수 또는 좋아요 수 기반 커서 조건을 적용하여 스터디 팀을 조회합니다. 정렬 기준: viewCount DESC or likeCount DESC, 이후 id DESC
      *
      * @param query 요청 필터 및 커서 정보
      * @return 커서 기준 정렬된 StudyTeam 리스트 (limit + 1개)

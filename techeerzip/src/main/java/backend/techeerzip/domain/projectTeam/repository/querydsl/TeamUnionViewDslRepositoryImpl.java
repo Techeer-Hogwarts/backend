@@ -110,8 +110,7 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
     }
 
     /**
-     * 조회수/좋아요 수 기반 정렬 시 커서 조건을 생성합니다.
-     * 동일한 count 값일 경우 createdAt과 ID를 비교하여 커서 정렬을 보조합니다.
+     * 조회수/좋아요 수 기반 정렬 시 커서 조건을 생성합니다. 동일한 count 값일 경우 createdAt과 ID를 비교하여 커서 정렬을 보조합니다.
      *
      * @param fieldValue 기준이 되는 count 값
      * @param expr 정렬에 사용할 필드
@@ -133,8 +132,7 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
     }
 
     /**
-     * 날짜 기반 정렬 시 커서 조건을 생성합니다.
-     * 동일한 날짜일 경우 ID를 기준으로 정렬을 보조합니다.
+     * 날짜 기반 정렬 시 커서 조건을 생성합니다. 동일한 날짜일 경우 ID를 기준으로 정렬을 보조합니다.
      *
      * @param fieldValue 날짜 커서 값
      * @param expr 정렬에 사용할 필드

@@ -102,7 +102,7 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
      * <p>1. 메인 이미지 S3 업로드<br>
      * 2. 결과 이미지 S3 업로드<br>
      * 3. 프로젝트 팀 생성 서비스 호출<br>
-     * 4. 실패 시 업로드된 이미지 전체 S3에서 삭제</p>
+     * 4. 실패 시 업로드된 이미지 전체 S3에서 삭제
      *
      * @param mainImage 메인 이미지 파일
      * @param resultImages 결과 이미지 파일 리스트
@@ -141,7 +141,7 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
      * <p>1. 수정 대상 이미지 여부 검증<br>
      * 2. 새 이미지가 있는 경우 S3 업로드<br>
      * 3. 프로젝트 팀 업데이트 서비스 호출<br>
-     * 4. 실패 시 업로드된 이미지 S3에서 삭제</p>
+     * 4. 실패 시 업로드된 이미지 S3에서 삭제
      *
      * @param projectTeamId 수정 대상 프로젝트 팀 ID
      * @param userId 요청자 ID
@@ -191,7 +191,7 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
      * <p>1. 정렬 조건이 없을 경우 기본값 설정<br>
      * 2. 프로젝트만 조회<br>
      * 3. 스터디만 조회<br>
-     * 4. 둘 다 포함된 경우 TeamUnionView를 통해 한 번에 조회</p>
+     * 4. 둘 다 포함된 경우 TeamUnionView를 통해 한 번에 조회
      *
      * @param queryRequest 팀 전체 조회 쿼리 요청 객체
      * @return 페이징된 팀 목록과 다음 커서 정보가 포함된 응답 객체

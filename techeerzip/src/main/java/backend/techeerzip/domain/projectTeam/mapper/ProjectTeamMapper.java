@@ -1,7 +1,5 @@
 package backend.techeerzip.domain.projectTeam.mapper;
 
-import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
-import backend.techeerzip.domain.projectTeam.entity.TeamStack;
 import java.util.List;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
@@ -62,7 +60,9 @@ public class ProjectTeamMapper {
                                 .map(ProjectMainImage::getImageUrl)
                                 .toList())
                 .teamStacks(
-                        projectTeam.getTeamStacks().stream().map(ProjectTeamStackMapper::toDto).toList())
+                        projectTeam.getTeamStacks().stream()
+                                .map(ProjectTeamStackMapper::toDto)
+                                .toList())
                 .createdAt(projectTeam.getCreatedAt())
                 .updatedAt(projectTeam.getUpdatedAt())
                 .likeCount(projectTeam.getLikeCount())

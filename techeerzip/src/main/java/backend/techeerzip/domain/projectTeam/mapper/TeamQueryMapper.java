@@ -20,18 +20,19 @@ import backend.techeerzip.domain.projectTeam.type.SortType;
 import backend.techeerzip.domain.studyTeam.dto.response.StudySliceTeamsResponse;
 
 /**
- * 팀 통합 조회 요청을 내부 도메인별 쿼리 객체(Project/Study)로 변환하거나,
- * 정렬 기준에 따라 페이징을 처리한 결과를 하나의 리스트로 병합하는 유틸리티 클래스입니다.
- * <p>
- * 주로 다음의 역할을 수행합니다:
+ * 팀 통합 조회 요청을 내부 도메인별 쿼리 객체(Project/Study)로 변환하거나, 정렬 기준에 따라 페이징을 처리한 결과를 하나의 리스트로 병합하는 유틸리티
+ * 클래스입니다.
+ *
+ * <p>주로 다음의 역할을 수행합니다:
+ *
  * <ul>
- *   <li>GetTeamsQueryRequest → GetTeamsQuery 로 변환</li>
- *   <li>팀 타입에 따라 GetProjectTeamsQuery, GetStudyTeamsQuery 분기 생성</li>
- *   <li>정렬 기준에 따라 date 또는 count 기반 커서 분기</li>
- *   <li>스터디/프로젝트 결과를 우선순위 큐로 정렬 및 통합</li>
+ *   <li>GetTeamsQueryRequest → GetTeamsQuery 로 변환
+ *   <li>팀 타입에 따라 GetProjectTeamsQuery, GetStudyTeamsQuery 분기 생성
+ *   <li>정렬 기준에 따라 date 또는 count 기반 커서 분기
+ *   <li>스터디/프로젝트 결과를 우선순위 큐로 정렬 및 통합
  * </ul>
  *
- * <p>※ 이 클래스는 생성자가 private인 static 유틸 클래스로만 동작합니다.</p>
+ * <p>※ 이 클래스는 생성자가 private인 static 유틸 클래스로만 동작합니다.
  */
 public class TeamQueryMapper {
     private static final int DEFAULT_LIMIT = 10;
@@ -39,8 +40,8 @@ public class TeamQueryMapper {
     private TeamQueryMapper() {}
 
     /**
-     * 통합 요청 DTO(GetTeamsQueryRequest)를 내부 커서 기반 쿼리 객체(GetTeamsQuery)로 변환합니다.
-     * 정렬 기준에 따라 날짜 기반 또는 수치 기반 쿼리로 분기됩니다.
+     * 통합 요청 DTO(GetTeamsQueryRequest)를 내부 커서 기반 쿼리 객체(GetTeamsQuery)로 변환합니다. 정렬 기준에 따라 날짜 기반 또는 수치
+     * 기반 쿼리로 분기됩니다.
      *
      * @param request 클라이언트 요청 DTO
      * @return 내부 공통 쿼리 객체
@@ -55,7 +56,8 @@ public class TeamQueryMapper {
 
     /**
      * 날짜 기반 커서 페이징용 쿼리 객체를 생성합니다.
-     * <p>※ dateCursor는 null인 경우 현재 시간으로 대체됩니다.</p>
+     *
+     * <p>※ dateCursor는 null인 경우 현재 시간으로 대체됩니다.
      */
     private static GetTeamsQuery mapWithDateCursor(SortType sortType, GetTeamsQueryRequest req) {
         return GetTeamsQuery.builder()
@@ -72,7 +74,8 @@ public class TeamQueryMapper {
 
     /**
      * count 기반 커서 페이징용 쿼리 객체를 생성합니다.
-     * <p>예: 조회수(viewCount), 좋아요 수(likeCount) 기반 정렬 시 사용됩니다.</p>
+     *
+     * <p>예: 조회수(viewCount), 좋아요 수(likeCount) 기반 정렬 시 사용됩니다.
      */
     private static GetTeamsQuery mapWithCountCursor(SortType sortType, GetTeamsQueryRequest req) {
         return GetTeamsQuery.builder()
@@ -89,10 +92,9 @@ public class TeamQueryMapper {
 
     /**
      * 통합 요청 DTO를 프로젝트 팀 전용 쿼리로 변환합니다.
-     * <p>
-     * 정렬 기준에 따라 {@code dateCursor} 또는 {@code countCursor}를 세팅하며,
-     * 포지션 필터(PositionNumType)도 함께 매핑합니다.
-     * </p>
+     *
+     * <p>정렬 기준에 따라 {@code dateCursor} 또는 {@code countCursor}를 세팅하며, 포지션 필터(PositionNumType)도 함께
+     * 매핑합니다.
      */
     public static GetProjectTeamsQuery mapToProjectQuery(GetTeamsQueryRequest req) {
         final GetProjectTeamsQuery.GetProjectTeamsQueryBuilder builder =
@@ -121,7 +123,8 @@ public class TeamQueryMapper {
 
     /**
      * 통합 요청 DTO를 스터디 팀 전용 쿼리로 변환합니다.
-     * <p>포지션 타입 필터는 없으며, isRecruited / isFinished 필터링 조건만 포함됩니다.</p>
+     *
+     * <p>포지션 타입 필터는 없으며, isRecruited / isFinished 필터링 조건만 포함됩니다.
      */
     public static GetStudyTeamsQuery mapToStudyQuery(GetTeamsQueryRequest req) {
         final GetStudyTeamsQuery.GetStudyTeamsQueryBuilder builder =
@@ -147,9 +150,8 @@ public class TeamQueryMapper {
 
     /**
      * 스터디와 프로젝트 팀 결과 리스트를 하나의 리스트로 정렬 통합합니다.
-     * <p>
-     * PriorityQueue를 사용해 동적 정렬되며, sortType에 따라 updatedAt, viewCount, likeCount를 기준으로 정렬됩니다.
-     * </p>
+     *
+     * <p>PriorityQueue를 사용해 동적 정렬되며, sortType에 따라 updatedAt, viewCount, likeCount를 기준으로 정렬됩니다.
      *
      * @param projectResponses 프로젝트 팀 응답 리스트
      * @param studyResponses 스터디 팀 응답 리스트

@@ -18,13 +18,14 @@ import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateRespo
 
 /**
  * 프로젝트 팀 관련 비즈니스 로직의 파사드 서비스입니다.
- * 
+ *
  * <p>처리 내용:
+ *
  * <ol>
- *     <li>프로젝트 팀 생성, 수정, 삭제 등의 기본 CRUD 작업</li>
- *     <li>이미지 업로드 및 S3 저장소 연동</li>
- *     <li>프로젝트/스터디 통합 조회 및 검색</li>
- *     <li>팀원 모집 및 지원자 관리</li>
+ *   <li>프로젝트 팀 생성, 수정, 삭제 등의 기본 CRUD 작업
+ *   <li>이미지 업로드 및 S3 저장소 연동
+ *   <li>프로젝트/스터디 통합 조회 및 검색
+ *   <li>팀원 모집 및 지원자 관리
  * </ol>
  */
 public interface ProjectTeamFacadeService {

@@ -7,5 +7,4 @@ public class TeamInvalidRecruitNumException extends BusinessException {
     public TeamInvalidRecruitNumException() {
         super(ErrorCode.TEAM_INVALID_RECRUIT_NUM);
     }
-
 }

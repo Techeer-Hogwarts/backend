@@ -7,28 +7,20 @@ import jakarta.persistence.EntityManager;
 
 import org.springframework.stereotype.Repository;
 
-import com.querydsl.core.group.GroupBy;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
 import backend.techeerzip.domain.common.util.DslBooleanBuilder;
-import backend.techeerzip.domain.projectMember.entity.QProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.request.GetProjectTeamsQuery;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectSliceTeamsResponse;
-import backend.techeerzip.domain.projectTeam.dto.response.ProjectUserTeamsResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.entity.QProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.QProjectTeam;
-import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamMapper;
 import backend.techeerzip.domain.projectTeam.type.CountSortOption;
 import backend.techeerzip.domain.projectTeam.type.DateSortOption;
 import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.SortType;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
-import backend.techeerzip.global.entity.StatusCategory;
 
 @Repository
 public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
@@ -66,7 +58,7 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
     /**
      * count 기반 커서 조건을 생성합니다.
      *
-     * <p>count 값이 동일할 경우 ID를 기준으로 추가 정렬 조건을 부여합니다.</p>
+     * <p>count 값이 동일할 경우 ID를 기준으로 추가 정렬 조건을 부여합니다.
      *
      * @param field 정렬 기준 필드 (조회수, 좋아요 수 등)
      * @param count 기준 카운트
@@ -131,7 +123,6 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
                 .and(PT.isDeleted.isFalse())
                 .build();
     }
-
 
     /**
      * 포지션 조건에 맞는 필터 BooleanExpression을 생성합니다.

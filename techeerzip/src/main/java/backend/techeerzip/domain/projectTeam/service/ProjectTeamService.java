@@ -2,9 +2,6 @@ package backend.techeerzip.domain.projectTeam.service;
 
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
 
-import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
-import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamStackMapper;
-import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -58,10 +55,13 @@ import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundExcept
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
 import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
+import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
 import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectImageMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamMapper;
+import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamStackMapper;
+import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectMainImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
@@ -80,6 +80,7 @@ import lombok.RequiredArgsConstructor;
  * <p>지원자 관리, 팀 이미지 처리, 팀 멤버 유효성 검사, 슬랙/인덱싱 연동까지 포함합니다.
  *
  * <p>ProjectTeamService 메서드는 다음과 같은 역할을 수행합니다:
+ *
  * <ul>
  *   <li>create(...) - 프로젝트 팀 생성
  *   <li>update(...) - 프로젝트 팀 수정
@@ -160,9 +161,9 @@ public class ProjectTeamService {
      * <p><b>처리 순서:</b>
      *
      * <ol>
-     *     <li>모집 인원 및 팀 이름 중복 여부 검증</li>
-     *     <li>팀 스택과 멤버, 이미지 정보를 엔티티로 변환</li>
-     *     <li>DB에 저장 후 슬랙/검색 인덱스용 객체로 응답</li>
+     *   <li>모집 인원 및 팀 이름 중복 여부 검증
+     *   <li>팀 스택과 멤버, 이미지 정보를 엔티티로 변환
+     *   <li>DB에 저장 후 슬랙/검색 인덱스용 객체로 응답
      * </ol>
      *
      * @param mainImage 메인 이미지 URL 리스트 (필수, 1개만 허용)
@@ -349,13 +350,15 @@ public class ProjectTeamService {
         }
 
         if (!mainImage.isEmpty()) {
-            final ProjectMainImage image = ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
+            final ProjectMainImage image =
+                    ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
             mainImgRepository.save(image);
             log.info("UpdateProjectTeam: 팀 메인 이미지 변경, 메인 이미지 저장", image.getId());
         }
 
         if (!resultImages.isEmpty()) {
-            final List<ProjectResultImage> images = ProjectImageMapper.toResultEntities(resultImages, team);
+            final List<ProjectResultImage> images =
+                    ProjectImageMapper.toResultEntities(resultImages, team);
             resultImgRepository.saveAll(images);
             log.info("UpdateProjectTeam: 팀 결과 이미지 변경, 결과 이미지 저장", images);
         }
@@ -407,15 +410,15 @@ public class ProjectTeamService {
     }
 
     /**
-     * 기존 멤버 목록을 기반으로 삭제 및 수정 요청을 반영하고,
-     * 기존에 존재하지 않았던 신규 멤버 요청 정보를 추출합니다.
+     * 기존 멤버 목록을 기반으로 삭제 및 수정 요청을 반영하고, 기존에 존재하지 않았던 신규 멤버 요청 정보를 추출합니다.
      *
      * <p>처리 순서:
+     *
      * <ol>
-     *   <li>업데이트 요청에 중복된 userId가 있는지 검증</li>
-     *   <li>삭제 요청에 중복된 memberId가 있는지 검증</li>
-     *   <li>기존 멤버 리스트를 순회하며 삭제 또는 수정 반영</li>
-     *   <li>수정과 삭제로 처리되지 않은 요청 정보는 신규 멤버로 간주하여 반환</li>
+     *   <li>업데이트 요청에 중복된 userId가 있는지 검증
+     *   <li>삭제 요청에 중복된 memberId가 있는지 검증
+     *   <li>기존 멤버 리스트를 순회하며 삭제 또는 수정 반영
+     *   <li>수정과 삭제로 처리되지 않은 요청 정보는 신규 멤버로 간주하여 반환
      * </ol>
      *
      * @param existingMembers 현재 저장된 프로젝트 멤버 목록
@@ -471,8 +474,7 @@ public class ProjectTeamService {
     }
 
     /**
-     * 기존 멤버 리스트를 순회하면서 삭제 및 수정 요청을 실제로 적용합니다.
-     * 삭제 요청은 soft delete 처리되고, 수정 요청은 역할 및 리더 상태가 반영됩니다.
+     * 기존 멤버 리스트를 순회하면서 삭제 및 수정 요청을 실제로 적용합니다. 삭제 요청은 soft delete 처리되고, 수정 요청은 역할 및 리더 상태가 반영됩니다.
      *
      * <p>요청한 삭제 및 수정 수와 실제 처리된 수가 불일치할 경우 예외를 발생시킵니다.
      *
@@ -773,7 +775,8 @@ public class ProjectTeamService {
     public List<ProjectSlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
         final ProjectMember pm =
                 projectMemberRepository
-                        .findByProjectTeamIdAndUserIdAndStatus(teamId, applicantId, StatusCategory.PENDING)
+                        .findByProjectTeamIdAndUserIdAndStatus(
+                                teamId, applicantId, StatusCategory.PENDING)
                         .orElseThrow(ProjectMemberNotFoundException::new);
         final ProjectTeam pt =
                 projectTeamRepository
