@@ -41,8 +41,8 @@ public class EventController implements EventSwagger {
     public ResponseEntity<List<EventGetResponse>> getEventList(
             @ParameterObject @Valid EventListQueryRequest query) {
         logger.debug("이벤트 목록 조회 및 검색 처리 중 - query: {}", query);
-        List<EventGetResponse> responseList = eventService.getEventList(query);
-        return ResponseEntity.ok(responseList);
+        List<EventGetResponse> response = eventService.getEventList(query);
+        return ResponseEntity.ok(response);
     }
 
     @Override
