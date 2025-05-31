@@ -2,6 +2,7 @@ package backend.techeerzip.domain.event.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,11 +20,11 @@ public class EventListQueryRequest {
     @Schema(description = "카테고리")
     private List<String> category;
 
-    @Schema(description = "오프셋", example = "0")
-    @Min(0)
-    private int offset = 0;
+    @Schema(description = "마지막으로 조회한 이벤트의 ID", example = "0")
+    @Min(value = 0, message = "cursorId는 0 이상의 정수여야 합니다.")
+    private Long cursorId = 0L;
 
     @Schema(description = "가져올 개수", example = "10")
-    @Min(1)
-    private int limit = 10;
+    @Min(value = 1, message = "limit은 1 이상의 정수여야 합니다.")
+    private Integer limit = 10;
 }

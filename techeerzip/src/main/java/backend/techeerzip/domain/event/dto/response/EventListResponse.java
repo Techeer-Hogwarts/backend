@@ -1,25 +1,24 @@
 package backend.techeerzip.domain.event.dto.response;
 
-import backend.techeerzip.domain.event.entity.Event;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 public class EventListResponse {
-    private final Long id;
-    private final String category;
-    private final String title;
-    private final LocalDateTime startDate;
-    private final LocalDateTime endDate;
-    private final String url;
+    @Schema(description = "이벤트 목록")
+    private final List<EventResponse> data;
 
-    public EventListResponse(Event event) {
-        this.id = event.getId();
-        this.category = event.getCategory();
-        this.title = event.getTitle();
-        this.startDate = event.getStartDate();
-        this.endDate = event.getEndDate();
-        this.url = event.getUrl();
+    @Schema(description = "다음 페이지 존재 여부")
+    private final boolean hasNext;
+
+    @Schema(description = "다음 페이지 조회를 위한 커서 ID")
+    private final Long nextCursor;
+
+    public EventListResponse(List<EventResponse> events, int limit) {
+        this.hasNext = events.size() > limit;
+        this.data = hasNext ? events.subList(0, limit) : events;
+        this.nextCursor = hasNext ? events.get(limit - 1).getId() : null;
     }
 }

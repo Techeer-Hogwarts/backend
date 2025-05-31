@@ -17,6 +17,7 @@ import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
 
 @Entity
 @Getter
@@ -50,6 +51,7 @@ public class Event extends BaseEntity {
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
+    @Builder
     public Event(
             String category,
             String title,

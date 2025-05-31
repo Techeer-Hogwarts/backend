@@ -17,8 +17,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.util.List;
-
 public interface EventSwagger {
 
     @Operation(summary = "이벤트 생성", description = "새로운 이벤트를 생성합니다.")
@@ -42,7 +40,7 @@ public interface EventSwagger {
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = EventResponse.class))))
     })
-    default ResponseEntity<List<EventListResponse>> getEventList(
+    default ResponseEntity<EventListResponse> getEventList(
             @Parameter(description = "검색 조건")
             EventListQueryRequest query
     ) {
@@ -83,7 +81,7 @@ public interface EventSwagger {
 
     @Operation(summary = "이벤트 삭제", description = "지정된 ID의 이벤트를 삭제합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "삭제 성공"),
+            @ApiResponse(responseCode = "200", description = "삭제 성공"),
             @ApiResponse(responseCode = "404", description = "이벤트를 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })

@@ -16,8 +16,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("api/v3/events")
 @RequiredArgsConstructor
@@ -39,10 +37,10 @@ public class EventController implements EventSwagger {
 
     @Override
     @GetMapping
-    public ResponseEntity<List<EventListResponse>> getEventList(
-            @ParameterObject @Valid EventListQueryRequest query) {
+    public ResponseEntity<EventListResponse> getEventList(
+                                                           @ParameterObject @Valid EventListQueryRequest query) {
         logger.debug("이벤트 목록 조회 및 검색 처리 중 - query: {}", query);
-        List<EventListResponse> response = eventService.getEventList(query);
+        EventListResponse response = eventService.getEventList(query);
         return ResponseEntity.ok(response);
     }
 
