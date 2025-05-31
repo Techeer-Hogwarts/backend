@@ -1,22 +1,5 @@
 package backend.techeerzip.domain.user.service;
 
-import java.util.List;
-import java.util.Map;
-
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
-
 import backend.techeerzip.domain.auth.exception.AuthNotVerifiedEmailException;
 import backend.techeerzip.domain.auth.service.AuthService;
 import backend.techeerzip.domain.blog.repository.BlogRepository;
@@ -43,6 +26,7 @@ import backend.techeerzip.domain.user.dto.response.GetUserProfileListResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.exception.UserAlreadyExistsException;
 import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.exception.UserNotResumeException;
 import backend.techeerzip.domain.user.exception.UserProfileImgFailException;
@@ -56,8 +40,23 @@ import backend.techeerzip.domain.userExperience.exception.UserExperienceNotFound
 import backend.techeerzip.domain.userExperience.repository.UserExperienceRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import backend.techeerzip.global.logger.CustomLogger;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -121,30 +120,61 @@ public class UserService {
         String password = createUserRequest.getPassword();
         String hashedPassword = passwordEncoder.encode(password);
 
+        Optional<User> existingUserOpt = userRepository.findByEmail(createUserRequest.getEmail());
+
         User savedUser;
 
-        User newUser =
-                User.builder()
-                        .email(createUserRequest.getEmail())
-                        .password(hashedPassword)
-                        .name(createUserRequest.getName())
-                        .mainPosition(createUserRequest.getMainPosition())
-                        .subPosition(createUserRequest.getSubPosition())
-                        .grade(createUserRequest.getGrade())
-                        .githubUrl(createUserRequest.getGithubUrl())
-                        .tistoryUrl(createUserRequest.getTistoryUrl())
-                        .velogUrl(createUserRequest.getVelogUrl())
-                        .mediumUrl(createUserRequest.getMediumUrl())
-                        .school(createUserRequest.getSchool())
-                        .year(createUserRequest.getYear())
-                        .isLft(createUserRequest.getIsLft())
-                        .profileImage(profileImage)
-                        .isAuth(true)
-                        .role(defaultRole)
-                        .build();
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
 
-        savedUser = userRepository.save(newUser);
-        logger.info("신규 회원 정보 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
+            if (!existingUser.isDeleted()) {
+                 throw new UserAlreadyExistsException();
+            }
+
+            existingUser.setDeleted(false);
+            existingUser.setPassword(hashedPassword);
+            existingUser.setName(createUserRequest.getName());
+            existingUser.setMainPosition(createUserRequest.getMainPosition());
+            existingUser.setSubPosition(createUserRequest.getSubPosition());
+            existingUser.setGrade(createUserRequest.getGrade());
+            existingUser.setGithubUrl(createUserRequest.getGithubUrl());
+            existingUser.setTistoryUrl(createUserRequest.getTistoryUrl());
+            existingUser.setVelogUrl(createUserRequest.getVelogUrl());
+            existingUser.setMediumUrl(createUserRequest.getMediumUrl());
+            existingUser.setSchool(createUserRequest.getSchool());
+            existingUser.setYear(createUserRequest.getYear());
+            existingUser.setLft(createUserRequest.getIsLft());
+            existingUser.setProfileImage(profileImage);
+            existingUser.setAuth(true);
+            existingUser.setRole(defaultRole);
+
+            savedUser = userRepository.save(existingUser);
+            logger.info("재가입 회원 정보 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
+
+        } else {
+            User newUser =
+                    User.builder()
+                            .email(createUserRequest.getEmail())
+                            .password(hashedPassword)
+                            .name(createUserRequest.getName())
+                            .mainPosition(createUserRequest.getMainPosition())
+                            .subPosition(createUserRequest.getSubPosition())
+                            .grade(createUserRequest.getGrade())
+                            .githubUrl(createUserRequest.getGithubUrl())
+                            .tistoryUrl(createUserRequest.getTistoryUrl())
+                            .velogUrl(createUserRequest.getVelogUrl())
+                            .mediumUrl(createUserRequest.getMediumUrl())
+                            .school(createUserRequest.getSchool())
+                            .year(createUserRequest.getYear())
+                            .isLft(createUserRequest.getIsLft())
+                            .profileImage(profileImage)
+                            .isAuth(true)
+                            .role(defaultRole)
+                            .build();
+
+            savedUser = userRepository.save(newUser);
+            logger.info("신규 회원 정보 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
+        }
 
         // 블로그 크롤링 실행
         // 이력서 저장
@@ -166,28 +196,28 @@ public class UserService {
                         .toList();
 
         userExperienceRepository.saveAll(experiencesData);
-        logger.info("신규 회원 경력 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
+        logger.info("경력 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
     }
 
     @Transactional
     public void deleteUser(Long userId, HttpServletResponse response) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        blogRepository.deletedByUserId(userId);
-        bookmarkRepository.deletedByUserId(userId);
-        eventRepository.deletedByUserId(userId);
-        likeRepository.deletedByUserId(userId);
-        projectMemberRepository.deletedByUserId(userId);
-        resumeRepository.deletedByUserId(userId);
-        sessionRepository.deletedByUserId(userId);
-        studyMemberRepository.deletedByUserId(userId);
-        userExperienceRepository.deletedByUserId(userId);
-
-        logger.info("해당 유저 연관 데이터 삭제 완료 - userId: {}", userId, CONTEXT);
-
         user.delete();
-        userRepository.delete(user);
-        logger.info("유저 정보 삭제 완료 - userId: {}", userId, CONTEXT);
+        userRepository.save(user);
+        logger.info("유저 데이터 삭제 완료 - userId: {}", userId, CONTEXT);
+
+        blogRepository.updateIsDeletedByUserId(userId);
+        bookmarkRepository.updateIsDeletedByUserId(userId);
+        eventRepository.updateIsDeletedByUserId(userId);
+        likeRepository.updateIsDeletedByUserId(userId);
+        projectMemberRepository.updateIsDeletedByUserId(userId);
+        resumeRepository.updateIsDeletedByUserId(userId);
+        sessionRepository.updateIsDeletedByUserId(userId);
+        studyMemberRepository.updateIsDeletedByUserId(userId);
+        userExperienceRepository.updateIsDeletedByUserId(userId);
+
+        logger.info("유저 연관 데이터 삭제 완료 - userId: {}", userId, CONTEXT);
 
         ResponseCookie expiredAccessToken =
                 ResponseCookie.from("access_token", "")

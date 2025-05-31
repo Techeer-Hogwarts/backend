@@ -1,16 +1,14 @@
 package backend.techeerzip.domain.blog.repository;
 
+import backend.techeerzip.domain.blog.entity.Blog;
 import java.time.LocalDateTime;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import backend.techeerzip.domain.blog.entity.Blog;
 
 public interface BlogRepository extends JpaRepository<Blog, Long>, BlogRepositoryCustom {
     Page<Blog> findByIsDeletedFalseAndCategoryOrderByCreatedAtDesc(
@@ -27,6 +25,6 @@ public interface BlogRepository extends JpaRepository<Blog, Long>, BlogRepositor
     boolean existsByUrl(String url);
 
     @Modifying
-    @Query("DELETE Blog b WHERE b.user.id = :userId")
-    void deletedByUserId(@Param("userId") Long userId);
+    @Query("UPDATE Blog b SET b.isDeleted = true WHERE b.user.id = :userId")
+    void updateIsDeletedByUserId(@Param("userId") Long userId);
 }

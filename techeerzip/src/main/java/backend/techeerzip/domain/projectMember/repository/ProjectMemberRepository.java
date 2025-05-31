@@ -1,15 +1,13 @@
 package backend.techeerzip.domain.projectMember.repository;
 
+import backend.techeerzip.domain.projectMember.entity.ProjectMember;
+import backend.techeerzip.global.entity.StatusCategory;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-import backend.techeerzip.global.entity.StatusCategory;
 
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
 
@@ -26,6 +24,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
             Long teamId, Long applicantId, StatusCategory statusCategory);
 
     @Modifying
-    @Query("DELETE ProjectMember p WHERE p.user.id = :userId")
-    void deletedByUserId(@Param("userId") Long userId);
+    @Query("UPDATE ProjectMember p SET p.isDeleted = true WHERE p.user.id = :userId")
+    void updateIsDeletedByUserId(@Param("userId") Long userId);
 }
