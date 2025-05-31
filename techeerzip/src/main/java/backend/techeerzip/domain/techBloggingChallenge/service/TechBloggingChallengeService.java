@@ -23,6 +23,7 @@ import backend.techeerzip.domain.techBloggingChallenge.repository.TechBloggingAt
 import backend.techeerzip.domain.techBloggingChallenge.repository.TechBloggingRoundRepository;
 import backend.techeerzip.domain.techBloggingChallenge.repository.TechBloggingTermRepository;
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
@@ -233,10 +234,7 @@ public class TechBloggingChallengeService {
                         .orElseThrow(() -> new TechBloggingTermNotFoundException());
 
         // 2. 유저 조회
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(() -> new RuntimeException("존재하지 않는 유저입니다."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
         // 3. 이미 참여했는지 확인
         boolean alreadyJoined =
@@ -253,12 +251,6 @@ public class TechBloggingChallengeService {
         termRepository.save(term);
     }
 
-    // 회차별 블로그 조회
-    @Transactional(readOnly = true)
-    public void getBlogsByRound(Long roundId, String sortOption) {
-        // TODO: 회차별 블로그 목록 조회 (최신순, 조회순, 이름순)
-    }
-
     // 출석 현황 조회
     @Transactional(readOnly = true)
     public List<AttendanceStatusResponse> getAttendanceStatus(Long termId) {
@@ -267,7 +259,7 @@ public class TechBloggingChallengeService {
             // 현재 진행중인 term: 오늘 날짜가 포함된 term
             LocalDate today = LocalDate.now();
             term =
-                    termRepository.findAll().stream()
+                    termRepository.findByIsDeletedFalse().stream()
                             .filter(
                                     t ->
                                             !t.isDeleted()
@@ -328,10 +320,7 @@ public class TechBloggingChallengeService {
     public void checkAttendance() {
         LocalDate today = LocalDate.now();
         // 진행중인 회차만 조회
-        List<TechBloggingRound> rounds =
-                roundRepository
-                        .findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndIsDeletedFalse(
-                                today, today);
+        List<TechBloggingRound> rounds = roundRepository.findActiveRoundsOnDate(today);
 
         for (TechBloggingRound round : rounds) {
             List<User> participants =
@@ -371,16 +360,7 @@ public class TechBloggingChallengeService {
         if (term.getRounds().isEmpty()) {
             throw new TechBloggingTermNoRoundsException();
         }
-        LocalDate startDate =
-                term.getRounds().stream()
-                        .map(r -> r.getStartDate())
-                        .min(LocalDate::compareTo)
-                        .orElse(null);
-        LocalDate endDate =
-                term.getRounds().stream()
-                        .map(r -> r.getEndDate())
-                        .max(LocalDate::compareTo)
-                        .orElse(null);
+        LocalDate[] dateRange = calculateTermDateRange(term);
         List<TermRoundsSummaryResponse.RoundSummary> rounds =
                 term.getRounds().stream()
                         .sorted((a, b) -> Integer.compare(a.getSequence(), b.getSequence()))
@@ -392,34 +372,39 @@ public class TechBloggingChallengeService {
                                                 r.getStartDate() + " - " + r.getEndDate()))
                         .collect(java.util.stream.Collectors.toList());
         return new TermRoundsSummaryResponse(
-                term.getId(), term.getTermName(), startDate, endDate, rounds);
+                term.getId(), term.getTermName(), dateRange[0], dateRange[1], rounds);
     }
 
     @Transactional(readOnly = true)
     public List<TermSummaryResponse> getTermList() {
-        List<TechBloggingTerm> terms = termRepository.findAll();
+        List<TechBloggingTerm> terms = termRepository.findByIsDeletedFalse();
         return terms.stream()
                 .map(
                         term -> {
-                            LocalDate startDate =
-                                    term.getRounds().stream()
-                                            .map(r -> r.getStartDate())
-                                            .min(LocalDate::compareTo)
-                                            .orElse(null);
-                            LocalDate endDate =
-                                    term.getRounds().stream()
-                                            .map(r -> r.getEndDate())
-                                            .max(LocalDate::compareTo)
-                                            .orElse(null);
+                            LocalDate[] dateRange = calculateTermDateRange(term);
                             int totalRounds = term.getRounds().size();
                             return new TermSummaryResponse(
                                     term.getId(),
                                     term.getTermName(),
-                                    startDate,
-                                    endDate,
+                                    dateRange[0],
+                                    dateRange[1],
                                     totalRounds);
                         })
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    private LocalDate[] calculateTermDateRange(TechBloggingTerm term) {
+        LocalDate startDate =
+                term.getRounds().stream()
+                        .map(r -> r.getStartDate())
+                        .min(LocalDate::compareTo)
+                        .orElse(null);
+        LocalDate endDate =
+                term.getRounds().stream()
+                        .map(r -> r.getEndDate())
+                        .max(LocalDate::compareTo)
+                        .orElse(null);
+        return new LocalDate[] {startDate, endDate};
     }
 
     // 회차별 블로그 커서 기반 조회
@@ -430,7 +415,7 @@ public class TechBloggingChallengeService {
 
         // roundId는 있는데 termId가 없는 경우 검증
         if (roundId != null && termId == null) {
-            throw new IllegalArgumentException("회차 ID만으로는 조회할 수 없습니다. 챌린지 기간(termId)을 함께 입력해주세요.");
+            throw new TechBloggingRoundNotFoundException();
         }
 
         logger.info(
@@ -455,8 +440,7 @@ public class TechBloggingChallengeService {
                             .orElseThrow(() -> new TechBloggingRoundNotFoundException());
 
             if (!round.getTerm().getId().equals(termId)) {
-                throw new IllegalArgumentException(
-                        String.format("회차 ID %d는 챌린지 기간 ID %d에 속하지 않습니다.", roundId, termId));
+                throw new TechBloggingRoundNotFoundException();
             }
         }
 
@@ -504,7 +488,7 @@ public class TechBloggingChallengeService {
     // 오늘 날짜 기준으로 현재 진행중인 termId 반환
     private Long findCurrentTermId() {
         LocalDate today = LocalDate.now();
-        return termRepository.findAll().stream()
+        return termRepository.findByIsDeletedFalse().stream()
                 .filter(
                         term ->
                                 !term.isDeleted()

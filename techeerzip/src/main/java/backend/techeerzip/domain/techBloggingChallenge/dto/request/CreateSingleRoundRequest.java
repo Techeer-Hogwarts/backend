@@ -3,6 +3,7 @@ package backend.techeerzip.domain.techBloggingChallenge.dto.request;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -31,7 +32,7 @@ public class CreateSingleRoundRequest {
     private LocalDate startDate;
 
     @NotNull(message = "회차 종료 날짜는 필수입니다")
-    @Future(message = "회차 종료 날짜는 현재 날짜 이후여야 합니다")
+    @FutureOrPresent(message = "회차 종료 날짜는 현재 날짜 이상이어야 합니다")
     @Schema(description = "회차 종료 날짜", example = "2024-03-14")
     private LocalDate endDate;
 

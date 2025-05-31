@@ -33,6 +33,5 @@ public interface TechBloggingRoundRepository extends JpaRepository<TechBloggingR
 
     @Query(
             "SELECT r FROM TechBloggingRound r WHERE r.startDate <= :today AND r.endDate >= :today AND r.isDeleted = false")
-    List<TechBloggingRound> findByStartDateLessThanEqualAndEndDateGreaterThanEqualAndIsDeletedFalse(
-            @Param("today") java.time.LocalDate start, @Param("today") java.time.LocalDate end);
+    List<TechBloggingRound> findActiveRoundsOnDate(@Param("today") LocalDate today);
 }
