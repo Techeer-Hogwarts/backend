@@ -18,7 +18,6 @@ public class SessionMapper {
                 session.getTitle(),
                 String.valueOf(session.getViewCount()),
                 session.getVideoUrl(),
-                session.getFileUrl()
-        );
+                session.getFileUrl());
     }
-} 
+}

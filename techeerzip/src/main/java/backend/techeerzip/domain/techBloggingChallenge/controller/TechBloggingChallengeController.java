@@ -128,7 +128,8 @@ public class TechBloggingChallengeController implements TechBloggingChallengeSwa
             @RequestParam(required = false) Long cursorId,
             @RequestParam(required = false, defaultValue = "10") int limit,
             @RequestParam(required = false, defaultValue = "latest") String sortBy) {
-        BlogChallengeCursorRequest request = new BlogChallengeCursorRequest(termId, roundId, cursorId, limit, sortBy);
+        BlogChallengeCursorRequest request =
+                new BlogChallengeCursorRequest(termId, roundId, cursorId, limit, sortBy);
         BlogChallengeListResponse response = challengeService.getBlogsByRoundCursor(request);
         return ResponseEntity.ok(response);
     }

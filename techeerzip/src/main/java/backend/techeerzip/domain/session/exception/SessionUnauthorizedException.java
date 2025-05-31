@@ -1,9 +1,10 @@
 package backend.techeerzip.domain.session.exception;
 
-import backend.techeerzip.global.exception.BusinessException;
-import backend.techeerzip.global.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import backend.techeerzip.global.exception.BusinessException;
+import backend.techeerzip.global.exception.ErrorCode;
 
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class SessionUnauthorizedException extends BusinessException {

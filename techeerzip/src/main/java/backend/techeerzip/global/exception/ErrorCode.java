@@ -71,10 +71,9 @@ public enum ErrorCode {
     PROJECT_TEAM_INVALID_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "PT017", "프로젝트 멤버가 유효하지 않습니다."),
 
     // Session
-    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND,"SS001", "해당 세션을 찾을 수 없습니다"),
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "SS001", "해당 세션을 찾을 수 없습니다"),
     SESSION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "SS002", "해당 세션이 이미 존재합니다."),
-    SESSION_UNAUTHORIZED(
-            HttpStatus.UNAUTHORIZED, "SS003", "해당 세션에 대한 권한이 없습니다."),
+    SESSION_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "SS003", "해당 세션에 대한 권한이 없습니다."),
 
     // ==== StudyMember ====
     STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SM001", "스터디 멤버를 찾을 수 없습니다."),
