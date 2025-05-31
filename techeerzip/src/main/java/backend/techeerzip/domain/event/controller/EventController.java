@@ -5,6 +5,7 @@ import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
 import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
 import backend.techeerzip.domain.event.dto.response.EventGetResponse;
 import backend.techeerzip.domain.event.service.EventService;
+import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class EventController implements EventSwagger {
     @PostMapping
     public ResponseEntity<EventCreateResponse> createEvent(
             @Valid @RequestBody EventCreateRequest request,
-            @AuthenticationPrincipal(expression = "id") Long userId) {
+            @UserId Long userId) {
         logger.debug("이벤트 생성 요청 처리 중 - userId: {}", userId);
         EventCreateResponse response = eventService.createEvent(userId, request);
         return ResponseEntity.ok(response);
@@ -58,7 +58,7 @@ public class EventController implements EventSwagger {
     public ResponseEntity<EventCreateResponse> updateEvent(
             @PathVariable Long eventId,
             @Valid @RequestBody EventCreateRequest request,
-            @AuthenticationPrincipal(expression = "id") Long userId) {
+            @UserId Long userId) {
         logger.debug("이벤트 수정 요청 처리 중 - userId: {}, eventId: {}", userId, eventId);
         EventCreateResponse response = eventService.updateEvent(userId, eventId, request);
         return ResponseEntity.ok(response);
@@ -68,7 +68,7 @@ public class EventController implements EventSwagger {
     @DeleteMapping("/{eventId}")
     public ResponseEntity<Void> deleteEvent(
             @PathVariable Long eventId,
-            @AuthenticationPrincipal(expression = "id") Long userId) {
+            @UserId Long userId) {
         logger.debug("이벤트 삭제 요청 처리 중 - userId: {}, eventId: {}", userId, eventId);
         eventService.deleteEvent(userId, eventId);
         return ResponseEntity.noContent().build();
