@@ -27,7 +27,7 @@ public class StudySlackRequest {
         private String notionLink;
         private String githubLink;
         private String goal;
-        private String role;
+        private String rule;
         private Integer recruitNum;
     }
 

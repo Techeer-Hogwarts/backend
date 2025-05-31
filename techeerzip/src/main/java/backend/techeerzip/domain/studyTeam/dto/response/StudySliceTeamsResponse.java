@@ -1,4 +1,4 @@
-package backend.techeerzip.domain.studyTeam.dto;
+package backend.techeerzip.domain.studyTeam.dto.response;
 
 import java.time.LocalDateTime;
 
