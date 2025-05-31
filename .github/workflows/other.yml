@@ -7,7 +7,7 @@ permissions:
 on:
   pull_request:
     branches:
-      - "**" # 모든 브랜치에 PR 올릴 때 실행
+      - '**' # 모든 브랜치에 PR 올릴 때 실행
 
 jobs:
   build:
