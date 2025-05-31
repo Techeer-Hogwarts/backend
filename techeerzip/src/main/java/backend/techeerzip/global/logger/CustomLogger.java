@@ -32,7 +32,7 @@ public class CustomLogger {
             List.of("password", "token", "secret", "authorization");
 
     // SLF4J Logger
-    private final Logger logger = LoggerFactory.getLogger(CustomLogger.class);
+    private final Logger logger = LoggerFactory.getLogger("backend.techeerzip");
 
     // -------------------------------------------------------------------------------
     // 기본 메시지 로깅 (색상 + SLF4J 플레이스홀더 지원)
@@ -80,16 +80,16 @@ public class CustomLogger {
             String logMessage =
                     String.format(
                             """
-                    %s[ERROR] %s%s
-                    %s* ERROR CODE:    %s%s
-                    %s* ERROR MESSAGE: %s%s
-                    %s* STATUS CODE:   %d%s
-                    %s* PATH:          %s%s
-                    %s* METHOD:        %s%s
-                    %s* BODY:          %s%s
-                    %s* STACK TRACE:   %s%s
-                    %s━━━━━━━━━━━━━━━━
-                    """,
+                            %s[ERROR] %s%s
+                            %s* ERROR CODE:    %s%s
+                            %s* ERROR MESSAGE: %s%s
+                            %s* STATUS CODE:   %d%s
+                            %s* PATH:          %s%s
+                            %s* METHOD:        %s%s
+                            %s* BODY:          %s%s
+                            %s* STACK TRACE:   %s%s
+                            %s━━━━━━━━━━━━━━━━
+                            """,
                             ANSI_RED,
                             new Date(),
                             ANSI_RESET,
@@ -125,51 +125,69 @@ public class CustomLogger {
 
     public void log(String message, String context) {
         if (logger.isInfoEnabled()) {
-            MDC.put(MDC_CONTEXT, context);
-            logger.info(message);
-            MDC.remove(MDC_CONTEXT);
+            try {
+                MDC.put(MDC_CONTEXT, context);
+                logger.info(message);
+            } finally {
+                MDC.remove(MDC_CONTEXT);
+            }
         }
     }
 
     public void error(String message, String trace, String context) {
         if (logger.isErrorEnabled()) {
-            MDC.put(MDC_CONTEXT, context);
-            MDC.put(MDC_TRACE, trace);
-            logger.error(message);
-            MDC.remove(MDC_CONTEXT);
-            MDC.remove(MDC_TRACE);
+            try {
+                MDC.put(MDC_CONTEXT, context);
+                MDC.put(MDC_TRACE, trace);
+                logger.error(message);
+            } finally {
+                MDC.remove(MDC_CONTEXT);
+                MDC.remove(MDC_TRACE);
+            }
         }
     }
 
     public void warn(String message, String context) {
         if (logger.isWarnEnabled()) {
-            MDC.put(MDC_CONTEXT, context);
-            logger.warn(message);
-            MDC.remove(MDC_CONTEXT);
+            try {
+                MDC.put(MDC_CONTEXT, context);
+                logger.warn(message);
+            } finally {
+                MDC.remove(MDC_CONTEXT);
+            }
         }
     }
 
     public void debug(String message, String context) {
         if (logger.isDebugEnabled()) {
-            MDC.put(MDC_CONTEXT, context);
-            logger.debug(message);
-            MDC.remove(MDC_CONTEXT);
+            try {
+                MDC.put(MDC_CONTEXT, context);
+                logger.debug(message);
+            } finally {
+                MDC.remove(MDC_CONTEXT);
+            }
         }
     }
 
     public void verbose(String message, String context) {
         if (logger.isTraceEnabled()) {
-            MDC.put(MDC_CONTEXT, context);
-            logger.trace(message);
-            MDC.remove(MDC_CONTEXT);
+            try {
+                MDC.put(MDC_CONTEXT, context);
+                logger.trace(message);
+            } finally {
+                MDC.remove(MDC_CONTEXT);
+            }
         }
     }
 
     public void fatal(String message, String context) {
         if (logger.isErrorEnabled()) {
-            MDC.put(MDC_CONTEXT, context);
-            logger.error(message);
-            MDC.remove(MDC_CONTEXT);
+            try {
+                MDC.put(MDC_CONTEXT, context);
+                logger.error(message);
+            } finally {
+                MDC.remove(MDC_CONTEXT);
+            }
         }
     }
 

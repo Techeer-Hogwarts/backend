@@ -35,13 +35,16 @@
         </encoder>
     </appender>
 
-
     <springProfile name="development">
-        <root level="INFO">
+        <root level="DEBUG">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
         </root>
+        <logger name="backend.techeerzip" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
     </springProfile>
 
     <springProfile name="production">
@@ -52,8 +55,7 @@
         </root>
     </springProfile>
 
-    <logger name="backend.techeerzip" additivity="true"/>
-    <logger name="org.springframework" additivity="true"/>
-    <logger name="org.hibernate" additivity="true"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.hibernate" level="INFO"/>
 
 </configuration>
