@@ -2,7 +2,6 @@ package backend.techeerzip.domain.event.entity;
 
 import java.time.LocalDateTime;
 
-import backend.techeerzip.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,10 +13,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Builder;
 
 @Entity
 @Getter

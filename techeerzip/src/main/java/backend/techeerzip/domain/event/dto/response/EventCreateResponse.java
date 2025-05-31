@@ -1,9 +1,9 @@
 package backend.techeerzip.domain.event.dto.response;
 
+import java.time.LocalDateTime;
+
 import backend.techeerzip.domain.event.entity.Event;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Getter
 public class EventCreateResponse {

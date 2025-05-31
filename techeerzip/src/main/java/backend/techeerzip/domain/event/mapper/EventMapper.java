@@ -13,7 +13,6 @@ public class EventMapper {
                 event.getCategory(),
                 String.valueOf(event.getId()),
                 event.getTitle(),
-                event.getUrl()
-        );
+                event.getUrl());
     }
 }

@@ -16,7 +16,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import backend.techeerzip.domain.event.entity.Event;
 
 @Repository
-public class EventRepositoryImpl extends QuerydslRepositorySupport implements EventRepositoryCustom {
+public class EventRepositoryImpl extends QuerydslRepositorySupport
+        implements EventRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
@@ -58,8 +59,12 @@ public class EventRepositoryImpl extends QuerydslRepositorySupport implements Ev
     }
 
     private BooleanExpression getCursorCondition(Event cursorEvent) {
-        return event.createdAt.lt(cursorEvent.getCreatedAt())
-                .or(event.createdAt.eq(cursorEvent.getCreatedAt()).and(event.id.lt(cursorEvent.getId())));
+        return event.createdAt
+                .lt(cursorEvent.getCreatedAt())
+                .or(
+                        event.createdAt
+                                .eq(cursorEvent.getCreatedAt())
+                                .and(event.id.lt(cursorEvent.getId())));
     }
 
     private OrderSpecifier<?>[] getOrderSpecifiers() {

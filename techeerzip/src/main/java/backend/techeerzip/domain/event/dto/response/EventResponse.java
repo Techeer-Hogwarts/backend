@@ -1,12 +1,12 @@
 package backend.techeerzip.domain.event.dto.response;
 
+import java.time.LocalDateTime;
+
 import backend.techeerzip.domain.event.entity.Event;
 import backend.techeerzip.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Getter
 public class EventResponse {
@@ -29,11 +29,9 @@ public class EventResponse {
         this.startDate = event.getStartDate();
         this.endDate = event.getEndDate();
         this.url = event.getUrl();
-        this.user = new UserInfo(
-                eventUser.getName(),
-                eventUser.getNickname(),
-                eventUser.getProfileImage()
-        );
+        this.user =
+                new UserInfo(
+                        eventUser.getName(), eventUser.getNickname(), eventUser.getProfileImage());
     }
 
     @Getter

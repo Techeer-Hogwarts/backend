@@ -1,13 +1,18 @@
 package backend.techeerzip.domain.event.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import org.hibernate.validator.constraints.URL;
-
 import java.time.LocalDateTime;
 
-@Schema(description = "이벤트 생성 DTO", example = """
+import jakarta.validation.constraints.NotBlank;
+
+import org.hibernate.validator.constraints.URL;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+@Schema(
+        description = "이벤트 생성 DTO",
+        example =
+                """
     {
       "category": "TECHEER",
       "title": "테커 파티",
