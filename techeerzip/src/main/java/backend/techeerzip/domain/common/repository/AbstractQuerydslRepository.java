@@ -56,4 +56,8 @@ public abstract class AbstractQuerydslRepository {
                 pageable,
                 () -> Optional.ofNullable(countQuery.apply(queryFactory).fetchOne()).orElse(0L));
     }
+
+    protected JPAQueryFactory getQueryFactory() {
+        return this.queryFactory;
+    }
 }

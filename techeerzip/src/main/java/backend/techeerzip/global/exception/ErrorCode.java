@@ -12,6 +12,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "Internal Server Error"),
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "Invalid Type Value"),
     HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "Access is Denied"),
+    EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "CT06", "결과 이미지는 10개까지만 등록 가능합니다."),
 
     // Jwt
     AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "A001", "이메일 또는 비밀번호가 올바르지 않습니다."),
@@ -43,8 +44,7 @@ public enum ErrorCode {
     // ==== ProjectMember ====
     PROJECT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "PM001", "존재하지 않는 프로젝트 멤버입니다."),
     PROJECT_MEMBER_INVALID_TEAM_ROLE(HttpStatus.BAD_REQUEST, "PM002", "프로젝트 멤버의 팀 역할이 유효하지 않습니다."),
-    PROJECT_MEMBER_INVALID_ACTIVE_REQUESTER(
-            HttpStatus.BAD_REQUEST, "PM003", "프로젝트 멤버만 접근할 수 있습니다."),
+    TEAM_INVALID_ACTIVE_REQUESTER(HttpStatus.BAD_REQUEST, "PM003", "팀 멤버만 접근할 수 있습니다."),
     PROJECT_MEMBER_APPLICATION_EXISTS(HttpStatus.BAD_REQUEST, "PM004", "이미 해당 프로젝트에 지원하셨습니다."),
     PROJECT_MEMBER_ALREADY_ACTIVE(HttpStatus.BAD_REQUEST, "PM005", "이미 해당 프로젝트에서 활동 중인 멤버입니다."),
     PROJECT_MEMBER_NOT_APPLICANT(HttpStatus.BAD_REQUEST, "PM006", "해당 프로젝트 지원자가 아닙니다."),
@@ -65,7 +65,6 @@ public enum ErrorCode {
     PROJECT_TEAM_INVALID_TEAM_ROLE(HttpStatus.BAD_REQUEST, "PT011", "유효하지 않은 팀 역할입니다."),
     PROJECT_TEAM_INVALID_UPDATE_MEMBER(HttpStatus.BAD_REQUEST, "PT012", "업데이트 멤버가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_APPLICANT(HttpStatus.BAD_REQUEST, "PT013", "유효하지 않은 지원자입니다."),
-    PROJECT_TEAM_EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "PT014", "결과 이미지는 10개까지만 등록 가능합니다."),
     PROJECT_TEAM_ALREADY_APPROVED(HttpStatus.BAD_REQUEST, "PT015", "이미 승인된 프로젝트 멤버입니다."),
     PROJECT_TEAM_INVALID_DELETE_IMAGE(HttpStatus.BAD_REQUEST, "PT016", "삭제하는 결과이미지가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "PT017", "프로젝트 멤버가 유효하지 않습니다."),
@@ -85,7 +84,7 @@ public enum ErrorCode {
     STUDY_TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "ST001", "요청한 스터디 팀을 찾을 수 없습니다."),
     STUDY_TEAM_BAD_REQUEST(HttpStatus.BAD_REQUEST, "ST002", "유효하지 않은 요청입니다."),
     STUDY_TEAM_DUPLICATE_TEAM_NAME(HttpStatus.CONFLICT, "ST003", "존재하는 스터디 이름입니다."),
-    STUDY_TEAM_INVALID_RECRUIT_NUM(HttpStatus.BAD_REQUEST, "ST004", "모집 인원이 음수 입니다."),
+    TEAM_INVALID_RECRUIT_NUM(HttpStatus.BAD_REQUEST, "ST004", "모집 인원이 음수 입니다."),
     STUDY_TEAM_MISSING_LEADER(HttpStatus.BAD_REQUEST, "ST005", "스터디 팀 리더가 존재하지 않습니다."),
     STUDY_TEAM_INVALID_UPDATE_MEMBER(HttpStatus.BAD_REQUEST, "ST006", "스터디 업데이트 멤버가 유효하지 않습니다."),
     STUDY_TEAM_ALREADY_ACTIVE_MEMBER(HttpStatus.BAD_REQUEST, "ST007", "이미 활동중인 스터디 멤버입니다."),

@@ -1,4 +1,4 @@
-package backend.techeerzip.domain.projectTeam.dto.response;
+package backend.techeerzip.domain.projectMember.dto;
 
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.StatusCategory;

@@ -1,35 +1,20 @@
 package backend.techeerzip.domain.projectTeam.type;
 
-import java.util.Arrays;
 import java.util.function.Function;
 
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamInvalidTeamRoleException;
 
 public enum TeamRole {
-    BACKEND("Backend", ProjectTeam::getBackendNum),
-    FRONTEND("Frontend", ProjectTeam::getFrontendNum),
-    FULLSTACK("FullStack", ProjectTeam::getFullStackNum),
-    DEVOPS("DevOps", ProjectTeam::getDevopsNum),
-    DATA_ENGINEER("DataEngineer", ProjectTeam::getDataEngineerNum);
+    BACKEND(ProjectTeam::getBackendNum),
+    FRONTEND(ProjectTeam::getFrontendNum),
+    FULLSTACK(ProjectTeam::getFullStackNum),
+    DEVOPS(ProjectTeam::getDevopsNum),
+    DATA_ENGINEER(ProjectTeam::getDataEngineerNum);
 
-    private final String type;
     private final Function<ProjectTeam, Integer> extractor;
 
-    TeamRole(String type, Function<ProjectTeam, Integer> extractor) {
-        this.type = type;
+    TeamRole(Function<ProjectTeam, Integer> extractor) {
         this.extractor = extractor;
-    }
-
-    public static boolean isTeamRole(String type) {
-        return Arrays.stream(values()).anyMatch(t -> t.type.equals(type));
-    }
-
-    public static TeamRole setType(String type) {
-        return Arrays.stream(values())
-                .filter(t -> t.type.equals(type))
-                .findFirst()
-                .orElseThrow(ProjectTeamInvalidTeamRoleException::new);
     }
 
     public int getCount(ProjectTeam pt) {

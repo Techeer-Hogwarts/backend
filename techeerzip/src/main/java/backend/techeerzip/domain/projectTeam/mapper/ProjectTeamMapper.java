@@ -16,6 +16,14 @@ public class ProjectTeamMapper {
 
     private ProjectTeamMapper() {}
 
+    /**
+     * 프로젝트 팀 생성 시 TeamData 및 RecruitCounts 정보를 이용해 ProjectTeam 엔티티를 생성합니다.
+     *
+     * @param teamData 프로젝트명, 설명, 링크 등 팀의 기본 정보
+     * @param recruitCounts 역할별 모집 인원 수
+     * @param isRecruited 모집 여부
+     * @return 생성된 ProjectTeam 엔티티
+     */
     public static ProjectTeam toEntity(
             TeamData teamData, RecruitCounts recruitCounts, Boolean isRecruited) {
         return ProjectTeam.builder()
@@ -52,7 +60,9 @@ public class ProjectTeamMapper {
                                 .map(ProjectMainImage::getImageUrl)
                                 .toList())
                 .teamStacks(
-                        projectTeam.getTeamStacks().stream().map(TeamStackMapper::toDto).toList())
+                        projectTeam.getTeamStacks().stream()
+                                .map(ProjectTeamStackMapper::toDto)
+                                .toList())
                 .createdAt(projectTeam.getCreatedAt())
                 .updatedAt(projectTeam.getUpdatedAt())
                 .likeCount(projectTeam.getLikeCount())
@@ -146,20 +156,35 @@ public class ProjectTeamMapper {
                 .toList();
     }
 
+    /**
+     * 팀 수정 이후 Slack 및 Indexing 정보를 포함한 응답 DTO를 생성합니다.
+     *
+     * @param projectTeamId 수정된 팀 ID
+     * @param team 수정된 ProjectTeam 객체
+     * @param leaders 리더 정보 리스트
+     * @return Slack/Indexing 포함 응답 DTO
+     */
     public static ProjectTeamUpdateResponse toUpdatedResponse(
             Long projectTeamId, ProjectTeam team, List<LeaderInfo> leaders) {
         return ProjectTeamUpdateResponse.builder()
                 .id(projectTeamId)
                 .slackRequest(ProjectSlackMapper.toChannelRequest(team, leaders))
-                .indexRequest(ProjectIndexMapper.toIndexRequest(team))
+                .indexRequest(TeamIndexMapper.toProjectRequest(team))
                 .build();
     }
 
+    /**
+     * Slack 알림이 필요 없는 경우, Indexing 정보만 포함한 응답 DTO를 생성합니다.
+     *
+     * @param projectTeamId 수정된 팀 ID
+     * @param team 수정된 ProjectTeam 객체
+     * @return Indexing 포함 응답 DTO
+     */
     public static ProjectTeamUpdateResponse toNoneSlackUpdateResponse(
             Long projectTeamId, ProjectTeam team) {
         return ProjectTeamUpdateResponse.builder()
                 .id(projectTeamId)
-                .indexRequest(ProjectIndexMapper.toIndexRequest(team))
+                .indexRequest(TeamIndexMapper.toProjectRequest(team))
                 .build();
     }
 }
