@@ -5,8 +5,16 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+@Schema(description = "이벤트 생성 DTO", example = """
+    {
+      "category": "TECHEER",
+      "title": "테커 파티",
+      "startDate": "2024-09-12T08:00:00Z",
+      "endDate": "2024-09-13T08:00:00Z",
+      "url": "https://example.com"
+    }
+    """)
 @Data
-@Schema(example = "CreateEventRequest", description = "이벤트 생성 DTO")
 public class EventCreateRequest {
 
     @Schema(example = "TECHEER", description = "카테고리")
