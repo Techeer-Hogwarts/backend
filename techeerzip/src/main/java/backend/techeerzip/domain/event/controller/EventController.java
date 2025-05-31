@@ -3,7 +3,8 @@ package backend.techeerzip.domain.event.controller;
 import backend.techeerzip.domain.event.dto.request.EventCreateRequest;
 import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
 import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
-import backend.techeerzip.domain.event.dto.response.EventGetResponse;
+import backend.techeerzip.domain.event.dto.response.EventListResponse;
+import backend.techeerzip.domain.event.dto.response.EventResponse;
 import backend.techeerzip.domain.event.service.EventService;
 import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,18 +39,18 @@ public class EventController implements EventSwagger {
 
     @Override
     @GetMapping
-    public ResponseEntity<List<EventGetResponse>> getEventList(
+    public ResponseEntity<List<EventListResponse>> getEventList(
             @ParameterObject @Valid EventListQueryRequest query) {
         logger.debug("이벤트 목록 조회 및 검색 처리 중 - query: {}", query);
-        List<EventGetResponse> response = eventService.getEventList(query);
+        List<EventListResponse> response = eventService.getEventList(query);
         return ResponseEntity.ok(response);
     }
 
     @Override
     @GetMapping("/{eventId}")
-    public ResponseEntity<EventGetResponse> getEvent(@PathVariable Long eventId) {
+    public ResponseEntity<EventResponse> getEvent(@PathVariable Long eventId) {
         logger.debug("단일 이벤트 조회 처리 중 - eventId: {}", eventId);
-        EventGetResponse response = eventService.getEvent(eventId);
+        EventResponse response = eventService.getEvent(eventId);
         return ResponseEntity.ok(response);
     }
 

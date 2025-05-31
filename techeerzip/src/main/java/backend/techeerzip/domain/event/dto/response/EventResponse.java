@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Getter
-public class EventGetResponse {
+public class EventResponse {
     private final Long id;
     private final Long userId;
     private final String category;
@@ -19,7 +19,7 @@ public class EventGetResponse {
     private final String url;
     private final UserInfo user;
 
-    public EventGetResponse(Event event) {
+    public EventResponse(Event event) {
         User eventUser = event.getUser();
 
         this.id = event.getId();

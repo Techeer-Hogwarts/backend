@@ -3,7 +3,8 @@ package backend.techeerzip.domain.event.controller;
 import backend.techeerzip.domain.event.dto.request.EventCreateRequest;
 import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
 import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
-import backend.techeerzip.domain.event.dto.response.EventGetResponse;
+import backend.techeerzip.domain.event.dto.response.EventListResponse;
+import backend.techeerzip.domain.event.dto.response.EventResponse;
 import backend.techeerzip.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,9 +40,9 @@ public interface EventSwagger {
     @Operation(summary = "이벤트 목록 조회 및 검색", description = "이벤트 목록을 조회하고 검색합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = EventGetResponse.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = EventResponse.class))))
     })
-    default ResponseEntity<List<EventGetResponse>> getEventList(
+    default ResponseEntity<List<EventListResponse>> getEventList(
             @Parameter(description = "검색 조건")
             EventListQueryRequest query
     ) {
@@ -50,10 +51,10 @@ public interface EventSwagger {
 
     @Operation(summary = "단일 이벤트 조회", description = "지정된 ID의 이벤트를 조회합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = EventGetResponse.class))),
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = EventResponse.class))),
             @ApiResponse(responseCode = "404", description = "이벤트를 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    default ResponseEntity<EventGetResponse> getEvent(
+    default ResponseEntity<EventResponse> getEvent(
             @Parameter(description = "이벤트 ID", required = true)
             @PathVariable Long eventId
     ) {

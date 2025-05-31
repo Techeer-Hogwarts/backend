@@ -3,7 +3,8 @@ package backend.techeerzip.domain.event.service;
 import backend.techeerzip.domain.event.dto.request.EventCreateRequest;
 import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
 import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
-import backend.techeerzip.domain.event.dto.response.EventGetResponse;
+import backend.techeerzip.domain.event.dto.response.EventListResponse;
+import backend.techeerzip.domain.event.dto.response.EventResponse;
 import backend.techeerzip.domain.event.entity.Event;
 import backend.techeerzip.domain.event.exception.EventNotFoundException;
 import backend.techeerzip.domain.event.exception.EventUnauthorizedException;
@@ -60,7 +61,7 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public List<EventGetResponse> getEventList(EventListQueryRequest query) {
+    public List<EventListResponse> getEventList(EventListQueryRequest query) {
         logger.debug("이벤트 목록 조회 시작 - query: {}", query);
 
         String keyword = query.getKeyword();
@@ -73,12 +74,12 @@ public class EventService {
 
         logger.debug("이벤트 목록 조회 완료 - 조회된 개수: {}", eventPage.getContent().size());
         return eventPage.getContent().stream()
-                .map(EventGetResponse::new)
+                .map(EventListResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public EventGetResponse getEvent(Long eventId) {
+    public EventResponse getEvent(Long eventId) {
         logger.debug("단일 이벤트 조회 시작 - eventId: {}", eventId);
 
         Event event = eventRepository.findById(eventId)
@@ -86,7 +87,7 @@ public class EventService {
                 .orElseThrow(EventNotFoundException::new);
 
         logger.debug("단일 이벤트 조회 완료 - eventId: {}", eventId);
-        return new EventGetResponse(event);
+        return new EventResponse(event);
     }
 
     @Transactional
