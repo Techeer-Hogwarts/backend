@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.user.entity;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,9 +17,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import backend.techeerzip.domain.blog.entity.Blog;
@@ -32,7 +29,9 @@ import backend.techeerzip.domain.resume.entity.Resume;
 import backend.techeerzip.domain.role.entity.Role;
 import backend.techeerzip.domain.session.entity.Session;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import backend.techeerzip.domain.techBloggingChallenge.entity.TechBloggingAttendance;
 import backend.techeerzip.domain.userExperience.entity.UserExperience;
+import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -44,7 +43,7 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "User",
         uniqueConstraints = @UniqueConstraint(name = "User_email_key", columnNames = "email"))
-public class User {
+public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private final List<Blog> blogs = new ArrayList<>();
@@ -76,18 +75,13 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private final List<UserExperience> experiences = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user")
+    private List<TechBloggingAttendance> techBloggingAttendances = new ArrayList<>();
+
     @Id
     @SequenceGenerator(name = "user_id_seq_gen", sequenceName = "User_id_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq_gen")
     private Long id;
-
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private boolean isDeleted;
@@ -186,7 +180,6 @@ public class User {
         this.tistoryUrl = tistoryUrl;
         this.velogUrl = velogUrl;
         this.isDeleted = false;
-        // createdAt/updatedAt default는 JPA/DB에 위임
     }
 
     public void update(
@@ -214,11 +207,9 @@ public class User {
         this.mediumUrl = mediumUrl;
         this.tistoryUrl = tistoryUrl;
         this.velogUrl = velogUrl;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void delete() {
         this.isDeleted = true;
-        this.updatedAt = LocalDateTime.now();
     }
 }
