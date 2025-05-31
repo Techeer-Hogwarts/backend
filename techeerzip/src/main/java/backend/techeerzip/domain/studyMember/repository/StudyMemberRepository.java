@@ -9,16 +9,10 @@ import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.global.entity.StatusCategory;
 
 public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> {
-    List<StudyMember> findByStudyTeamId(Long studyTeamId);
-
-    List<StudyMember> findByUserId(Long userId);
-
     boolean existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(
             Long userId, Long studyTeamId, StatusCategory statusCategory);
 
     List<StudyMember> findAllByStudyTeamId(Long studyTeamId);
-
-    boolean existsByStudyTeamIdAndUserId(Long studyTeamId, Long userId);
 
     Optional<StudyMember> findByStudyTeamIdAndUserId(Long id, Long applicantId);
 
