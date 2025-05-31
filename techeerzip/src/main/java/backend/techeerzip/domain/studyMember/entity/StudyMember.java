@@ -50,7 +50,7 @@ public class StudyMember extends BaseEntity {
     private String summary;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)

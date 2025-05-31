@@ -5,14 +5,16 @@ import static backend.techeerzip.infra.s3.ImageExtensionHandler.extractExtension
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.IntStream;
+import java.util.concurrent.CompletionException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -25,6 +27,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class S3Service {
 
     private final S3Client s3Client;
+    private final CustomLogger log;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -45,6 +48,10 @@ public class S3Service {
         }
     }
 
+    private static String getFileName(String urlPrefix, String ext, Integer index) {
+        return urlPrefix + "-" + System.currentTimeMillis() + "-" + index + ext;
+    }
+
     private PutObjectRequest setPutObjectRequest(String keyPath, String ext) {
         return PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -57,29 +64,42 @@ public class S3Service {
         return RequestBody.fromInputStream(file.getInputStream(), file.getSize());
     }
 
+    public List<String> upload(MultipartFile file, String folderPath, String urlPrefix) {
+        if (file == null) {
+            return List.of();
+        }
+        final String ext = extractExtension(file.getOriginalFilename());
+        final String fileName = getFileName(urlPrefix, ext, 0);
+        final String keyPath = makeKeyPath(fileName, folderPath);
+        try {
+            this.s3Client.putObject(this.setPutObjectRequest(keyPath, ext), this.getFile(file));
+            return List.of(
+                    s3Client.utilities()
+                            .getUrl(GetUrlRequest.builder().bucket(bucketName).key(keyPath).build())
+                            .toString());
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     public List<String> uploadMany(List<MultipartFile> files, String folderPath, String urlPrefix) {
         if (files.isEmpty()) {
             return List.of();
         }
-        final List<CompletableFuture<String>> futures =
-                IntStream.range(0, files.size())
-                        .mapToObj(
-                                i -> {
-                                    final String ext =
-                                            extractExtension(files.get(i).getOriginalFilename());
-                                    final String fileName =
-                                            urlPrefix
-                                                    + "-"
-                                                    + System.currentTimeMillis()
-                                                    + "-"
-                                                    + i
-                                                    + ext;
-
-                                    return uploadAsync(files.get(i), folderPath, fileName, ext);
-                                })
-                        .toList();
-
-        return futures.stream().map(CompletableFuture::join).toList();
+        final List<CompletableFuture<String>> uploadFuture = new ArrayList<>();
+        for (int i = 0; i < files.size(); i++) {
+            final String ext = extractExtension(files.get(i).getOriginalFilename());
+            final String fileName = getFileName(urlPrefix, ext, i);
+            uploadFuture.add(uploadAsync(files.get(i), folderPath, fileName, ext));
+        }
+        final List<String> uploaded = new ArrayList<>();
+        try {
+            uploadFuture.stream().map(CompletableFuture::join).forEach(uploaded::add);
+            return List.copyOf(uploaded);
+        } catch (CompletionException e) {
+            deleteMany(uploaded);
+            throw e;
+        }
     }
 
     private CompletableFuture<String> uploadAsync(
@@ -88,8 +108,7 @@ public class S3Service {
                 () -> {
                     try {
                         final String keyPath = makeKeyPath(fileName, folderPath);
-                        this.s3Client.putObject(
-                                this.setPutObjectRequest(keyPath, ext), this.getFile(file));
+                        s3Client.putObject(setPutObjectRequest(keyPath, ext), this.getFile(file));
                         return s3Client.utilities()
                                 .getUrl(
                                         GetUrlRequest.builder()
@@ -120,7 +139,7 @@ public class S3Service {
                                         .build();
                         s3Client.deleteObject(deleteObjectRequest);
                     } catch (Exception e) {
-                        throw new IllegalArgumentException(e);
+                        log.error("S3 삭제 오류 발생", url, e);
                     }
                 });
     }
