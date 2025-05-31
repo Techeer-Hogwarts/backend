@@ -1,26 +1,23 @@
 package backend.techeerzip.domain.event.controller;
 
-import java.util.List;
-
+import backend.techeerzip.domain.event.dto.request.EventCreateRequest;
+import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
+import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
+import backend.techeerzip.domain.event.dto.response.EventListResponse;
+import backend.techeerzip.domain.event.dto.response.EventResponse;
+import backend.techeerzip.domain.event.service.EventService;
+import backend.techeerzip.global.resolver.UserId;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import backend.techeerzip.domain.event.dto.request.EventCreateRequest;
-import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
-import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
-import backend.techeerzip.domain.event.dto.response.EventResponse;
-import backend.techeerzip.domain.event.service.EventService;
-import backend.techeerzip.global.resolver.UserId;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-
 @RestController
-@RequestMapping("/api/v3/events")
+@RequestMapping("api/v3/events")
 @RequiredArgsConstructor
 @Tag(name = "events", description = "이벤트 API")
 public class EventController implements EventSwagger {
@@ -31,7 +28,8 @@ public class EventController implements EventSwagger {
     @Override
     @PostMapping
     public ResponseEntity<EventCreateResponse> createEvent(
-            @Valid @RequestBody EventCreateRequest request, @UserId Long userId) {
+            @Valid @RequestBody EventCreateRequest request,
+            @UserId Long userId) {
         logger.debug("이벤트 생성 요청 처리 중 - userId: {}", userId);
         EventCreateResponse response = eventService.createEvent(userId, request);
         return ResponseEntity.ok(response);
@@ -39,10 +37,10 @@ public class EventController implements EventSwagger {
 
     @Override
     @GetMapping
-    public ResponseEntity<List<EventResponse>> getEventList(
+    public ResponseEntity<EventListResponse> getEventList(
             @ParameterObject @Valid EventListQueryRequest query) {
         logger.debug("이벤트 목록 조회 및 검색 처리 중 - query: {}", query);
-        List<EventResponse> response = eventService.getEventList(query);
+        EventListResponse response = eventService.getEventList(query);
         return ResponseEntity.ok(response);
     }
 
@@ -67,7 +65,9 @@ public class EventController implements EventSwagger {
 
     @Override
     @DeleteMapping("/{eventId}")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Long eventId, @UserId Long userId) {
+    public ResponseEntity<Void> deleteEvent(
+            @PathVariable Long eventId,
+            @UserId Long userId) {
         logger.debug("이벤트 삭제 요청 처리 중 - userId: {}, eventId: {}", userId, eventId);
         eventService.deleteEvent(userId, eventId);
         return ResponseEntity.noContent().build();

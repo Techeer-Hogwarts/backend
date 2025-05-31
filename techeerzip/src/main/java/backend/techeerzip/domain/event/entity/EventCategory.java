@@ -1,7 +1,7 @@
 package backend.techeerzip.domain.event.entity;
 
 public enum EventCategory {
-    EVENT,
+    TECHEER,
     CONFERENCE,
-    ANNOUNCEMENT
+    JOBINFO
 }
