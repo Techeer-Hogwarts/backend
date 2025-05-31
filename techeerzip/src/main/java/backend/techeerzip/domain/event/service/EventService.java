@@ -13,9 +13,8 @@ import backend.techeerzip.domain.event.repository.EventRepository;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.infra.index.IndexEvent;
+import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +29,8 @@ public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
-
-    private static final Logger logger = LoggerFactory.getLogger(EventService.class);
+    private final CustomLogger logger;
+    private static final String CONTEXT = "EventService";
 
     @Transactional
     public EventCreateResponse createEvent(Long userId, EventCreateRequest request) {
@@ -39,7 +38,7 @@ public class EventService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    logger.warn("이벤트 생성 실패: 사용자를 찾을 수 없습니다 - userId: {}", userId);
+                    logger.warn("이벤트 생성 실패: 사용자를 찾을 수 없습니다 - userId: {} | context: {}", userId, CONTEXT);
                     return new IllegalArgumentException("사용자를 찾을 수 없습니다.");
                 });
 
@@ -74,7 +73,7 @@ public class EventService {
         List<EventResponse> eventResponses =
                 events.stream().map(EventResponse::new).collect(Collectors.toList());
 
-        logger.debug("이벤트 목록 조회 완료 - 조회된 개수: {}", eventResponses.size());
+        logger.debug("이벤트 목록 조회 완료 - 조회된 개수: {} | context: {}", eventResponses.size(), CONTEXT);
         return new EventListResponse(eventResponses, query.getLimit());
     }
 
@@ -84,26 +83,26 @@ public class EventService {
 
         Event event = eventRepository.findByIdAndIsDeletedFalse(eventId)
                 .orElseThrow(() -> {
-                    logger.warn("이벤트 조회 실패: 존재하지 않거나 삭제된 이벤트 - eventId: {}", eventId);
+                    logger.warn("이벤트 조회 실패: 존재하지 않거나 삭제된 이벤트 - eventId: {} | context: {}", eventId, CONTEXT);
                     return new EventNotFoundException();
                 });
 
-        logger.debug("단일 이벤트 조회 완료 - eventId: {}", eventId);
+        logger.debug("단일 이벤트 조회 완료 - eventId: {} | context: {}", eventId, CONTEXT);
         return new EventResponse(event);
     }
 
     @Transactional
     public EventCreateResponse updateEvent(Long userId, Long eventId, EventCreateRequest request) {
-        logger.debug("이벤트 수정 시작 - userId: {}, eventId: {}, request: {}", userId, eventId, request);
+        logger.debug("이벤트 수정 시작 - userId: {}, eventId: {}, request: {} | context: {}", userId, eventId, request, CONTEXT);
 
         Event event = eventRepository.findByIdAndIsDeletedFalse(eventId)
                 .orElseThrow(() -> {
-                    logger.warn("이벤트 수정 실패: 존재하지 않거나 삭제된 이벤트 - eventId: {}", eventId);
+                    logger.warn("이벤트 수정 실패: 존재하지 않거나 삭제된 이벤트 - eventId: {} | context: {}", eventId, CONTEXT);
                     return new EventNotFoundException();
                 });
 
         if (!event.getUser().getId().equals(userId)) {
-            logger.error("이벤트 수정 권한 없음 - userId: {}, eventId: {}", userId, eventId);
+            logger.error("이벤트 수정 권한 없음 - userId: {}, eventId: {} | context: {}", userId, eventId, CONTEXT);
             throw new EventUnauthorizedException();
         }
 
@@ -119,28 +118,28 @@ public class EventService {
 
         eventPublisher.publishEvent(new IndexEvent.Create<>("event", EventMapper.toIndexDto(updatedEvent)));
 
-        logger.debug("이벤트 수정 완료 - eventId: {}", eventId);
+        logger.debug("이벤트 수정 완료 - eventId: {} | context: {}", eventId, CONTEXT);
         return new EventCreateResponse(event);
     }
 
     @Transactional
     public void deleteEvent(Long userId, Long eventId) {
-        logger.debug("이벤트 삭제 시작 - userId: {}, eventId: {}", userId, eventId);
+        logger.debug("이벤트 삭제 시작 - userId: {}, eventId: {} | context: {}", userId, eventId, CONTEXT);
 
         Event event = eventRepository.findByIdAndIsDeletedFalse(eventId)
                 .orElseThrow(() -> {
-                    logger.warn("이벤트 삭제 실패: 존재하지 않거나 이미 삭제된 이벤트 - eventId: {}", eventId);
+                    logger.warn("이벤트 삭제 실패: 존재하지 않거나 이미 삭제된 이벤트 - eventId: {} | context: {}", eventId, CONTEXT);
                     return new EventNotFoundException();
                 });
 
         if (!event.getUser().getId().equals(userId)) {
-            logger.error("이벤트 삭제 권한 없음 - userId: {}, eventId: {}", userId, eventId);
+            logger.error("이벤트 삭제 권한 없음 - userId: {}, eventId: {} | context: {}", userId, eventId, CONTEXT);
             throw new EventUnauthorizedException();
         }
 
         event.delete();
         eventPublisher.publishEvent(new IndexEvent.Delete("event", eventId));
 
-        logger.debug("이벤트 삭제 완료 - eventId: {}", eventId);
+        logger.debug("이벤트 삭제 완료 - eventId: {} | context: {}", eventId, CONTEXT);
     }
 }
