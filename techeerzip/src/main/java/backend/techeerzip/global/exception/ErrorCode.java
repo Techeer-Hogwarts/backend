@@ -70,6 +70,12 @@ public enum ErrorCode {
     PROJECT_TEAM_INVALID_DELETE_IMAGE(HttpStatus.BAD_REQUEST, "PT016", "삭제하는 결과이미지가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "PT017", "프로젝트 멤버가 유효하지 않습니다."),
 
+    // Session
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND,"SS001", "해당 세션을 찾을 수 없습니다"),
+    SESSION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "SS002", "해당 세션이 이미 존재합니다."),
+    SESSION_UNAUTHORIZED(
+            HttpStatus.UNAUTHORIZED, "SS003", "해당 세션에 대한 권한이 없습니다."),
+
     // ==== StudyMember ====
     STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SM001", "스터디 멤버를 찾을 수 없습니다."),
     STUDY_MEMBER_BAD_REQUEST(HttpStatus.BAD_REQUEST, "SM002", "유효하지 않은 요청입니다."),
@@ -92,6 +98,7 @@ public enum ErrorCode {
             HttpStatus.BAD_REQUEST, "ST012", "스터디 삭제 멤버와 업데이트 멤버가 중복됩니다."),
     STUDY_TEAM_ALREADY_APPLIED(HttpStatus.BAD_REQUEST, "ST013", "이미 지원한 팀입니다."),
     STUDY_TEAM_CLOSED_RECRUIT(HttpStatus.BAD_REQUEST, "ST014", "모집이 종료된 스터디입니다."),
+
     // Stack
     STACK_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "Stack not found"),
     STACK_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "S002", "Stack already exists"),
