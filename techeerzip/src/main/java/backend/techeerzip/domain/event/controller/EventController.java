@@ -1,19 +1,21 @@
 package backend.techeerzip.domain.event.controller;
 
+import jakarta.validation.Valid;
+
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import backend.techeerzip.domain.event.dto.request.EventCreateRequest;
 import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
 import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
 import backend.techeerzip.domain.event.dto.response.EventListResponse;
 import backend.techeerzip.domain.event.dto.response.EventResponse;
 import backend.techeerzip.domain.event.service.EventService;
-import backend.techeerzip.global.resolver.UserId;
 import backend.techeerzip.global.logger.CustomLogger;
+import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v3/events")
@@ -28,8 +30,7 @@ public class EventController implements EventSwagger {
     @Override
     @PostMapping
     public ResponseEntity<EventCreateResponse> createEvent(
-            @Valid @RequestBody EventCreateRequest request,
-            @UserId Long userId) {
+            @Valid @RequestBody EventCreateRequest request, @UserId Long userId) {
         logger.debug("이벤트 생성 요청 처리 중 - userId: {} | context: {}", userId, CONTEXT);
         EventCreateResponse response = eventService.createEvent(userId, request);
         return ResponseEntity.ok(response);
@@ -58,17 +59,17 @@ public class EventController implements EventSwagger {
             @PathVariable Long eventId,
             @Valid @RequestBody EventCreateRequest request,
             @UserId Long userId) {
-        logger.debug("이벤트 수정 요청 처리 중 - userId: {}, eventId: {} | context: {}", userId, eventId, CONTEXT);
+        logger.debug(
+                "이벤트 수정 요청 처리 중 - userId: {}, eventId: {} | context: {}", userId, eventId, CONTEXT);
         EventCreateResponse response = eventService.updateEvent(userId, eventId, request);
         return ResponseEntity.ok(response);
     }
 
     @Override
     @DeleteMapping("/{eventId}")
-    public ResponseEntity<Void> deleteEvent(
-            @PathVariable Long eventId,
-            @UserId Long userId) {
-        logger.debug("이벤트 삭제 요청 처리 중 - userId: {}, eventId: {} | context: {}", userId, eventId, CONTEXT);
+    public ResponseEntity<Void> deleteEvent(@PathVariable Long eventId, @UserId Long userId) {
+        logger.debug(
+                "이벤트 삭제 요청 처리 중 - userId: {}, eventId: {} | context: {}", userId, eventId, CONTEXT);
         eventService.deleteEvent(userId, eventId);
         return ResponseEntity.noContent().build();
     }
