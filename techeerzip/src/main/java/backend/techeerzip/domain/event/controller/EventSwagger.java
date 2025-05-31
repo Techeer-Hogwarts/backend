@@ -3,7 +3,6 @@ package backend.techeerzip.domain.event.controller;
 import backend.techeerzip.domain.event.dto.request.EventCreateRequest;
 import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
 import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
-import backend.techeerzip.domain.event.dto.response.EventListResponse;
 import backend.techeerzip.domain.event.dto.response.EventResponse;
 import backend.techeerzip.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
 
 public interface EventSwagger {
 
@@ -38,11 +39,11 @@ public interface EventSwagger {
     @Operation(summary = "이벤트 목록 조회 및 검색", description = "이벤트 목록을 조회하고 검색합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = EventResponse.class))))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = EventResponse.class)))) // EventListResponse -> EventResponse[] 변경
     })
-    default ResponseEntity<EventListResponse> getEventList(
-            @Parameter(description = "검색 조건")
-            EventListQueryRequest query
+    default ResponseEntity<List<EventResponse>> getEventList(
+                                                              @Parameter(description = "검색 조건")
+                                                              EventListQueryRequest query
     ) {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
     }

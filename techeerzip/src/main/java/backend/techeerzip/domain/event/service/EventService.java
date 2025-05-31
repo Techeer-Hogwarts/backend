@@ -3,7 +3,6 @@ package backend.techeerzip.domain.event.service;
 import backend.techeerzip.domain.event.dto.request.EventCreateRequest;
 import backend.techeerzip.domain.event.dto.request.EventListQueryRequest;
 import backend.techeerzip.domain.event.dto.response.EventCreateResponse;
-import backend.techeerzip.domain.event.dto.response.EventListResponse;
 import backend.techeerzip.domain.event.dto.response.EventResponse;
 import backend.techeerzip.domain.event.entity.Event;
 import backend.techeerzip.domain.event.exception.EventNotFoundException;
@@ -61,7 +60,7 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public EventListResponse getEventList(EventListQueryRequest query) {
+    public List<EventResponse> getEventList(EventListQueryRequest query) {
         logger.debug("이벤트 목록 조회 시작 - query: {}", query);
 
         List<Event> events =
@@ -69,13 +68,16 @@ public class EventService {
                         query.getCursorId(),
                         query.getKeyword(),
                         query.getCategory(),
-                        query.getLimit());
+                        query.getLimit() + 1);
+
+        boolean hasNext = events.size() > query.getLimit();
+        List<Event> resultEvents = hasNext ? events.subList(0, query.getLimit()) : events;
 
         List<EventResponse> eventResponses =
-                events.stream().map(EventResponse::new).collect(Collectors.toList());
+                resultEvents.stream().map(EventResponse::new).collect(Collectors.toList());
 
         logger.debug("이벤트 목록 조회 완료 - 조회된 개수: {}", eventResponses.size());
-        return new EventListResponse(eventResponses, query.getLimit());
+        return eventResponses;
     }
 
     @Transactional(readOnly = true)
