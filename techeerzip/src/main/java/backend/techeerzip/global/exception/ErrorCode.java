@@ -71,10 +71,9 @@ public enum ErrorCode {
     PROJECT_TEAM_INVALID_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "PT017", "프로젝트 멤버가 유효하지 않습니다."),
 
     // Session
-    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND,"SS001", "해당 세션을 찾을 수 없습니다"),
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "SS001", "해당 세션을 찾을 수 없습니다"),
     SESSION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "SS002", "해당 세션이 이미 존재합니다."),
-    SESSION_UNAUTHORIZED(
-            HttpStatus.UNAUTHORIZED, "SS003", "해당 세션에 대한 권한이 없습니다."),
+    SESSION_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "SS003", "해당 세션에 대한 권한이 없습니다."),
 
     // ==== StudyMember ====
     STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SM001", "스터디 멤버를 찾을 수 없습니다."),
@@ -109,6 +108,10 @@ public enum ErrorCode {
     REDIS_MESSAGE_PROCESSING_ERROR(
             HttpStatus.INTERNAL_SERVER_ERROR, "R002", "Redis message processing error"),
     REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found"),
+
+    // Event
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "이벤트를 찾을 수 없습니다."),
+    EVENT_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "E002", "이벤트에 대한 권한이 없습니다."),
 
     // TechBloggingRound
     ROUND_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "TBR001", "이미 해당 연도/반기의 챌린지 회차가 존재합니다."),

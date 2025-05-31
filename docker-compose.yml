@@ -85,7 +85,7 @@ services:
     #         - '8001:8001'
     #     networks:
     #         - techeerism
-    
+
     search-container:
         image: teami2022/watchtower-test:arm-search
         networks:
@@ -99,7 +99,7 @@ services:
             - GIN_MODE=release
         ports:
             - "8082:8080"
-  
+
     search-cron:
         image: teami2022/watchtower-test:arm-cron
         container_name: search-cron
@@ -119,7 +119,7 @@ services:
             - DB_SSL_MODE=disable
         ports:
             - "8081:8081"
-   
+
     meilisearch:
         image: getmeili/meilisearch:latest
         container_name: meilisearch
@@ -133,7 +133,7 @@ services:
         volumes:
             - meilisearch-data:/meili_data/data.ms
         restart: unless-stopped
-    
+
     otel-collector:
         image: otel/opentelemetry-collector-contrib:0.122.1
         container_name: otel-collector

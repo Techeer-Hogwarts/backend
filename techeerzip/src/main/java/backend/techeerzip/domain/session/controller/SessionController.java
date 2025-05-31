@@ -1,22 +1,23 @@
 package backend.techeerzip.domain.session.controller;
 
-import backend.techeerzip.domain.session.dto.request.SessionCreateRequest;
-import backend.techeerzip.domain.session.dto.request.SessionListQueryRequest;
-import backend.techeerzip.domain.session.dto.response.SessionResponse;
-import backend.techeerzip.domain.session.entity.Session;
-import backend.techeerzip.domain.session.mapper.SessionMapper;
-import backend.techeerzip.domain.session.service.SessionService;
-import backend.techeerzip.domain.session.dto.request.SessionBestListRequest;
-import backend.techeerzip.domain.session.dto.response.SessionBestListResponse;
-import backend.techeerzip.domain.session.dto.response.SessionListResponse;
-import backend.techeerzip.global.resolver.UserId;
-import backend.techeerzip.infra.index.IndexEvent;
 import jakarta.validation.Valid;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import backend.techeerzip.domain.session.dto.request.SessionBestListRequest;
+import backend.techeerzip.domain.session.dto.request.SessionCreateRequest;
+import backend.techeerzip.domain.session.dto.request.SessionListQueryRequest;
+import backend.techeerzip.domain.session.dto.response.SessionBestListResponse;
+import backend.techeerzip.domain.session.dto.response.SessionListResponse;
+import backend.techeerzip.domain.session.dto.response.SessionResponse;
+import backend.techeerzip.domain.session.entity.Session;
+import backend.techeerzip.domain.session.mapper.SessionMapper;
+import backend.techeerzip.domain.session.service.SessionService;
+import backend.techeerzip.global.resolver.UserId;
+import backend.techeerzip.infra.index.IndexEvent;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -29,9 +30,7 @@ public class SessionController implements SessionSwagger {
     @Override
     @PostMapping
     public ResponseEntity<Long> createSession(
-            @RequestBody @Valid SessionCreateRequest request,
-            @UserId Long userId
-    ) {
+            @RequestBody @Valid SessionCreateRequest request, @UserId Long userId) {
         return ResponseEntity.ok(sessionService.createSession(request, userId));
     }
 
@@ -40,8 +39,7 @@ public class SessionController implements SessionSwagger {
     public ResponseEntity<Void> updateSession(
             @RequestBody @Valid SessionCreateRequest request,
             @PathVariable Long sessionId,
-            @UserId Long userId
-    ) {
+            @UserId Long userId) {
         Session session = sessionService.updateSession(request, sessionId, userId);
         eventPublisher.publishEvent(
                 new IndexEvent.Create<>("session", SessionMapper.toIndexDto(session)));
@@ -64,17 +62,13 @@ public class SessionController implements SessionSwagger {
     @Override
     @GetMapping("/best")
     public ResponseEntity<SessionBestListResponse<SessionResponse>> getAllBestSessions(
-            @ParameterObject @Valid SessionBestListRequest request
-    ) {
+            @ParameterObject @Valid SessionBestListRequest request) {
         return ResponseEntity.ok(sessionService.getAllBestSessions(request));
     }
 
     @Override
     @DeleteMapping("/{sessionId}")
-    public ResponseEntity<Void> deleteSession(
-            @PathVariable Long sessionId,
-            @UserId Long userId
-    ) {
+    public ResponseEntity<Void> deleteSession(@PathVariable Long sessionId, @UserId Long userId) {
         sessionService.deleteSession(sessionId, userId);
         return ResponseEntity.ok().build();
     }
