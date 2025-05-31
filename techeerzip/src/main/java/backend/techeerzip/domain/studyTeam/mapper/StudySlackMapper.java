@@ -10,6 +10,8 @@ import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.global.entity.StatusCategory;
 
 public class StudySlackMapper {
+    private static final String NO_APPLICANT = "Null";
+
     private StudySlackMapper() {}
 
     public static StudySlackRequest.Channel toChannelRequest(
@@ -23,7 +25,7 @@ public class StudySlackMapper {
                 .email(leaderEmails)
                 .recruitNum(team.getRecruitNum())
                 .id(team.getId())
-                .role(team.getRule())
+                .rule(team.getRule())
                 .goal(team.getGoal())
                 .githubLink(team.getGithubLink())
                 .notionLink(team.getNotionLink())
@@ -43,7 +45,7 @@ public class StudySlackMapper {
 
         for (int i = 0; i < leaders.size(); i++) {
             final String leaderEmail = leaders.get(i).email();
-            final String first = (i == 0) ? applicantEmail : "Null";
+            final String first = (i == 0) ? applicantEmail : NO_APPLICANT;
 
             alerts.add(
                     new StudySlackRequest.DM(
