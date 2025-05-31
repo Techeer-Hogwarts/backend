@@ -3,6 +3,8 @@ package backend.techeerzip.domain.event.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import org.hibernate.validator.constraints.URL;
+
 import java.time.LocalDateTime;
 
 @Schema(description = "이벤트 생성 DTO", example = """
@@ -31,6 +33,7 @@ public class EventCreateRequest {
     @Schema(example = "2024-09-13T08:00:00Z", description = "종료 날짜")
     private LocalDateTime endDate;
 
+    @URL(message = "유효한 URL 형식이어야 합니다")
     @Schema(example = "https://example.com", description = "링크")
     private String url;
 }

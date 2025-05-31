@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v3/events")
+@RequestMapping("/api/v3/events")
 @RequiredArgsConstructor
 @Tag(name = "events", description = "이벤트 API")
 public class EventController implements EventSwagger {

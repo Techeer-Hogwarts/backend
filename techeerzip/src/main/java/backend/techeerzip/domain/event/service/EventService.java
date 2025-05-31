@@ -10,6 +10,7 @@ import backend.techeerzip.domain.event.exception.EventUnauthorizedException;
 import backend.techeerzip.domain.event.mapper.EventMapper;
 import backend.techeerzip.domain.event.repository.EventRepository;
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.infra.index.IndexEvent;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class EventService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     logger.warn("이벤트 생성 실패: 사용자를 찾을 수 없습니다 - userId: {}", userId);
-                    return new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+                    return new UserNotFoundException();
                 });
 
         Event event = new Event(
@@ -55,8 +56,8 @@ public class EventService {
 
         eventPublisher.publishEvent(new IndexEvent.Create<>("event", EventMapper.toIndexDto(savedEvent)));
 
-        logger.debug("이벤트 생성 완료 - eventId: {}", event.getId());
-        return new EventCreateResponse(event);
+        logger.debug("이벤트 생성 완료 - eventId: {}", savedEvent.getId());
+        return new EventCreateResponse(savedEvent);
     }
 
     @Transactional(readOnly = true)
@@ -122,7 +123,7 @@ public class EventService {
         eventPublisher.publishEvent(new IndexEvent.Create<>("event", EventMapper.toIndexDto(updatedEvent)));
 
         logger.debug("이벤트 수정 완료 - eventId: {}", eventId);
-        return new EventCreateResponse(event);
+        return new EventCreateResponse(updatedEvent);
     }
 
     @Transactional

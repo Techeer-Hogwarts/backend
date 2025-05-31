@@ -17,7 +17,7 @@ public class EventCreateResponse {
 
     public EventCreateResponse(Event event) {
         this.id = event.getId();
-        this.userId = event.getUser().getId();
+        this.userId = event.getUser() != null ? event.getUser().getId() : null;
         this.category = event.getCategory();
         this.title = event.getTitle();
         this.startDate = event.getStartDate();
