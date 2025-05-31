@@ -118,12 +118,10 @@ public class EventService {
                 request.getUrl()
         );
 
-        Event updatedEvent = eventRepository.save(event);
-
-        eventPublisher.publishEvent(new IndexEvent.Create<>("event", EventMapper.toIndexDto(updatedEvent)));
+        eventPublisher.publishEvent(new IndexEvent.Create<>("event", EventMapper.toIndexDto(event)));
 
         logger.debug("이벤트 수정 완료 - eventId: {}", eventId);
-        return new EventCreateResponse(updatedEvent);
+        return new EventCreateResponse(event);
     }
 
     @Transactional
