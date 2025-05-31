@@ -9,6 +9,7 @@ import backend.techeerzip.domain.blog.dto.request.BlogListQueryRequest;
 import backend.techeerzip.domain.blog.dto.response.BlogListResponse;
 import backend.techeerzip.domain.blog.dto.response.BlogResponse;
 import backend.techeerzip.global.exception.ErrorResponse;
+import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,10 +18,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/**
- * 이 인터페이스는 Swagger 문서 생성을 위한 어노테이션 분리용입니다. 실제 컨트롤러에서는 구현하지 않으며, 메서드 호출 목적도 없습니다. 따라서 IntelliJ 등에서
- * 사용되지 않는 메서드로 표시될 수 있습니다.
- */
 @Tag(name = "blogs", description = "블로그 API")
 public interface BlogSwagger {
 
@@ -33,7 +30,7 @@ public interface BlogSwagger {
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     default ResponseEntity<Void> createSharedBlog(
-            @Parameter(hidden = true) Long userId,
+            @Parameter(hidden = true) @UserId Long userId,
             @Parameter(description = "블로그 URL") @RequestParam String url) {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
     }
@@ -105,7 +102,7 @@ public interface BlogSwagger {
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     default ResponseEntity<BlogResponse> deleteBlog(
-            @Parameter(hidden = true) Long userId,
+            @Parameter(hidden = true) @UserId Long userId,
             @Parameter(description = "블로그 ID") @PathVariable Long blogId) {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
     }

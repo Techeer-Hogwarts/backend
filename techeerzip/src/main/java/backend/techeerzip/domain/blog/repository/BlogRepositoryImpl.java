@@ -93,4 +93,44 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
             default -> new OrderSpecifier<?>[] {blog.createdAt.desc()};
         };
     }
+
+    public List<Blog> findBlogsForChallenge(
+            List<Long> blogIds, Blog cursorBlog, int limit, String sortBy) {
+        return queryFactory
+                .selectFrom(blog)
+                .where(blog.id.in(blogIds), cursorCondition(cursorBlog, sortBy))
+                .orderBy(orderSpecifier(sortBy))
+                .limit(limit)
+                .fetch();
+    }
+
+    private BooleanExpression cursorCondition(Blog cursorBlog, String sortBy) {
+        if (cursorBlog == null) {
+            return null;
+        }
+
+        switch (sortBy) {
+            case "latest":
+                return blog.createdAt.lt(cursorBlog.getCreatedAt());
+            case "viewCount":
+                return blog.viewCount.lt(cursorBlog.getViewCount());
+            case "name":
+                return blog.user.name.lt(cursorBlog.getUser().getName());
+            default:
+                return blog.createdAt.lt(cursorBlog.getCreatedAt());
+        }
+    }
+
+    private OrderSpecifier<?> orderSpecifier(String sortBy) {
+        switch (sortBy) {
+            case "latest":
+                return blog.createdAt.desc();
+            case "viewCount":
+                return blog.viewCount.desc();
+            case "name":
+                return blog.user.name.asc();
+            default:
+                return blog.createdAt.desc();
+        }
+    }
 }
