@@ -353,6 +353,7 @@ public class UserService {
         permissionRequestRepository.updateStatusByUserId(userId, StatusCategory.APPROVED);
     }
 
+    @Transactional
     public void updateProfile(
             Long userId, UpdateUserWithExperienceRequest updateUserWithExperienceRequest) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
