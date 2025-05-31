@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -68,10 +69,10 @@ public class EventService {
         int limit = query.getLimit();
 
         Pageable pageable = PageRequest.of(offset / limit, limit); // 페이지 번호는 0부터 시작
-        List<Event> events = eventRepository.findEvents(keyword, categories, pageable);
+        Page<Event> eventPage = eventRepository.findEvents(keyword, categories, pageable);
 
-        logger.debug("이벤트 목록 조회 완료 - 조회된 개수: {}", events.size());
-        return events.stream()
+        logger.debug("이벤트 목록 조회 완료 - 조회된 개수: {}", eventPage.getContent().size());
+        return eventPage.getContent().stream()
                 .map(EventGetResponse::new)
                 .collect(Collectors.toList());
     }
