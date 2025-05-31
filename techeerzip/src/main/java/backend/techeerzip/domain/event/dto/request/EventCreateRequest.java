@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotBlank;
 
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.URL;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +27,7 @@ public class EventCreateRequest {
 
     @Schema(example = "TECHEER", description = "카테고리")
     @NotBlank
+    @Pattern(regexp = "TECHEER|CONFERENCE|JOBINFO", message = "유효하지 않은 카테고리입니다. 유효한 값: TECHEER, CONFERENCE, JOBINFO")
     private String category;
 
     @Schema(example = "테커 파티", description = "행사 이름")

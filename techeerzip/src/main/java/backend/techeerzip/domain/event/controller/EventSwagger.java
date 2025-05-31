@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -25,7 +26,7 @@ public interface EventSwagger {
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     default ResponseEntity<EventCreateResponse> createEvent(
-            @RequestBody(description = "이벤트 생성 요청 객체", required = true,
+            @Valid @RequestBody(description = "이벤트 생성 요청 객체", required = true,
                     content = @Content(schema = @Schema(implementation = EventCreateRequest.class)))
             EventCreateRequest request,
 
