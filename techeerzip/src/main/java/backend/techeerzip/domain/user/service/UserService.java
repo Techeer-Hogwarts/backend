@@ -1,5 +1,25 @@
 package backend.techeerzip.domain.user.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+
 import backend.techeerzip.domain.auth.exception.AuthNotVerifiedEmailException;
 import backend.techeerzip.domain.auth.service.AuthService;
 import backend.techeerzip.domain.blog.repository.BlogRepository;
@@ -40,25 +60,8 @@ import backend.techeerzip.domain.userExperience.exception.UserExperienceNotFound
 import backend.techeerzip.domain.userExperience.repository.UserExperienceRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import backend.techeerzip.global.logger.CustomLogger;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -489,7 +492,6 @@ public class UserService {
                 users.stream().map(userMapper::toGetUserResponse).toList();
 
         return new GetUserProfileListResponse(responses, hasNext, nextCursor);
-
     }
 
     public <T> Map<Long, User> getIdAndUserMap(List<T> usersInfo, Function<T, Long> idExtractor) {

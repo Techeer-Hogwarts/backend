@@ -1,13 +1,15 @@
 package backend.techeerzip.domain.studyMember.repository;
 
-import backend.techeerzip.domain.studyMember.entity.StudyMember;
-import backend.techeerzip.global.entity.StatusCategory;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import backend.techeerzip.global.entity.StatusCategory;
 
 public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> {
     boolean existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(
@@ -25,5 +27,4 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
 
     Optional<StudyMember> findByStudyTeamIdAndUserIdAndStatus(
             Long teamId, Long applicantId, StatusCategory statusCategory);
-
 }
