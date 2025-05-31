@@ -1,6 +1,10 @@
 package backend.techeerzip.domain.projectTeam.mapper;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
 import backend.techeerzip.domain.projectTeam.dto.request.RecruitCounts;
@@ -11,7 +15,9 @@ import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamDetailRespo
 import backend.techeerzip.domain.projectTeam.dto.response.ProjectTeamUpdateResponse;
 import backend.techeerzip.domain.projectTeam.entity.ProjectMainImage;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
+import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 
+@Component
 public class ProjectTeamMapper {
 
     private ProjectTeamMapper() {}
@@ -161,5 +167,32 @@ public class ProjectTeamMapper {
                 .id(projectTeamId)
                 .indexRequest(ProjectIndexMapper.toIndexRequest(team))
                 .build();
+    }
+
+    public GetUserResponse.ProjectTeamDTO toUserProjectTeamDTO(ProjectMember pm) {
+        if (pm.getProjectTeam() == null) return null;
+
+        ProjectTeam projectTeam = pm.getProjectTeam();
+
+        return GetUserResponse.ProjectTeamDTO.builder()
+                .id(projectTeam.getId())
+                .name(projectTeam.getName())
+                .resultImages(
+                        projectTeam.getResultImages().stream()
+                                .map(img -> img.getImageUrl())
+                                .collect(Collectors.toList()))
+                .mainImage(
+                        projectTeam.getMainImages().isEmpty()
+                                ? ""
+                                : projectTeam.getMainImages().get(0).getImageUrl())
+                .build();
+    }
+
+    public List<GetUserResponse.ProjectTeamDTO> toUserProjectTeamDTOList(
+            List<ProjectMember> members) {
+        return members.stream()
+                .map(this::toUserProjectTeamDTO)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }
