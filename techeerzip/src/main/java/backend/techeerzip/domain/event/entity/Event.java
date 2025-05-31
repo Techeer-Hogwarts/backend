@@ -13,7 +13,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,17 +23,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Event")
-public class Event {
+public class Event extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private boolean isDeleted;
@@ -55,6 +51,7 @@ public class Event {
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
+    @Builder
     public Event(
             String category,
             String title,
@@ -62,8 +59,6 @@ public class Event {
             LocalDateTime endDate,
             String url,
             User user) {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
         this.isDeleted = false;
         this.category = category;
         this.title = title;

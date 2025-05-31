@@ -1,8 +1,7 @@
 package backend.techeerzip.global.exception;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
@@ -13,6 +12,7 @@ public enum ErrorCode {
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "Invalid Type Value"),
     HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "Access is Denied"),
     INVALID_CURSOR_ID(HttpStatus.BAD_REQUEST, "C006", "유효하지 않은 커서 ID입니다."),
+    EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "CT06", "결과 이미지는 10개까지만 등록 가능합니다."),
 
     // Auth
     AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "A001", "이메일 또는 비밀번호가 올바르지 않습니다."),
@@ -53,8 +53,7 @@ public enum ErrorCode {
     // ==== ProjectMember ====
     PROJECT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "PM001", "존재하지 않는 프로젝트 멤버입니다."),
     PROJECT_MEMBER_INVALID_TEAM_ROLE(HttpStatus.BAD_REQUEST, "PM002", "프로젝트 멤버의 팀 역할이 유효하지 않습니다."),
-    PROJECT_MEMBER_INVALID_ACTIVE_REQUESTER(
-            HttpStatus.BAD_REQUEST, "PM003", "프로젝트 멤버만 접근할 수 있습니다."),
+    TEAM_INVALID_ACTIVE_REQUESTER(HttpStatus.BAD_REQUEST, "PM003", "팀 멤버만 접근할 수 있습니다."),
     PROJECT_MEMBER_APPLICATION_EXISTS(HttpStatus.BAD_REQUEST, "PM004", "이미 해당 프로젝트에 지원하셨습니다."),
     PROJECT_MEMBER_ALREADY_ACTIVE(HttpStatus.BAD_REQUEST, "PM005", "이미 해당 프로젝트에서 활동 중인 멤버입니다."),
     PROJECT_MEMBER_NOT_APPLICANT(HttpStatus.BAD_REQUEST, "PM006", "해당 프로젝트 지원자가 아닙니다."),
@@ -75,10 +74,14 @@ public enum ErrorCode {
     PROJECT_TEAM_INVALID_TEAM_ROLE(HttpStatus.BAD_REQUEST, "PT011", "유효하지 않은 팀 역할입니다."),
     PROJECT_TEAM_INVALID_UPDATE_MEMBER(HttpStatus.BAD_REQUEST, "PT012", "업데이트 멤버가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_APPLICANT(HttpStatus.BAD_REQUEST, "PT013", "유효하지 않은 지원자입니다."),
-    PROJECT_TEAM_EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "PT014", "결과 이미지는 10개까지만 등록 가능합니다."),
     PROJECT_TEAM_ALREADY_APPROVED(HttpStatus.BAD_REQUEST, "PT015", "이미 승인된 프로젝트 멤버입니다."),
     PROJECT_TEAM_INVALID_DELETE_IMAGE(HttpStatus.BAD_REQUEST, "PT016", "삭제하는 결과이미지가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "PT017", "프로젝트 멤버가 유효하지 않습니다."),
+
+    // Session
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "SS001", "해당 세션을 찾을 수 없습니다"),
+    SESSION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "SS002", "해당 세션이 이미 존재합니다."),
+    SESSION_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "SS003", "해당 세션에 대한 권한이 없습니다."),
 
     // ==== StudyMember ====
     STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SM001", "스터디 멤버를 찾을 수 없습니다."),
@@ -90,7 +93,7 @@ public enum ErrorCode {
     STUDY_TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "ST001", "요청한 스터디 팀을 찾을 수 없습니다."),
     STUDY_TEAM_BAD_REQUEST(HttpStatus.BAD_REQUEST, "ST002", "유효하지 않은 요청입니다."),
     STUDY_TEAM_DUPLICATE_TEAM_NAME(HttpStatus.CONFLICT, "ST003", "존재하는 스터디 이름입니다."),
-    STUDY_TEAM_INVALID_RECRUIT_NUM(HttpStatus.BAD_REQUEST, "ST004", "모집 인원이 음수 입니다."),
+    TEAM_INVALID_RECRUIT_NUM(HttpStatus.BAD_REQUEST, "ST004", "모집 인원이 음수 입니다."),
     STUDY_TEAM_MISSING_LEADER(HttpStatus.BAD_REQUEST, "ST005", "스터디 팀 리더가 존재하지 않습니다."),
     STUDY_TEAM_INVALID_UPDATE_MEMBER(HttpStatus.BAD_REQUEST, "ST006", "스터디 업데이트 멤버가 유효하지 않습니다."),
     STUDY_TEAM_ALREADY_ACTIVE_MEMBER(HttpStatus.BAD_REQUEST, "ST007", "이미 활동중인 스터디 멤버입니다."),
@@ -102,6 +105,7 @@ public enum ErrorCode {
             HttpStatus.BAD_REQUEST, "ST012", "스터디 삭제 멤버와 업데이트 멤버가 중복됩니다."),
     STUDY_TEAM_ALREADY_APPLIED(HttpStatus.BAD_REQUEST, "ST013", "이미 지원한 팀입니다."),
     STUDY_TEAM_CLOSED_RECRUIT(HttpStatus.BAD_REQUEST, "ST014", "모집이 종료된 스터디입니다."),
+
     // Stack
     STACK_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "Stack not found"),
     STACK_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "S002", "Stack already exists"),
@@ -114,7 +118,24 @@ public enum ErrorCode {
     REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found"),
 
     // Role
-    ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "RL001", "해당 권한을 찾을 수 없습니다.");
+    ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "RL001", "해당 권한을 찾을 수 없습니다."),
+
+    // Event
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "이벤트를 찾을 수 없습니다."),
+    EVENT_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "E002", "이벤트에 대한 권한이 없습니다."),
+
+    // TechBloggingRound
+    ROUND_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "TBR001", "이미 해당 연도/반기의 챌린지 회차가 존재합니다."),
+    ROUND_PERIOD_TOO_SHORT(HttpStatus.BAD_REQUEST, "TBR002", "회차 기간은 최소 2주(14일) 이상이어야 합니다."),
+    ROUND_NOT_FOUND(HttpStatus.NOT_FOUND, "TBR003", "존재하지 않는 챌린지 회차입니다."),
+    ROUND_PAST_DATE(HttpStatus.BAD_REQUEST, "TBR004", "과거의 회차는 생성할 수 없습니다."),
+    ROUND_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "TBR005", "종료 날짜는 시작 날짜보다 이후여야 합니다."),
+    ROUND_INFINITE_LOOP(HttpStatus.BAD_REQUEST, "TBR006", "라운드 생성 중 무한 루프가 감지되었습니다. 입력값을 확인하세요."),
+    TECH_BLOGGING_TERM_ALREADY_EXISTS(
+            HttpStatus.BAD_REQUEST, "TBT001", "이미 해당 연도/반기의 챌린지 기간이 존재합니다."),
+    TECH_BLOGGING_TERM_NOT_FOUND(HttpStatus.NOT_FOUND, "TBT002", "존재하지 않는 챌린지 기간입니다."),
+    TECH_BLOGGING_TERM_ALREADY_JOINED(HttpStatus.CONFLICT, "TBT003", "이미 해당 챌린지에 참여한 유저입니다."),
+    TECH_BLOGGING_TERM_NO_ROUNDS(HttpStatus.NOT_FOUND, "TBT004", "해당 챌린지 기간에 회차가 존재하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;
