@@ -40,15 +40,15 @@ public class SwaggerConfig {
         // 서버 URL 설정
         Server httpsServer = new Server();
         httpsServer.setUrl(httpsServerUrl);
-        httpsServer.setDescription("techeerzip https 서버입니다.");
+        httpsServer.setDescription("techeerzip https 서버");
 
         Server stagingServer = new Server();
         stagingServer.setUrl(stagingServerUrl);
-        stagingServer.setDescription("techeerzip 스테이징 서버입니다.");
+        stagingServer.setDescription("techeerzip 스테이징 서버");
 
         Server localServer = new Server();
         localServer.setUrl("http://localhost:8000");
-        localServer.setDescription("techeerzip 로컬 서버입니다.");
+        localServer.setDescription("techeerzip 로컬 서버");
 
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes("cookieAuth", securityScheme))

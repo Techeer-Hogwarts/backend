@@ -54,11 +54,12 @@ public class PermissionRequest {
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(insertable = false, updatable = false)
+    @JoinColumn(name = "userId", updatable = false)
     private User user;
 
     @Builder
-    public PermissionRequest(Long requestedRoleId) {
+    public PermissionRequest(User user, Long requestedRoleId) {
+        this.user = user;
         this.requestedRoleId = requestedRoleId;
         this.status = StatusCategory.PENDING;
     }

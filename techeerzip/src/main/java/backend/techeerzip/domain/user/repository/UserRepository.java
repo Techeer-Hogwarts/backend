@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import backend.techeerzip.domain.user.entity.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);

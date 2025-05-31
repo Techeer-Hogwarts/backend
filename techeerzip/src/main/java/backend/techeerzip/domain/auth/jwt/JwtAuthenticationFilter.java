@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import backend.techeerzip.domain.auth.dto.token.TokenPair;
+import backend.techeerzip.domain.auth.exception.InvalidJwtTokenException;
 import backend.techeerzip.global.logger.CustomLogger;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
@@ -34,13 +35,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDED_PATH_PREFIXES =
             List.of(
                     "/api/v3/docs/**",
-                    "/api/v3/docs",
-                    "/api/v3/api-docs",
-                    "/api/v3/api-docs/swagger-config",
+                    "/api/v3/api-docs/**",
                     "/api/v3/swagger-ui/**",
                     "/api/v3/swagger-resources/**",
-                    "/api/v3/swagger-ui/**",
-                    "/api/v3/swagger-ui.html",
                     "/api/v3/webjars/**");
 
     private boolean isExcludedPath(HttpServletRequest request) {
@@ -66,17 +63,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtTokenProvider.validateToken(accessToken)) {
                     Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    logger.info(
-                            String.format("액세스 토큰 인증 완료 - email: %s", authentication.getName()),
-                            CONTEXT);
+                } else {
+                    throw new InvalidJwtTokenException();
                 }
             } else {
                 // 액세스 토큰이 null인 경우
                 reissueWithRefreshToken(refreshToken, response);
             }
         } catch (ExpiredJwtException e) {
-            logger.info(
-                    String.format("액세스 토큰 만료 - email: %s", e.getClaims().getSubject()), CONTEXT);
+            logger.info("액세스 토큰 만료 - email: %s", e.getClaims().getSubject(), CONTEXT);
             reissueWithRefreshToken(refreshToken, response);
         }
 
