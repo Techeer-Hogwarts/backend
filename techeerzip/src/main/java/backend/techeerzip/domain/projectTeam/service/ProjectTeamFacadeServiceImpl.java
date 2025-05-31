@@ -30,7 +30,7 @@ import backend.techeerzip.domain.projectTeam.exception.TeamResultImageException;
 import backend.techeerzip.domain.projectTeam.mapper.TeamQueryMapper;
 import backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepository;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
-import backend.techeerzip.domain.studyTeam.dto.StudySliceTeamsResponse;
+import backend.techeerzip.domain.studyTeam.dto.response.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.service.StudyTeamService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.s3.S3Service;
@@ -46,6 +46,14 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
     private final S3Service s3Service;
     private final CustomLogger log;
 
+    /**
+     * 메인 이미지의 유효성을 검증합니다.
+     *
+     * @param mainImage 업로드할 메인 이미지
+     * @param deleteMainImages 삭제할 메인 이미지 ID 리스트
+     * @return 메인 이미지 업데이트 필요 여부
+     * @throws ProjectTeamMainImageException 메인 이미지 검증 실패 시
+     */
     private static boolean validateMainImage(MultipartFile mainImage, List<Long> deleteMainImages) {
         if ((mainImage == null || mainImage.isEmpty()) && deleteMainImages.isEmpty()) {
             return false;
@@ -56,6 +64,14 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         throw new ProjectTeamMainImageException();
     }
 
+    /**
+     * 결과 이미지들의 유효성을 검증합니다.
+     *
+     * @param resultImages 업로드할 결과 이미지 리스트
+     * @param deleteResultImages 삭제할 결과 이미지 ID 리스트
+     * @return 결과 이미지 업데이트 필요 여부
+     * @throws TeamResultImageException 결과 이미지 검증 실패 시
+     */
     public static boolean validateResultImages(
             List<MultipartFile> resultImages, List<Long> deleteResultImages) {
         if (resultImages == null || resultImages.isEmpty()) {
@@ -80,6 +96,20 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         return projectTeamService.updateViewCountAndGetDetail(projectTeamId);
     }
 
+    /**
+     * 프로젝트 팀을 생성하고 이미지 업로드 처리 및 실패 시 롤백을 수행합니다.
+     *
+     * <p>1. 메인 이미지 S3 업로드<br>
+     * 2. 결과 이미지 S3 업로드<br>
+     * 3. 프로젝트 팀 생성 서비스 호출<br>
+     * 4. 실패 시 업로드된 이미지 전체 S3에서 삭제</p>
+     *
+     * @param mainImage 메인 이미지 파일
+     * @param resultImages 결과 이미지 파일 리스트
+     * @param request 프로젝트 생성 요청 객체
+     * @return 생성된 프로젝트 팀의 응답 객체
+     * @throws RuntimeException 이미지 업로드나 서비스 처리 중 예외 발생 시 그대로 전파
+     */
     public ProjectTeamCreateResponse create(
             MultipartFile mainImage,
             List<MultipartFile> resultImages,
@@ -105,6 +135,22 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         }
     }
 
+    /**
+     * 프로젝트 팀을 수정하고 필요한 경우 이미지 업로드 및 삭제 처리를 수행합니다.
+     *
+     * <p>1. 수정 대상 이미지 여부 검증<br>
+     * 2. 새 이미지가 있는 경우 S3 업로드<br>
+     * 3. 프로젝트 팀 업데이트 서비스 호출<br>
+     * 4. 실패 시 업로드된 이미지 S3에서 삭제</p>
+     *
+     * @param projectTeamId 수정 대상 프로젝트 팀 ID
+     * @param userId 요청자 ID
+     * @param mainImage 새 메인 이미지 파일 (null 가능)
+     * @param resultImages 새 결과 이미지 파일 리스트 (null 가능)
+     * @param request 프로젝트 수정 요청 객체
+     * @return 수정된 프로젝트 팀의 응답 객체
+     * @throws RuntimeException 이미지 업로드나 서비스 처리 중 예외 발생 시 그대로 전파
+     */
     public ProjectTeamUpdateResponse update(
             Long projectTeamId,
             Long userId,
@@ -139,6 +185,17 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         }
     }
 
+    /**
+     * 프로젝트와 스터디 팀을 조건에 따라 조회합니다. (커서 기반 페이징)
+     *
+     * <p>1. 정렬 조건이 없을 경우 기본값 설정<br>
+     * 2. 프로젝트만 조회<br>
+     * 3. 스터디만 조회<br>
+     * 4. 둘 다 포함된 경우 TeamUnionView를 통해 한 번에 조회</p>
+     *
+     * @param queryRequest 팀 전체 조회 쿼리 요청 객체
+     * @return 페이징된 팀 목록과 다음 커서 정보가 포함된 응답 객체
+     */
     public GetAllTeamsResponse getAllProjectAndStudyTeams(GetTeamsQueryRequest queryRequest) {
         final GetTeamsQueryRequest request = queryRequest.withDefaultSortType();
         final List<TeamType> teamTypes =
@@ -156,10 +213,10 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         final TeamUnionSliceResult slicedResult = teamUnionViewDslRepository.fetchSliceTeams(query);
 
         final List<ProjectSliceTeamsResponse> projectResponses =
-                projectTeamService.getYoungTeamsById(slicedResult.getProjectIds());
+                projectTeamService.getProjectTeamsById(slicedResult.getProjectIds());
 
         final List<StudySliceTeamsResponse> studyResponses =
-                studyTeamService.getYoungTeamsById(slicedResult.getStudyIds());
+                studyTeamService.getStudyTeamsById(slicedResult.getStudyIds());
         final SliceNextCursor sliceNextInfo = slicedResult.getSliceNextInfo();
         final List<SliceTeamsResponse> responses =
                 TeamQueryMapper.toTeamGetAllResponse(
