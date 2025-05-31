@@ -184,44 +184,45 @@ public class ProjectTeamService {
         final List<ProjectMemberInfoRequest> membersInfo = request.getProjectMember();
         final List<TeamStackInfo.WithName> teamStacksInfo = request.getTeamStacks();
 
-        // 1. validate
         final boolean isRecruited = checkRecruit(recruitCounts, teamData.getIsRecruited());
         checkUniqueProjectName(teamData.getName());
-        this.log.debug("CreateProjectTeam: 이름 중복 검증 완료");
+        log.info("CreateProjectTeam: 이름 중복 검증 완료");
         List<TeamStackInfo.WithStack> teamStacks = teamStackService.create(teamStacksInfo);
-        this.log.debug("CreateProjectTeam: 팀 스택 검증 완료");
+        log.info("CreateProjectTeam: 팀 스택 검증 완료");
 
         final Map<Long, User> users = getIdAndUserMap(membersInfo);
-        this.log.debug("CreateProjectTeam: 프로젝트 멤버 검증 완료");
+        log.info("CreateProjectTeam: 프로젝트 멤버 검증 완료");
 
-        // 3. mapToEntities
-        // ProjectTeam
         final ProjectTeam teamEntity =
                 ProjectTeamMapper.toEntity(teamData, recruitCounts, isRecruited);
         final ProjectTeam team = projectTeamRepository.save(teamEntity);
-        // ProjectMember
+        log.info("CreateProjectTeam: 프로젝트 팀 엔티티 생성 완료");
+
         final List<ProjectMember> memberEntities =
                 mapToProjectMemberEntities(membersInfo, team, users);
+        teamEntity.addProjectMembers(memberEntities);
+        log.info("CreateProjectTeam: 프로젝트 멤버 엔티티 생성 완료");
+
         final ProjectMainImage mainImgEntity =
                 ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
-        final List<TeamStack> teamStackEntities =
-                teamStacks.stream().map(s -> ProjectTeamStackMapper.toEntity(s, team)).toList();
-        teamEntity.addProjectMembers(memberEntities);
         teamEntity.addProjectMainImages(List.of(mainImgEntity));
+        log.info("CreateProjectTeam: 프로젝트 팀 메인 이미지 엔티티 생성 완료");
 
         if (!resultImages.isEmpty()) {
             final List<ProjectResultImage> resultImageEntities =
                     ProjectImageMapper.toResultEntities(resultImages, team);
             teamEntity.addProjectResultImages(resultImageEntities);
+            log.info("CreateProjectTeam: 프로젝트 팀 결과 이미지 엔티티 생성 완료");
         }
+
+        final List<TeamStack> teamStackEntities =
+                teamStacks.stream().map(s -> ProjectTeamStackMapper.toEntity(s, team)).toList();
         teamEntity.addTeamStacks(teamStackEntities);
-        this.log.debug("CreateProjectTeam: 엔티티 맵핑 완료");
+        log.info("CreateProjectTeam: 프로젝트 팀 스택 엔티티 생성 완료");
 
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
-        this.log.debug("CreateProjectTeam: 프로젝트 팀 생성 완료");
 
-        // indexService, slackService
-        // return 수정
+        log.info("CreateProjectTeam: 프로젝트 팀 서비스 완료");
         return new ProjectTeamCreateResponse(
                 team.getId(),
                 ProjectSlackMapper.toChannelRequest(team, leaders),
@@ -267,6 +268,7 @@ public class ProjectTeamService {
                         + recruitCounts.getDevOpsNum()
                         + recruitCounts.getDataEngineerNum();
         if (total < 0) {
+            log.error("ProjectTeamService: 프로젝트 팀 checkRecruit 음수 발생");
             throw new TeamInvalidRecruitNumException();
         }
         if (total == 0) {
@@ -312,55 +314,70 @@ public class ProjectTeamService {
             List<String> mainImage,
             List<String> resultImages,
             ProjectTeamUpdateRequest request) {
-        this.log.debug("UpdateProjectTeam: 시작");
+        log.info("UpdateProjectTeam: 시작");
         final TeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> updateMembersInfo = request.getProjectMember();
         final List<TeamStackInfo.WithName> teamStacksInfo = request.getTeamStacks();
         final List<Long> deleteMembersId = request.getDeleteMembers();
 
-        /* 1. 수정 권한이 있는 멤버인지 검증 */
         verifyUserIsActiveProjectMember(userId, projectTeamId);
-        /* 2. TeamRole 검증 */
+        log.info("UpdateProjectTeam: 유저 검증 확인 완료");
+
         validateLeaderExists(updateMembersInfo, ProjectMemberInfoRequest::isLeader);
+        log.info("UpdateProjectTeam: updateMember 리더 존재 확인 완료");
+
         final ProjectTeam team =
                 projectTeamRepository
                         .findById(projectTeamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
-        /* 4. Recruit 준비 */
+        validateResultImageCount(projectTeamId, resultImages, request);
+        log.info("UpdateProjectTeam: 결과 이미지 개수 검증 완료");
+
         final boolean wasRecruit = team.isRecruited();
         final boolean isRecruited = this.checkRecruit(recruitCounts, teamData.getIsRecruited());
-        /* 3. 프로젝트 이름 중복 검증 */
+
         if (!teamData.getName().equals(team.getName())) {
             checkUniqueProjectName(teamData.getName());
+            log.info("UpdateProjectTeam: 팀 이름 변경, 검증 완료");
         }
-        /* 4. TeamStack 검증 */
+
         if (!request.getTeamStacks().isEmpty()) {
             team.clearTeamStacks();
             teamStackService.update(teamStacksInfo, team);
+            log.info("UpdateProjectTeam: 팀 스택 변경, 업데이트 적용");
         }
+
         if (!mainImage.isEmpty()) {
-            mainImgRepository.save(ProjectImageMapper.toMainEntity(mainImage.getFirst(), team));
+            final ProjectMainImage image = ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
+            mainImgRepository.save(image);
+            log.info("UpdateProjectTeam: 팀 메인 이미지 변경, 메인 이미지 저장", image.getId());
         }
+
         if (!resultImages.isEmpty()) {
-            resultImgRepository.saveAll(ProjectImageMapper.toResultEntities(resultImages, team));
+            final List<ProjectResultImage> images = ProjectImageMapper.toResultEntities(resultImages, team);
+            resultImgRepository.saveAll(images);
+            log.info("UpdateProjectTeam: 팀 결과 이미지 변경, 결과 이미지 저장", images);
         }
-        validateResultImageCount(projectTeamId, resultImages, request);
+
         final List<ProjectMember> existingMembers =
                 projectMemberRepository.findAllByProjectTeamId(projectTeamId);
+        log.info("UpdateProjectTeam: 기존 프로젝트 멤버 수", existingMembers.size());
 
-        /* 9. 업데이트 멤버 검증, 적용 / 신규 멤버 추출 */
         final List<ProjectMemberInfoRequest> incomingMembersInfo =
                 updateExistMembersAndExtractIncomingMembers(
                         existingMembers, updateMembersInfo, deleteMembersId);
+        log.info("UpdateProjectTeam: 신규 프로젝트 멤버 수", incomingMembersInfo.size());
 
-        /* 10. 프로젝트 팀 업데이트 */
         team.update(teamData, isRecruited);
+        log.info("UpdateProjectTeam: 프로젝트 팀 엔티티 업데이트");
+
         if (!incomingMembersInfo.isEmpty()) {
             final Map<Long, User> users = getIdAndUserMap(incomingMembersInfo);
             final List<ProjectMember> incomingMembers =
                     ProjectMemberMapper.toEntities(incomingMembersInfo, team, users);
             projectMemberRepository.saveAll(incomingMembers);
+            log.info("UpdateProjectTeam: 신규 ");
         }
         /* 12.isRecruited 값이 false → true 로 변경되었을 때 Slack 알림 전송 **/
         if (!wasRecruit && isRecruited) {
