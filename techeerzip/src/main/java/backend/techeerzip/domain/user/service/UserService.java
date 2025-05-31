@@ -432,7 +432,6 @@ public class UserService {
                                 }
                             });
         }
-        userRepository.save(user);
     }
 
     @Transactional
@@ -444,6 +443,7 @@ public class UserService {
         userExperienceRepository.delete(experience);
     }
 
+    @Transactional
     public void updateNickname(Long userId, String nickname) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
