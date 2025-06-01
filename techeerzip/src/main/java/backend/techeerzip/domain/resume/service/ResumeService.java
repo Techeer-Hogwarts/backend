@@ -168,4 +168,22 @@ public class ResumeService {
                 .map(ResumeResponse::new)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<ResumeResponse> getBestResumes() {
+        logger.debug("인기 이력서 목록 조회 요청 처리 중");
+
+        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
+        List<Resume> resumes = resumeRepository.findByIsDeletedFalseAndCreatedAtAfter(twoWeeksAgo);
+
+        resumes.sort((a, b) ->
+            Integer.compare(
+                (b.getViewCount() + b.getLikeCount() * 10),
+                (a.getViewCount() + a.getLikeCount() * 10)
+            )
+        );
+
+        logger.debug("{}개의 인기 이력서 목록 조회 성공", resumes.size());
+        return resumes.stream().map(ResumeResponse::new).toList();
+    }
 }

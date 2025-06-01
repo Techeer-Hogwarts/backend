@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 import backend.techeerzip.domain.resume.entity.Resume;
 
@@ -43,6 +44,18 @@ public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
                 .orderBy(resume.title.asc())
                 .offset(defaultOffset)
                 .limit(defaultLimit)
+                .fetch();
+    }
+
+    @Override
+    public List<Resume> findBestResumes(LocalDateTime createdAt) {
+        return queryFactory
+                .selectFrom(resume)
+                .join(resume.user, user).fetchJoin()
+                .where(
+                        resume.isDeleted.eq(false),
+                        resume.createdAt.goe(createdAt)
+                )
                 .fetch();
     }
 

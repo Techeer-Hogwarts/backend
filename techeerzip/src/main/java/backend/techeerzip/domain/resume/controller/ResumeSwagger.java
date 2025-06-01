@@ -138,4 +138,16 @@ public interface ResumeSwagger {
     ) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }
+
+    @Operation(
+        summary = "인기 이력서 목록 조회",
+        description = "최근 2주 이내 생성된 이력서 중 (viewCount + likeCount * 10) 내림차순으로 정렬된 인기 이력서 목록을 조회합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "인기 이력서 목록 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResumeResponse.class)))
+    })
+    default ResponseEntity<List<ResumeResponse>> getBestResumes() {
+        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
+    }
 }
