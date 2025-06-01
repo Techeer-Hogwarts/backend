@@ -4,6 +4,7 @@ import java.util.List;
 
 import jakarta.persistence.EntityManager;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.Projections;
@@ -15,6 +16,7 @@ import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.studyTeam.dto.response.StudyApplicantResponse;
 import backend.techeerzip.global.entity.StatusCategory;
 
+@Slf4j
 @Repository
 public class StudyMemberDslRepositoryImpl extends AbstractQuerydslRepository
         implements StudyMemberDslRepository {
@@ -25,7 +27,9 @@ public class StudyMemberDslRepositoryImpl extends AbstractQuerydslRepository
     }
 
     public List<StudyApplicantResponse> findManyApplicants(Long teamId) {
-        return select(SM)
+        log.info("StudyMemberDslRepository findManyApplicants: PENDING 상태 지원자 조회 시작, teamId={}", teamId);
+
+        final List<StudyApplicantResponse> result = select(SM)
                 .select(
                         Projections.constructor(
                                 StudyApplicantResponse.class,
@@ -42,5 +46,8 @@ public class StudyMemberDslRepositoryImpl extends AbstractQuerydslRepository
                         SM.studyTeam.id.eq(teamId),
                         SM.isDeleted.eq(false))
                 .fetch();
+
+        log.info("StudyMemberDslRepository findManyApplicants: 조회 완료, 결과 수={}", result.size());
+        return result;
     }
 }
