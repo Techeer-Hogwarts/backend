@@ -1,10 +1,12 @@
 package backend.techeerzip.domain.studyTeam.repository.querydsl;
 
+import backend.techeerzip.domain.projectTeam.exception.TeamInvalidSliceQueryException;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -23,6 +25,7 @@ import backend.techeerzip.domain.studyTeam.entity.QStudyTeam;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.domain.studyTeam.mapper.StudyTeamMapper;
 
+@Slf4j
 @Repository
 public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         implements StudyTeamDslRepository {
@@ -58,11 +61,23 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final BooleanExpression expression =
                 setBuilderWithAndDate(id, dateCursor, isRecruited, isFinished);
 
-        return selectFrom(ST)
-                .where(expression)
-                .orderBy(DateSortOption.setOrder(sortType, TeamType.STUDY))
-                .limit(limit + 1L)
-                .fetch();
+        log.info("StudyTeam sliceTeamsByDate: 요청 - idCursor={}, dateCursor={}, isRecruited={}, isFinished={}, sortType={}, limit={}",
+                id, dateCursor, isRecruited, isFinished, sortType, limit);
+        log.info("StudyTeam sliceTeamsByDate: expression = {}", expression);
+
+        try {
+            final List<StudyTeam> result = selectFrom(ST)
+                    .where(expression)
+                    .orderBy(DateSortOption.setOrder(sortType, TeamType.STUDY))
+                    .limit(limit + 1L)
+                    .fetch();
+
+            log.info("StudyTeam sliceTeamsByDate: 조회 결과 수 = {}", result.size());
+            return result;
+        } catch (Exception e) {
+            log.error("StudyTeam sliceTeamsByDate: 예외 발생", e);
+            throw e;
+        }
     }
 
     /**
@@ -81,11 +96,23 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final BooleanExpression expression =
                 setBuilderWithAndCount(id, countCursor, isRecruited, isFinished, sortType);
 
-        return selectFrom(ST)
-                .where(expression)
-                .orderBy(CountSortOption.setOrder(sortType.name(), TeamType.STUDY))
-                .limit(limit + 1L)
-                .fetch();
+        log.info("StudyTeam sliceTeamsByCount: 요청 - idCursor={}, countCursor={}, isRecruited={}, isFinished={}, sortType={}, limit={}",
+                id, countCursor, isRecruited, isFinished, sortType, limit);
+        log.info("StudyTeam sliceTeamsByCount: expression = {}", expression);
+
+        try {
+            final List<StudyTeam> result = selectFrom(ST)
+                    .where(expression)
+                    .orderBy(CountSortOption.setOrder(sortType, TeamType.STUDY))
+                    .limit(limit + 1L)
+                    .fetch();
+
+            log.info("StudyTeam sliceTeamsByCount: 조회 결과 수 = {}", result.size());
+            return result;
+        } catch (Exception e) {
+            log.error("StudyTeam sliceTeamsByCount: 예외 발생", e);
+            throw e;
+        }
     }
 
     /**
@@ -95,6 +122,7 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
      * @return 조건에 맞는 StudyTeam 리스트 (limit + 1개)
      */
     public List<StudyTeam> sliceTeams(GetStudyTeamsQuery query) {
+        log.info("StudyTeam sliceTeams: 정렬 타입 = {}", query.getSortType());
 
         if (query.getSortType().isDate()) {
             return sliceTeamsByDate(query);
@@ -102,7 +130,9 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         if (query.getSortType().isCount()) {
             return sliceTeamsByCount(query);
         }
-        throw new IllegalArgumentException();
+        log.error("StudyTeam sliceTeams: 지원되지 않는 정렬 타입 = {}", query.getSortType());
+
+        throw new TeamInvalidSliceQueryException();
     }
 
     /**
@@ -187,21 +217,5 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
                 .andIfNotNull(isFinished, ST.isFinished::eq)
                 .and(ST.isDeleted.isFalse())
                 .build();
-    }
-
-    /**
-     * 특정 ID 리스트를 기준으로 조건에 맞는 스터디 팀 리스트를 조회합니다.
-     *
-     * @param keys 대상 ID 리스트
-     * @param isRecruited 모집 여부
-     * @param isFinished 종료 여부
-     * @return StudySliceTeamsResponse 리스트
-     */
-    public List<StudySliceTeamsResponse> findManyYoungTeamById(
-            List<Long> keys, Boolean isRecruited, Boolean isFinished) {
-        final BooleanExpression expression =
-                setBuilder(isRecruited, isFinished).and(ST.id.in(keys));
-        List<StudyTeam> teams = selectFrom(ST).where(expression).fetch();
-        return teams.stream().map(StudyTeamMapper::toGetAllResponse).toList();
     }
 }
