@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,9 +35,10 @@ public class ProjectMainImage extends BaseEntity {
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "projectTeamId", nullable = false)
+    @JoinColumn(name = "projectTeamId", updatable = false, nullable = false)
     private ProjectTeam projectTeam;
 
+    @Builder
     public ProjectMainImage(String imageUrl, ProjectTeam projectTeam) {
         this.imageUrl = imageUrl;
         this.projectTeam = projectTeam;

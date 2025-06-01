@@ -14,6 +14,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import backend.techeerzip.domain.projectMember.entity.ProjectMember;
+import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
+import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -27,9 +30,6 @@ import lombok.NoArgsConstructor;
 public class ProjectTeam extends BaseEntity {
 
     @OneToMany(mappedBy = "projectTeam", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<TeamStack> teamStacks = new ArrayList<>();
-
-    @OneToMany(mappedBy = "projectTeam", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<ProjectMember> projectMembers = new ArrayList<>();
 
     @OneToMany(mappedBy = "projectTeam", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -37,6 +37,9 @@ public class ProjectTeam extends BaseEntity {
 
     @OneToMany(mappedBy = "projectTeam", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<ProjectMainImage> mainImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "projectTeam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<TeamStack> teamStacks = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -117,6 +120,22 @@ public class ProjectTeam extends BaseEntity {
         this.viewCount = 0;
     }
 
+    public void update(TeamData teamData, Boolean isRecruited) {
+        this.name = teamData.getName();
+        this.projectExplain = teamData.getProjectExplain();
+        this.isRecruited = isRecruited;
+        this.isFinished = teamData.getIsFinished();
+        if (teamData.getIsRecruited() != null) {
+            this.recruitExplain = teamData.getRecruitExplain();
+        }
+        if (teamData.getGithubLink() != null) {
+            this.githubLink = teamData.getGithubLink();
+        }
+        if (teamData.getNotionLink() != null) {
+            this.notionLink = teamData.getNotionLink();
+        }
+    }
+
     public void update(
             boolean isRecruited,
             boolean isFinished,
@@ -145,8 +164,33 @@ public class ProjectTeam extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void delete() {
+    public void clearTeamStacks() {
+        this.teamStacks.clear();
+    }
+
+    public void addTeamStacks(List<TeamStack> stacks) {
+        this.teamStacks.addAll(stacks);
+    }
+
+    public void addProjectMembers(List<ProjectMember> members) {
+        this.projectMembers.addAll(members);
+    }
+
+    public void addProjectMainImages(List<ProjectMainImage> images) {
+        this.mainImages.addAll(images);
+    }
+
+    public void addProjectResultImages(List<ProjectResultImage> images) {
+        this.resultImages.addAll(images);
+    }
+
+    public void softDelete() {
         this.isDeleted = true;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void close() {
+        this.isRecruited = false;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -163,5 +207,27 @@ public class ProjectTeam extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public List<LeaderInfo> getLeaders() {
+        List<LeaderInfo> leaders = new ArrayList<>();
+        for (ProjectMember m : this.projectMembers) {
+            if (m.isLeader()) {
+                leaders.add(new LeaderInfo(m.getUser().getName(), m.getUser().getEmail()));
+            }
+        }
+        return leaders;
+    }
+
+    public boolean isRecruited() {
+        return this.isRecruited;
+    }
+
+    public boolean isRecruitPosition(TeamRole teamRole) {
+        return teamRole.getCount(this) > 0;
+    }
+
+    public void remove(ProjectMember pm) {
+        this.projectMembers.remove(pm);
     }
 }

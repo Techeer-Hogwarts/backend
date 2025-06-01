@@ -37,9 +37,7 @@ public class TaskService {
     private final @Lazy BlogService blogService;
     private final CustomLogger logger;
 
-    @Autowired
-    @Lazy
-    private TaskService self; // 순환 참조 해결을 위한 자기 주입
+    @Autowired @Lazy private TaskService self; // 순환 참조 해결을 위한 자기 주입
 
     public TaskService(
             RabbitMqService rabbitMQService,
@@ -93,27 +91,29 @@ public class TaskService {
     }
 
     /** 매일 새벽 3시 - 유저 최신 블로그 게시물 크롤링 요청 */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void requestDailyUpdate() {
         logger.info("일일 블로그 업데이트 요청 시작", CONTEXT);
         List<BlogUrlsResponse> userBlogUrls = blogService.getAllUserBlogUrl();
         logger.info(String.format("userBlogUrls: %s", userBlogUrls), CONTEXT);
 
         userBlogUrls.forEach(
-                user -> user.getBlogUrls()
-                        .forEach(
-                                url -> {
-                                    if (url == null || url.trim().isEmpty()) {
-                                        logger.error("Cannot send an empty task.");
-                                        return;
-                                    }
-                                    String taskId = generateTaskId(
-                                            "blogs_daily_update", user.getUserId());
-                                    rabbitMQService.sendToQueue(
-                                            taskId, url, "blogs_daily_update");
-                                    logger.info("Sending task: {} - {}", taskId, url);
-                                    redisService.setTaskStatus(taskId, url);
-                                }));
+                user ->
+                        user.getBlogUrls()
+                                .forEach(
+                                        url -> {
+                                            if (url == null || url.trim().isEmpty()) {
+                                                logger.error("Cannot send an empty task.");
+                                                return;
+                                            }
+                                            String taskId =
+                                                    generateTaskId(
+                                                            "blogs_daily_update", user.getUserId());
+                                            rabbitMQService.sendToQueue(
+                                                    taskId, url, "blogs_daily_update");
+                                            logger.info("Sending task: {} - {}", taskId, url);
+                                            redisService.setTaskStatus(taskId, url);
+                                        }));
     }
 
     /** 매일 새벽 3시 - 유저 최신 블로그 게시물 크롤링 응답 후 처리 */
@@ -150,35 +150,37 @@ public class TaskService {
 
         logger.info("Current time: {}, 24 hours ago: {}", now, start24hAgo);
 
-        List<BlogSaveRequest> filtered = posts.stream()
-                .filter(Objects::nonNull)
-                .filter(
-                        post -> {
-                            String dateStr = post.getDate();
-                            if (dateStr == null || dateStr.trim().isEmpty()) {
-                                logger.warn(
-                                        "Post date is null or empty for post: {}",
-                                        post.getTitle());
-                                throw new BlogEmptyDateException(post.getTitle());
-                            }
+        List<BlogSaveRequest> filtered =
+                posts.stream()
+                        .filter(Objects::nonNull)
+                        .filter(
+                                post -> {
+                                    String dateStr = post.getDate();
+                                    if (dateStr == null || dateStr.trim().isEmpty()) {
+                                        logger.warn(
+                                                "Post date is null or empty for post: {}",
+                                                post.getTitle());
+                                        throw new BlogEmptyDateException(post.getTitle());
+                                    }
 
-                            try {
-                                LocalDateTime postDate = LocalDateTime.parse(
-                                        dateStr, DateTimeFormatter.ISO_DATE_TIME);
-                                logger.debug(
-                                        "Post date: {} | context: {}", postDate, CONTEXT);
-                                return !postDate.isBefore(start24hAgo)
-                                        && !postDate.isAfter(now);
-                            } catch (DateTimeParseException e) {
-                                logger.warn(
-                                        "Invalid date format for post '{}': {}",
-                                        post.getTitle(),
-                                        dateStr);
-                                throw new BlogInvalidDateFormatException(
-                                        post.getTitle(), dateStr);
-                            }
-                        })
-                .collect(Collectors.toList());
+                                    try {
+                                        LocalDateTime postDate =
+                                                LocalDateTime.parse(
+                                                        dateStr, DateTimeFormatter.ISO_DATE_TIME);
+                                        logger.debug(
+                                                "Post date: {} | context: {}", postDate, CONTEXT);
+                                        return !postDate.isBefore(start24hAgo)
+                                                && !postDate.isAfter(now);
+                                    } catch (DateTimeParseException e) {
+                                        logger.warn(
+                                                "Invalid date format for post '{}': {}",
+                                                post.getTitle(),
+                                                dateStr);
+                                        throw new BlogInvalidDateFormatException(
+                                                post.getTitle(), dateStr);
+                                    }
+                                })
+                        .collect(Collectors.toList());
 
         logger.info("Filtered {} posts from last 24 hours | context: {}", filtered.size(), CONTEXT);
         return filtered;

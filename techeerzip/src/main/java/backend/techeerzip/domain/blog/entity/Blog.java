@@ -12,11 +12,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import backend.techeerzip.domain.techBloggingChallenge.entity.TechBloggingAttendance;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
@@ -69,6 +71,9 @@ public class Blog extends BaseEntity {
 
     @Column(nullable = false)
     private Integer likeCount;
+
+    @OneToMany(mappedBy = "blog")
+    private List<TechBloggingAttendance> techBloggingAttendances = new ArrayList<>();
 
     @Builder
     public Blog(

@@ -35,28 +35,22 @@ public class TeamStack extends BaseEntity {
     @Column(nullable = false)
     private boolean isMain;
 
-    @Column(nullable = false)
-    private Long stackId;
-
-    @Column(nullable = false)
-    private Long projectTeamId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "projectTeamId", insertable = false, updatable = false)
+    @JoinColumn(name = "projectTeamId", updatable = false, nullable = false)
     private ProjectTeam projectTeam;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stackId", insertable = false, updatable = false)
+    @JoinColumn(name = "stackId", updatable = false, nullable = false)
     private Stack stack;
 
     @Builder
-    public TeamStack(boolean isMain, Long stackId, Long projectTeamId) {
+    public TeamStack(boolean isMain, ProjectTeam projectTeam, Stack stack) {
         this.isMain = isMain;
-        this.stackId = stackId;
-        this.projectTeamId = projectTeamId;
+        this.projectTeam = projectTeam;
+        this.stack = stack;
     }
 
-    public void update(boolean isMain) {
+    public void updateIsMain(boolean isMain) {
         this.isMain = isMain;
         this.updatedAt = LocalDateTime.now();
     }

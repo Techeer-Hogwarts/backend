@@ -15,10 +15,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import backend.techeerzip.domain.permissionRequest.entity.StatusCategory;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.global.entity.BaseEntity;
+import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,7 +50,7 @@ public class StudyMember extends BaseEntity {
     private String summary;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private StatusCategory status;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -62,10 +62,17 @@ public class StudyMember extends BaseEntity {
     private User user;
 
     @Builder
-    public StudyMember(boolean isLeader, String summary, StatusCategory status) {
+    public StudyMember(
+            boolean isLeader,
+            String summary,
+            StatusCategory status,
+            StudyTeam studyTeam,
+            User user) {
         this.isLeader = isLeader;
         this.summary = summary;
         this.status = status;
+        this.studyTeam = studyTeam;
+        this.user = user;
     }
 
     public void update(String summary, StatusCategory status) {
@@ -74,13 +81,60 @@ public class StudyMember extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void delete() {
-        this.isDeleted = true;
-        this.updatedAt = LocalDateTime.now();
+    public boolean isDeleted() {
+        return this.isDeleted;
     }
 
     public void changeLeaderStatus(boolean isLeader) {
         this.isLeader = isLeader;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void softDelete() {
+        if (!isDeleted()) {
+            this.isDeleted = true;
+            this.updatedAt = LocalDateTime.now();
+        }
+    }
+
+    public void toActive(Boolean isLeader) {
+        if (isLeader != null && !isLeader.equals(this.isLeader)) {
+            this.isLeader = isLeader;
+        }
+        if (!isApproved()) {
+            this.status = StatusCategory.APPROVED;
+        }
+        if (this.isDeleted) {
+            this.isDeleted = false;
+        }
+    }
+
+    public void toActive() {
+        this.status = StatusCategory.APPROVED;
+        this.isDeleted = false;
+    }
+
+    private boolean isApproved() {
+        return this.status.equals(StatusCategory.APPROVED);
+    }
+
+    public void toApplicant() {
+        if (!isPending()) {
+            this.status = StatusCategory.PENDING;
+        }
+    }
+
+    public void toReject() {
+        if (!isReject()) {
+            this.status = StatusCategory.REJECT;
+        }
+    }
+
+    private boolean isReject() {
+        return this.status.equals(StatusCategory.REJECT);
+    }
+
+    public boolean isPending() {
+        return this.status.equals(StatusCategory.PENDING);
     }
 }

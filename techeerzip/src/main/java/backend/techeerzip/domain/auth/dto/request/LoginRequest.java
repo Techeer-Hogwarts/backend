@@ -2,6 +2,7 @@ package backend.techeerzip.domain.auth.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
@@ -22,6 +23,7 @@ public class LoginRequest {
     private String email;
 
     @NotBlank
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$")
     @Schema(description = "비밀번호", example = "passW0rd!")
     private String password;
 

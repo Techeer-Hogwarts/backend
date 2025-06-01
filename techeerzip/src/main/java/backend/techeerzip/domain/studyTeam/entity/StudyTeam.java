@@ -13,7 +13,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import backend.techeerzip.domain.studyTeam.dto.request.StudyData;
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -24,6 +26,21 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "StudyTeam")
+/**
+ * 스터디 팀 엔티티입니다.
+ *
+ * <p>처리 내용:
+ *
+ * <ol>
+ *   <li>스터디 팀의 기본 정보 관리
+ *   <li>팀원 및 이미지 등의 연관 관계 관리
+ *   <li>스터디 모집 상태 및 진행 상태 관리
+ * </ol>
+ *
+ * @see StudyMember 스터디 팀원 정보
+ * @see StudyMainImage 스터디 메인 이미지
+ * @see StudyResultImage 스터디 결과 이미지
+ */
 public class StudyTeam extends BaseEntity {
 
     @OneToMany(mappedBy = "studyTeam", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -37,13 +54,13 @@ public class StudyTeam extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private boolean isDeleted = false;
+    private Boolean isDeleted = false;
 
     @Column(nullable = false)
-    private boolean isRecruited;
+    private Boolean isRecruited;
 
     @Column(nullable = false)
-    private boolean isFinished;
+    private Boolean isFinished;
 
     @Column(nullable = false, unique = true, length = 100)
     private String name;
@@ -125,9 +142,8 @@ public class StudyTeam extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void delete() {
-        this.isDeleted = true;
-        this.updatedAt = LocalDateTime.now();
+    public boolean isSameName(String name) {
+        return this.name != null && this.name.equals(name);
     }
 
     public void increaseLikeCount() {
@@ -143,5 +159,55 @@ public class StudyTeam extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount++;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void addResultImage(List<StudyResultImage> manyResultEntity) {
+        this.studyResultImages.addAll(manyResultEntity);
+    }
+
+    public void addMembers(List<StudyMember> incomingMembers) {
+        this.studyMembers.addAll(incomingMembers);
+    }
+
+    public void update(StudyData studyData, boolean isRecruited) {
+        this.name = studyData.getName();
+        this.studyExplain = studyData.getStudyExplain();
+        this.recruitExplain = studyData.getRecruitExplain();
+        this.isRecruited = isRecruited;
+        this.isFinished = studyData.getIsFinished();
+        this.goal = studyData.getGoal();
+        this.rule = studyData.getRule();
+        this.githubLink = studyData.getGithubLink();
+        this.notionLink = studyData.getNotionLink();
+        this.recruitNum = studyData.getRecruitNum();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public List<LeaderInfo> getLeaders() {
+        List<LeaderInfo> leaders = new ArrayList<>();
+        for (StudyMember m : this.studyMembers) {
+            if (m.isLeader()) {
+                leaders.add(new LeaderInfo(m.getUser().getName(), m.getUser().getEmail()));
+            }
+        }
+        return leaders;
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void close() {
+        this.isRecruited = false;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isRecruited() {
+        return isRecruited || recruitNum > 0;
+    }
+
+    public void remove(StudyMember sm) {
+        this.studyMembers.remove(sm);
     }
 }
