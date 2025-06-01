@@ -51,4 +51,19 @@ public interface ResumeSwagger {
     ) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }
+
+    @Operation(
+        summary = "이력서 삭제",
+        description = "단일 이력서를 삭제합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "이력서 삭제 성공"),
+        @ApiResponse(responseCode = "404", description = "이력서를 찾을 수 없음")
+    })
+    default ResponseEntity<Void> deleteResume(
+        @Parameter(description = "이력서 ID", required = true, example = "1") Long resumeId,
+        @Parameter(hidden = true) @UserId Long userId
+    ) {
+        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
+    }
 }
