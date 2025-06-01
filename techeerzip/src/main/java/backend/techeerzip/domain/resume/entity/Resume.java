@@ -2,6 +2,7 @@ package backend.techeerzip.domain.resume.entity;
 
 import java.time.LocalDateTime;
 
+import backend.techeerzip.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,6 +19,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import backend.techeerzip.domain.user.entity.User;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -25,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Resume")
-public class Resume {
+public class Resume extends BaseEntity {
 
     @Id
     @SequenceGenerator(
@@ -71,18 +73,19 @@ public class Resume {
     @Column(nullable = false, length = 50)
     private String category;
 
-    public Resume(User user, String title, String url, String position, String category) {
+    @Builder
+    public Resume(User user, String title, String url, String position, String category, boolean isMain) {
         this.user = user;
         this.title = title;
         this.url = url;
         this.position = position;
         this.category = category;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.isMain = isMain;
         this.isDeleted = false;
-        this.isMain = false;
         this.likeCount = 0;
         this.viewCount = 0;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void update(String title, String url, String position, String category) {
