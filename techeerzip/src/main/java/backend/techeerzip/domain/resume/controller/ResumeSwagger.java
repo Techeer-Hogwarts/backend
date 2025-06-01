@@ -124,4 +124,18 @@ public interface ResumeSwagger {
     ) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }
+
+    @Operation(
+        summary = "특정 유저의 이력서 목록 조회",
+        description = "특정 유저의 id로 이력서 목록을 조회합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResumeResponse.class)))
+    })
+    default ResponseEntity<List<ResumeResponse>> getUserResumes(
+        @Parameter(description = "유저 ID", required = true, example = "1") Long userId
+    ) {
+        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
+    }
 }

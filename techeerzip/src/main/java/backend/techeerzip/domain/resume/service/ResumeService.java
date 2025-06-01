@@ -155,4 +155,17 @@ public class ResumeService {
                 .map(ResumeResponse::new)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<ResumeResponse> getResumesByUserId(
+        Long userId
+    ) {
+        logger.debug("사용자 이력서 목록 조회 요청 처리 중 - UserID: {}", userId);
+
+        List<Resume> resumes = resumeRepository.findByUserIdAndIsDeletedFalse(userId);
+
+        return resumes.stream()
+                .map(ResumeResponse::new)
+                .toList();
+    }
 }

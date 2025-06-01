@@ -83,4 +83,14 @@ public class ResumeController implements ResumeSwagger {
         );
         return ResponseEntity.ok(responses);
     }
+
+    // 특정 유저의 이력서 목록 조회
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ResumeResponse>> getUserResumes(
+            // TODO: 오프셋 or 커서
+            @PathVariable Long userId
+            ) {
+        List<ResumeResponse> responses = resumeService.getResumesByUserId(userId);
+        return ResponseEntity.ok(responses);
+    }
 }
