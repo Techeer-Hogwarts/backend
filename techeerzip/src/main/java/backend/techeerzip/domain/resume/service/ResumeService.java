@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.resume.service;
 
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
+import backend.techeerzip.domain.resume.dto.response.ResumeListResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.domain.resume.entity.Resume;
 import backend.techeerzip.domain.user.entity.User;
@@ -25,6 +26,8 @@ public class ResumeService {
     private final CustomLogger logger;
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
+
+    private static final String CONTEXT = "ResumeService";
 
     // 이력서 파일 이름을 반환
     // 이름 형식: "사용자이름(날짜)" 또는 "기본이름-사용자이름(날짜)"
@@ -136,24 +139,29 @@ public class ResumeService {
     }
 
     @Transactional(readOnly = true)
-    public List<ResumeResponse> getResumes(
+    public ResumeListResponse getResumes(
             List<String> position,
             List<Integer> year,
             String category,
-            Integer offset,
+            Long cursorId,
             Integer limit
     ) {
-        logger.debug("이력서 목록 조회 요청 처리 중 - Position: {}, Year: {}, Category: {}, Offset: {}, Limit: {}",
-                position, year, category, offset, limit
+        logger.info("이력서 목록 조회 요청 처리 중 - Position: {}, Year: {}, Category: {}, CursorId: {}, Limit: {}",
+                position, year, category, cursorId, limit,
+                CONTEXT
         );
 
-        List<Resume> resumes = resumeRepository.findResumesWithFilter(
-                position, year, category, offset, limit
+        List<Resume> resumes = resumeRepository.findResumesWithCursor(
+                position, year, category, cursorId, limit
         );
 
-        return resumes.stream()
+        List<ResumeResponse> resumeResponses = resumes.stream()
                 .map(ResumeResponse::new)
                 .toList();
+
+        logger.info("이력서 목록 조회 완료 - 개수: {}", resumeResponses.size(), CONTEXT);
+
+        return new ResumeListResponse(resumeResponses, limit);
     }
 
     @Transactional(readOnly = true)

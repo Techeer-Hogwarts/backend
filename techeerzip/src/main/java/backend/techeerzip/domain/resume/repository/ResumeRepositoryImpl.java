@@ -22,15 +22,16 @@ public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
     }
 
     @Override
-    public List<Resume> findResumesWithFilter(
+    public List<Resume> findResumesWithCursor(
             List<String> position,
             List<Integer> year,
             String category,
-            Integer offset,
+            Long cursorId,
             Integer limit
     ) {
-        Integer defaultOffset = (offset != null) ? offset : 0;
-        Integer defaultLimit = (limit != null && limit > 0) ? limit : 10;
+        Resume cursorResume = (cursorId != null)
+                ? queryFactory.selectFrom(resume).where(resume.id.eq(cursorId)).fetchOne()
+                : null;
 
         return queryFactory
                 .selectFrom(resume)
@@ -39,11 +40,11 @@ public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
                         resume.isDeleted.eq(false),
                         positionIn(position),
                         yearIn(year),
-                        categoryEq(category)
+                        categoryEq(category),
+                        cursorResume != null ? resume.title.gt(cursorResume.getTitle()) : null
                 )
-                .orderBy(resume.title.asc())
-                .offset(defaultOffset)
-                .limit(defaultLimit)
+                .orderBy(resume.createdAt.desc())
+                .limit((limit != null && limit > 0) ? limit + 1 : 11)
                 .fetch();
     }
 

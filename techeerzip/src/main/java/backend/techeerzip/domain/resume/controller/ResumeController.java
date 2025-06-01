@@ -3,6 +3,7 @@ package backend.techeerzip.domain.resume.controller;
 import backend.techeerzip.domain.resume.dto.request.ResumeCreateRequest;
 import backend.techeerzip.domain.resume.dto.request.ResumeListGetRequest;
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
+import backend.techeerzip.domain.resume.dto.response.ResumeListResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.global.resolver.UserId;
@@ -71,17 +72,18 @@ public class ResumeController implements ResumeSwagger {
 
     // 이력서 목록 조회
     @GetMapping()
-    public ResponseEntity<List<ResumeResponse>> getResumes(
+    public ResponseEntity<ResumeListResponse> getResumes(
         ResumeListGetRequest request
     ) {
-        List<ResumeResponse> responses = resumeService.getResumes(
+        ResumeListResponse response = resumeService.getResumes(
             request.getPosition(),
             request.getYear(),
             request.getCategory(),
-            request.getOffset(),
+            request.getCursorId(),
             request.getLimit()
         );
-        return ResponseEntity.ok(responses);
+
+        return ResponseEntity.ok(response);
     }
 
     // 특정 유저의 이력서 목록 조회

@@ -112,10 +112,10 @@ public interface ResumeSwagger {
             required = false
         ) String category,
         @Parameter(
-            description = "오프셋 (페이지네이션 시작 위치, 기본값: 0)",
+            description = "커서 ID",
             example = "0",
             required = false
-        ) Integer offset,
+        ) Long cursorId,
         @Parameter(
             description = "가져올 개수 (기본값: 10)",
             example = "10",
