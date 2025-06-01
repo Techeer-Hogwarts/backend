@@ -13,7 +13,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @JsonTypeName("STUDY")
-@Schema(description = "스터디 팀 카드 정보 (전체 목록 응답용)")
+@Schema(description = "스터디 팀 카드 정보 (전체 목록 응답용)", name = "StudySliceTeamsResponse")
 public class StudySliceTeamsResponse implements SliceTeamsResponse {
 
     @Schema(description = "스터디 팀 ID", example = "1")
