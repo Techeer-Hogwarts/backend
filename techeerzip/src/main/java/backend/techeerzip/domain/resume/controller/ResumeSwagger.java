@@ -66,4 +66,20 @@ public interface ResumeSwagger {
     ) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }
+
+    @Operation(
+        summary = "메인 이력서 지정",
+        description = "특정 이력서를 메인 이력서로 지정합니다. 기존 메인 이력서는 자동으로 해제됩니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "메인 이력서 지정 성공"),
+        @ApiResponse(responseCode = "404", description = "이력서를 찾을 수 없음"),
+        @ApiResponse(responseCode = "403", description = "권한 없음")
+    })
+    default ResponseEntity<Void> updateMainResume(
+        @Parameter(description = "이력서 ID", required = true, example = "1") Long resumeId,
+        @Parameter(hidden = true) @UserId Long userId
+    ) {
+        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
+    }
 }

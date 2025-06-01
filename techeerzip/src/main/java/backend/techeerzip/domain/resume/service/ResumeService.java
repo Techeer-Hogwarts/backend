@@ -41,6 +41,13 @@ public class ResumeService {
         return fileName;
     }
 
+    // 특정 유저의 기존 메인 이력서를 전부 해제
+    private void unsetMainResumeByUserId(Long userId) {
+        logger.debug("기존 메인 이력서 해제 요청 처리 중 - UserID: {}", userId);
+
+        resumeRepository.unsetMainResumeByUserId(userId);
+    }
+
     @Transactional
     public ResumeCreateResponse createResume(Long userId, MultipartFile file, String title, String position, String category, Boolean isMain) {
         this.logger.debug("이력서 생성 요청 처리 중 - Title: {}, Position: {}, Category: {}, IsMain: {}", title, position, category, isMain);
@@ -89,7 +96,7 @@ public class ResumeService {
     }
 
     @Transactional
-    public void deleteResume(Long userId, Long resumeId) {
+    public void deleteResumeById(Long userId, Long resumeId) {
         logger.debug("이력서 삭제 요청 처리 중 - UserID: {}, ResumeID: {}", userId, resumeId);
 
         Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
@@ -101,10 +108,29 @@ public class ResumeService {
             throw new IllegalArgumentException("이력서를 삭제할 권한이 없습니다.");
         }
 
+        // TODO: 메인 이력서에서 해제해야 함
         resume.delete();
 
         // TODO: 인덱스 제거
 
         logger.debug("이력서 삭제 완료 - UserID: {}, ResumeID: {}", userId, resumeId);
+    }
+
+    @Transactional
+    public void updateMainResume(Long resumeId, Long userId) {
+        logger.debug("메인 이력서 업데이트 요청 처리 중 - ResumeID: {}, UserID: {}", resumeId, userId);
+        Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("이력서를 찾을 수 없습니다."));
+
+        // TODO: 권한처리 미들웨어로 분리 및 Forbidden에러 발생
+        if(!resume.getUser().getId().equals(userId)) {
+            logger.warn("메인 이력서 업데이트 권한 없음 - UserID: {}, ResumeID: {}", userId, resumeId);
+            throw new IllegalArgumentException("이력서를 업데이트할 권한이 없습니다.");
+        }
+
+        // 기존 메인 이력서가 있다면 해제
+        this.unsetMainResumeByUserId(userId);
+
+        resume.setMain(true);
     }
 }

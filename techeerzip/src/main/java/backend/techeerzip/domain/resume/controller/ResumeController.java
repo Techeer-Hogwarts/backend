@@ -40,7 +40,9 @@ public class ResumeController implements ResumeSwagger {
     }
 
     @GetMapping("/{resumeId}")
-    public ResponseEntity<ResumeResponse> getResumesByUserId(@PathVariable Long resumeId) {
+    public ResponseEntity<ResumeResponse> getResumesByUserId(
+            @PathVariable Long resumeId
+    ) {
         ResumeResponse response = resumeService.getResumeById(resumeId);
         return ResponseEntity.ok(response);
     }
@@ -50,9 +52,17 @@ public class ResumeController implements ResumeSwagger {
             @PathVariable Long resumeId,
             @UserId Long userId
     ) {
-        resumeService.deleteResume(resumeId, userId);
+        resumeService.deleteResumeById(resumeId, userId);
         return ResponseEntity.noContent().build();
     }
 
-
+    // 메인 이력서 업데이트
+    @PatchMapping("/{resumeId}")
+    public ResponseEntity<Void> updateMainResume(
+            @PathVariable Long resumeId,
+            @UserId Long userId
+    ) {
+        resumeService.updateMainResume(resumeId, userId);
+        return ResponseEntity.ok().build();
+    }
 }
