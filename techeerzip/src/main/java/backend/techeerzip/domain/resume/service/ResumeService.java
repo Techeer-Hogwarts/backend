@@ -4,6 +4,8 @@ import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeListResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.domain.resume.entity.Resume;
+import backend.techeerzip.domain.resume.exception.ResumeNotFoundException;
+import backend.techeerzip.domain.resume.exception.ResumeUnAuthorizedException;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -29,8 +31,11 @@ public class ResumeService {
 
     private static final String CONTEXT = "ResumeService";
 
-    // 이력서 파일 이름을 반환
-    // 이름 형식: "사용자이름(날짜)" 또는 "기본이름-사용자이름(날짜)"
+
+    /**
+     * 이력서 파일 이름 변환
+     * "baseName-userName(yyyy-MM-dd)" 형식으로 변환됩니다.
+     */
     private String getResumeFileName(String userName, String baseName) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -42,6 +47,8 @@ public class ResumeService {
         } else {
             fileName = String.format("%s-%s(%s)", baseName, userName, date);
         }
+
+        logger.debug("이력서 파일 이름 변환 - 사용자 이름: {}, 기본 이름: {}, 변환된 파일 이름: {}", userName, baseName, fileName);
         return fileName;
     }
 
@@ -122,20 +129,23 @@ public class ResumeService {
 
     @Transactional
     public void updateMainResume(Long resumeId, Long userId) {
-        logger.debug("메인 이력서 업데이트 요청 처리 중 - ResumeID: {}, UserID: {}", resumeId, userId);
+        logger.info("메인 이력서 업데이트 요청 처리 중 - ResumeID: {}, UserID: {}", resumeId, userId);
         Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
-                .orElseThrow(() -> new IllegalArgumentException("이력서를 찾을 수 없습니다."));
+                .orElseThrow(() -> {
+                    logger.warn("메인 이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
+                    return new ResumeNotFoundException();
+                });
 
-        // TODO: 권한처리 미들웨어로 분리 및 Forbidden에러 발생
         if(!resume.getUser().getId().equals(userId)) {
             logger.warn("메인 이력서 업데이트 권한 없음 - UserID: {}, ResumeID: {}", userId, resumeId);
-            throw new IllegalArgumentException("이력서를 업데이트할 권한이 없습니다.");
+            throw new ResumeUnAuthorizedException();
         }
 
         // 기존 메인 이력서가 있다면 해제
         this.unsetMainResumeByUserId(userId);
 
         resume.setMain(true);
+        logger.info("메인 이력서 업데이트 요청 처리 성공 - ResumeID: {}, UserID: {}", resumeId, userId);
     }
 
     @Transactional(readOnly = true)
@@ -165,7 +175,7 @@ public class ResumeService {
 
     @Transactional(readOnly = true)
     public ResumeListResponse getBestResumes(Long cursorId, Integer limit) {
-        logger.info("인기 이력서 목록 커서 기반 조회 요청 처리 중 - CursorId: {}, Limit: {}", cursorId, limit, CONTEXT);
+        logger.info("인기 이력서 목록 조회 요청 처리 중 - CursorId: {}, Limit: {}", cursorId, limit, CONTEXT);
 
         List<Resume> resumes = resumeRepository.findBestResumesWithCursor(cursorId, limit);
         List<ResumeResponse> responseList = resumes.stream().map(ResumeResponse::new).toList();
@@ -176,12 +186,12 @@ public class ResumeService {
 
     @Transactional(readOnly = true)
     public ResumeListResponse getUserRessumes(Long userId, Long cursorId, Integer limit) {
-        logger.info("사용자 이력서 목록 커서 기반 조회 요청 처리 중 - UserID: {}, CursorId: {}, Limit: {}", userId, cursorId, limit, CONTEXT);
+        logger.info("유저 이력서 목록 조회 요청 처리 중 - UserID: {}, CursorId: {}, Limit: {}", userId, cursorId, limit, CONTEXT);
 
         List<Resume> resumes = resumeRepository.findUserResumesWithCursor(userId, cursorId, limit);
         List<ResumeResponse> responseList = resumes.stream().map(ResumeResponse::new).toList();
 
-        logger.info("{}개의 인기 이력서 목록 조회 성공", resumes.size());
+        logger.info("{}개의 유저 이력서 목록 조회 성공", resumes.size());
         return new ResumeListResponse(responseList, limit);
     }
 }

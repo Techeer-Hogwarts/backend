@@ -24,6 +24,4 @@ public interface ResumeRepository extends JpaRepository<Resume, Long>, ResumeRep
     @Modifying
     @Query("UPDATE Resume r SET r.isMain = false WHERE r.user.id = :userId AND r.isMain = true AND r.isDeleted = false")
     void unsetMainResumeByUserId(@Param("userId") Long userId);
-
-    List<Resume> findByIsDeletedFalseAndCreatedAtAfter(java.time.LocalDateTime createdAt);
 }
