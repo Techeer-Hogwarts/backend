@@ -51,18 +51,6 @@ public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
     }
 
     @Override
-    public List<Resume> findBestResumes(LocalDateTime createdAt) {
-        return queryFactory
-                .selectFrom(resume)
-                .join(resume.user, user).fetchJoin()
-                .where(
-                        resume.isDeleted.eq(false),
-                        resume.createdAt.goe(createdAt)
-                )
-                .fetch();
-    }
-
-    @Override
     public List<Resume> findUserResumesWithCursor(Long userId, Long cursorId, Integer limit) {
         Resume cursorResume = (cursorId != null)
                 ? queryFactory.selectFrom(resume).where(resume.id.eq(cursorId)).fetchOne()
