@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,12 +23,13 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3Service {
 
     private final S3Client s3Client;
-    private final CustomLogger log;
+    private final CustomLogger logger;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -73,12 +75,15 @@ public class S3Service {
         final String keyPath = makeKeyPath(fileName, folderPath);
         try {
             this.s3Client.putObject(this.setPutObjectRequest(keyPath, ext), this.getFile(file));
+            logger.info("S3Service: upload 완료");
             return List.of(
                     s3Client.utilities()
                             .getUrl(GetUrlRequest.builder().bucket(bucketName).key(keyPath).build())
                             .toString());
         } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+            logger.error("S3Service: Upload error - file: {}, folderPath: {}, urlPrefix: {}, error: {}",
+                    file, folderPath, urlPrefix, e);
+            throw new S3UploadFailException();
         }
     }
 
@@ -95,6 +100,7 @@ public class S3Service {
         final List<String> uploaded = new ArrayList<>();
         try {
             uploadFuture.stream().map(CompletableFuture::join).forEach(uploaded::add);
+            logger.info("S3Service: uploadMany 완료");
             return List.copyOf(uploaded);
         } catch (CompletionException e) {
             deleteMany(uploaded);
@@ -117,14 +123,23 @@ public class S3Service {
                                                 .build())
                                 .toString();
                     } catch (IOException e) {
-                        throw new IllegalArgumentException(e);
+                        log.error("S3Service: uploadAsync error - file: {}, folderPath: {}",
+                                file, folderPath, e);
+                        throw new S3UploadFailException();
                     }
                 });
     }
 
     public void deleteMany(List<String> s3Urls) {
         List<CompletableFuture<Void>> futures = s3Urls.stream().map(this::deleteAsync).toList();
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        CompletableFuture<Void> all = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+        try {
+            all.join(); // 여기서 내부 예외 발생 시 throw
+        } catch (CompletionException e) {
+            log.error("S3Service: deleteMany error - s3Urls: {}", s3Urls, e);
+            throw new S3DeleteFailException(); // or custom exception
+        }
     }
 
     private CompletableFuture<Void> deleteAsync(String url) {
@@ -139,7 +154,7 @@ public class S3Service {
                                         .build();
                         s3Client.deleteObject(deleteObjectRequest);
                     } catch (Exception e) {
-                        log.error("S3 삭제 오류 발생", url, e);
+                        log.error("S3Service: deleteAsync error - s3Url: {}", url, e);
                     }
                 });
     }
