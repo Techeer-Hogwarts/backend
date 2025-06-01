@@ -75,7 +75,7 @@ public class ResumeController implements ResumeSwagger {
     public ResponseEntity<ResumeListResponse> getResumes(
         ResumeListGetRequest request
     ) {
-        ResumeListResponse response = resumeService.getResumes(
+        ResumeListResponse resumes = resumeService.getResumes(
             request.getPosition(),
             request.getYear(),
             request.getCategory(),
@@ -83,7 +83,7 @@ public class ResumeController implements ResumeSwagger {
             request.getLimit()
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(resumes);
     }
 
     // 특정 유저의 이력서 목록 조회 (커서 기반 페이지네이션)
@@ -93,8 +93,8 @@ public class ResumeController implements ResumeSwagger {
             @RequestParam(required = false) Long cursorId,
             @RequestParam(required = false) Integer limit
     ) {
-        ResumeListResponse response = resumeService.getUserRessumes(userId, cursorId, limit);
-        return ResponseEntity.ok(response);
+        ResumeListResponse userResumes = resumeService.getUserResumes(userId, cursorId, limit);
+        return ResponseEntity.ok(userResumes);
     }
 
     // 인기 이력서 목록 조회 (커서 기반 페이지네이션)

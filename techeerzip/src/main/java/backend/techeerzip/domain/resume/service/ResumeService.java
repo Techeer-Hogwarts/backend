@@ -9,6 +9,7 @@ import backend.techeerzip.domain.resume.exception.ResumeUnAuthorizedException;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
+import backend.techeerzip.infra.googleDrive.service.GoogleDriveService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import backend.techeerzip.domain.resume.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -28,6 +30,7 @@ public class ResumeService {
     private final CustomLogger logger;
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
+    private final GoogleDriveService googleDriveService;
 
     private static final String CONTEXT = "ResumeService";
 
@@ -61,16 +64,22 @@ public class ResumeService {
 
     @Transactional
     public ResumeCreateResponse createResume(Long userId, MultipartFile file, String title, String position, String category, Boolean isMain) {
-        this.logger.debug("이력서 생성 요청 처리 중 - Title: {}, Position: {}, Category: {}, IsMain: {}", title, position, category, isMain);
-
-        // TODO: googleDrive에 업로드 후 url 반환
-        String driveUrl = "testURL";
+        this.logger.info("이력서 생성 요청 처리 중 - Title: {}, Position: {}, Category: {}, IsMain: {}", title, position, category, isMain);
 
         // 유저 정보 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         String fileName = getResumeFileName(user.getName(), null);
+
+        // Google Drive에 파일 업로드
+        String driveUrl;
+        try {
+            driveUrl = googleDriveService.uploadFileBuffer(file.getBytes(), fileName);
+        } catch (IOException e) {
+            logger.error("Google Drive 파일 업로드 실패: {}", e.getMessage());
+            throw new RuntimeException("Google Drive 파일 업로드 실패", e);
+        }
 
         final Resume resume = Resume.builder()
                 .user(user)
@@ -83,13 +92,15 @@ public class ResumeService {
 
         Resume createdResume = resumeRepository.save(resume);
 
-        // TODO: 메인 이력서 중복 방지 처리
+        // 메인 이력서 중복 방지 처리
+        this.unsetMainResumeByUserId(userId);
 
         // TODO: 인덱스 업데이트
-        this.logger.debug("이력서 생성 완료 - ID: {}", createdResume.getId());
+
+        this.logger.info("이력서 생성 완료 - ID: {}, Title: {}, Position: {}, Category: {}, IsMain: {}",
+                createdResume.getId(), createdResume.getTitle(), createdResume.getPosition(), createdResume.getCategory(), createdResume.isMain());
 
         return new ResumeCreateResponse(createdResume);
-
     }
 
     // 단일 이력서 조회
@@ -168,33 +179,33 @@ public class ResumeService {
                 position, year, category, cursorId, limit
         );
 
-        List<ResumeResponse> resumeResponses = resumes.stream()
+        List<ResumeResponse> responseList = resumes.stream()
                 .map(ResumeResponse::new)
                 .toList();
 
-        logger.info("이력서 목록 조회 완료 - 개수: {}", resumeResponses.size(), CONTEXT);
-        return new ResumeListResponse(resumeResponses, limit);
+        logger.info("이력서 목록 조회 완료 - 개수: {}", responseList.size(), CONTEXT);
+        return new ResumeListResponse(responseList, limit);
     }
 
     @Transactional(readOnly = true)
     public ResumeListResponse getBestResumes(Long cursorId, Integer limit) {
         logger.info("인기 이력서 목록 조회 요청 처리 중 - CursorId: {}, Limit: {}", cursorId, limit, CONTEXT);
 
-        List<Resume> resumes = resumeRepository.findBestResumesWithCursor(cursorId, limit);
-        List<ResumeResponse> responseList = resumes.stream().map(ResumeResponse::new).toList();
+        List<Resume> bestResumes = resumeRepository.findBestResumesWithCursor(cursorId, limit);
+        List<ResumeResponse> responseList = bestResumes.stream().map(ResumeResponse::new).toList();
 
-        logger.info("{}개의 인기 이력서 목록 조회 성공", resumes.size(), CONTEXT);
+        logger.info("{}개의 인기 이력서 목록 조회 성공", responseList.size(), CONTEXT);
         return new ResumeListResponse(responseList, limit);
     }
 
     @Transactional(readOnly = true)
-    public ResumeListResponse getUserRessumes(Long userId, Long cursorId, Integer limit) {
+    public ResumeListResponse getUserResumes(Long userId, Long cursorId, Integer limit) {
         logger.info("유저 이력서 목록 조회 요청 처리 중 - UserID: {}, CursorId: {}, Limit: {}", userId, cursorId, limit, CONTEXT);
 
-        List<Resume> resumes = resumeRepository.findUserResumesWithCursor(userId, cursorId, limit);
-        List<ResumeResponse> responseList = resumes.stream().map(ResumeResponse::new).toList();
+        List<Resume> userResumes = resumeRepository.findUserResumesWithCursor(userId, cursorId, limit);
+        List<ResumeResponse> responseList = userResumes.stream().map(ResumeResponse::new).toList();
 
-        logger.info("{}개의 유저 이력서 목록 조회 성공", resumes.size());
+        logger.info("{}개의 유저 이력서 목록 조회 성공", responseList.size());
         return new ResumeListResponse(responseList, limit);
     }
 }

@@ -3,10 +3,15 @@ package backend.techeerzip.infra.googleDrive.service;
 import backend.techeerzip.global.logger.CustomLogger;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.InputStreamContent;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,12 +20,15 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class GoogleDriveService {
     private static final String APPLICATION_NAME = "TecheerZip";
+    private static final String CONTEXT = "GoogleDriveService";
     private final CustomLogger logger;
 
     @Value("${google.auth.type}")
@@ -54,22 +62,28 @@ public class GoogleDriveService {
 
     private void initDriveClient() throws Exception {
 
-        GoogleCredential credential = new GoogleCredential.Builder()
-                .setTransport(com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.newTrustedTransport())
-                .setJsonFactory(com.google.api.client.json.jackson2.JacksonFactory.getDefaultInstance())
-                .setServiceAccountId(clientEmail)
-                .setServiceAccountScopes(java.util.Collections.singleton(com.google.api.services.drive.DriveScopes.DRIVE))
-                .setServiceAccountPrivateKeyFromP12File(new java.io.File(privateKey))
-                .build();
+        Map<String, Object> credentialsMap = new HashMap<>();
+        credentialsMap.put("type", type);
+        credentialsMap.put("project_id", projectId);
+        credentialsMap.put("private_key_id", privateKeyId);
+        credentialsMap.put("private_key", privateKey);
+        credentialsMap.put("client_email", clientEmail);
+        credentialsMap.put("client_id", clientId);
+
+        String jsonCredentials = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(credentialsMap);
+
+        // GoogleCredentials 생성
+        GoogleCredentials credentials = GoogleCredentials.fromStream(
+                new ByteArrayInputStream(jsonCredentials.getBytes())
+        ).createScoped(Collections.singleton(DriveScopes.DRIVE));
 
         driveClient = new Drive.Builder(
-                com.google.api.client.googleapis.javanet.GoogleNetHttpTransport.newTrustedTransport(),
-                com.google.api.client.json.jackson2.JacksonFactory.getDefaultInstance(),
-                credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                new HttpCredentialsAdapter(credentials)
+        ).setApplicationName(APPLICATION_NAME).build();
 
-        logger.info("구글 드라이브 인증 초기화 완료: {}", APPLICATION_NAME);
+        logger.info("구글 드라이브 인증 초기화 완료: {}", APPLICATION_NAME, CONTEXT);
     }
 
     public String uploadFileBuffer(byte[] fileBuffer, String fileName) throws IOException {
@@ -106,7 +120,7 @@ public class GoogleDriveService {
         List<File> files = result.getFiles();
         if (files.isEmpty()) {
             logger.error("파일 {}을(를) 찾을 수 없습니다.", fileName);
-            // 예외처리
+            // TODO: 예외처리
             return;
         }
 
