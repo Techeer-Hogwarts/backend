@@ -97,7 +97,7 @@ public class GoogleDriveService {
 
         // 버퍼를 InputStreamContent로 변환
         InputStreamContent mediaContent = new InputStreamContent(
-                "application/pdf", // TODO: googleDrive에서는 파일 타입 지정하지 않고 이력서 도메인에서 타입 검사
+                "application/pdf",
                 new ByteArrayInputStream(fileBuffer));
 
         // 파일 업로드

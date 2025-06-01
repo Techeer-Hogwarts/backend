@@ -4,6 +4,7 @@ import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeListResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.domain.resume.entity.Resume;
+import backend.techeerzip.domain.resume.exception.ResumeInvalidTypeException;
 import backend.techeerzip.domain.resume.exception.ResumeNotFoundException;
 import backend.techeerzip.domain.resume.exception.ResumeUnAuthorizedException;
 import backend.techeerzip.domain.user.entity.User;
@@ -12,10 +13,12 @@ import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.googleDrive.service.GoogleDriveService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import backend.techeerzip.domain.resume.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -65,6 +68,13 @@ public class ResumeService {
     @Transactional
     public ResumeCreateResponse createResume(Long userId, MultipartFile file, String title, String position, String category, Boolean isMain) {
         this.logger.info("이력서 생성 요청 처리 중 - Title: {}, Position: {}, Category: {}, IsMain: {}", title, position, category, isMain);
+
+        // 파일 타입 검사
+        String mimeType = file.getContentType();
+        if (mimeType == null || !mimeType.equalsIgnoreCase("application/pdf")) {
+            logger.warn("잘못된 파일 형식 업로드 시도: {}", mimeType);
+            throw new ResumeInvalidTypeException();
+        }
 
         // 유저 정보 조회
         User user = userRepository.findById(userId)

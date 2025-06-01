@@ -82,7 +82,7 @@ public enum ErrorCode {
     // Resume
     RESUME_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "이력서를 찾을 수 없습니다."),
     RESUME_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "R002", "이력서에 대한 권한이 없습니다."),
-
+    RESUME_INVALID_TYPE(HttpStatus.BAD_REQUEST, "R003", "유효하지 않은 이력서 타입입니다. PDF 형식만 가능합니다."),
 
     // Session
     SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "SS001", "해당 세션을 찾을 수 없습니다"),
