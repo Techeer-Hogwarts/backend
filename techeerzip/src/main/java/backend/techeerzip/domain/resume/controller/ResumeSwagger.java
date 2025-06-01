@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Tag(name = "resumes", description = "Resume API")
 public interface ResumeSwagger {
     @Operation(
@@ -79,6 +81,46 @@ public interface ResumeSwagger {
     default ResponseEntity<Void> updateMainResume(
         @Parameter(description = "이력서 ID", required = true, example = "1") Long resumeId,
         @Parameter(hidden = true) @UserId Long userId
+    ) {
+        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
+    }
+
+    @Operation(
+        summary = "이력서 목록 조회",
+        description = "여러 조건(직책, 기수, 카테고리 등)으로 이력서 목록을 조회합니다.\n\n"
+            + "직책 예시: BACKEND, FRONTEND, DEVOPS, FULL_STACK, DATA_ENGINEER\n"
+            + "카테고리 예시: RESUME, PORTFOLIO, ICT, OTHER"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResumeResponse.class)))
+    })
+    default ResponseEntity<List<ResumeResponse>> getResumes(
+        @Parameter(
+            description = "검색할 직책 (여러 개 가능) - BACKEND, FRONTEND, DEVOPS, FULL_STACK, DATA_ENGINEER",
+            example = "[\"BACKEND\", \"FRONTEND\"]",
+            required = false
+        ) List<String> position,
+        @Parameter(
+            description = "검색할 기수 (여러 개 가능)",
+            example = "[1, 2, 3]",
+            required = false
+        ) List<Integer> year,
+        @Parameter(
+            description = "카테고리 - 전체/RESUME/PORTFOLIO/ICT/OTHER (기본값: 전체)",
+            example = "OTHER",
+            required = false
+        ) String category,
+        @Parameter(
+            description = "오프셋 (페이지네이션 시작 위치, 기본값: 0)",
+            example = "0",
+            required = false
+        ) Integer offset,
+        @Parameter(
+            description = "가져올 개수 (기본값: 10)",
+            example = "10",
+            required = false
+        ) Integer limit
     ) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }

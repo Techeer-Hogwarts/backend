@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import backend.techeerzip.domain.resume.entity.Resume;
 
-public interface ResumeRepository extends JpaRepository<Resume, Long> {
+public interface ResumeRepository extends JpaRepository<Resume, Long>, ResumeRepositoryCustom {
     List<Resume> findByUserId(Long userId);
 
     Optional<Resume> findByIdAndIsDeletedFalse(Long id);

@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -132,5 +133,26 @@ public class ResumeService {
         this.unsetMainResumeByUserId(userId);
 
         resume.setMain(true);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResumeResponse> getResumes(
+            List<String> position,
+            List<Integer> year,
+            String category,
+            Integer offset,
+            Integer limit
+    ) {
+        logger.debug("이력서 목록 조회 요청 처리 중 - Position: {}, Year: {}, Category: {}, Offset: {}, Limit: {}",
+                position, year, category, offset, limit
+        );
+
+        List<Resume> resumes = resumeRepository.findResumesWithFilter(
+                position, year, category, offset, limit
+        );
+
+        return resumes.stream()
+                .map(ResumeResponse::new)
+                .toList();
     }
 }

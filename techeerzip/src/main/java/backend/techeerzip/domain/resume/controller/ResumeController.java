@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.resume.controller;
 
 import backend.techeerzip.domain.resume.dto.request.ResumeCreateRequest;
+import backend.techeerzip.domain.resume.dto.request.ResumeListGetRequest;
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -13,6 +14,8 @@ import backend.techeerzip.domain.resume.dto.ResumeDto;
 import backend.techeerzip.domain.resume.service.ResumeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v3/resumes")
@@ -64,5 +67,20 @@ public class ResumeController implements ResumeSwagger {
     ) {
         resumeService.updateMainResume(resumeId, userId);
         return ResponseEntity.ok().build();
+    }
+
+    // 이력서 목록 조회
+    @GetMapping()
+    public ResponseEntity<List<ResumeResponse>> getResumes(
+        ResumeListGetRequest request
+    ) {
+        List<ResumeResponse> responses = resumeService.getResumes(
+            request.getPosition(),
+            request.getYear(),
+            request.getCategory(),
+            request.getOffset(),
+            request.getLimit()
+        );
+        return ResponseEntity.ok(responses);
     }
 }

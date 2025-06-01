@@ -11,8 +11,6 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 public class ResumeCreateRequest {
-
-    private String url;
     private String category;
     private String position;
     private String title;

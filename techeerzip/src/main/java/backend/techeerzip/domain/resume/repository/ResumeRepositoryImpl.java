@@ -1,0 +1,60 @@
+package backend.techeerzip.domain.resume.repository;
+
+import static backend.techeerzip.domain.resume.entity.QResume.resume;
+import static backend.techeerzip.domain.user.entity.QUser.user;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import jakarta.persistence.EntityManager;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+import backend.techeerzip.domain.resume.entity.Resume;
+
+@Repository
+public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
+    private final JPAQueryFactory queryFactory;
+
+    public ResumeRepositoryImpl(EntityManager em) {
+        this.queryFactory = new JPAQueryFactory(em);
+    }
+
+    @Override
+    public List<Resume> findResumesWithFilter(
+            List<String> position,
+            List<Integer> year,
+            String category,
+            Integer offset,
+            Integer limit
+    ) {
+        Integer defaultOffset = (offset != null) ? offset : 0;
+        Integer defaultLimit = (limit != null && limit > 0) ? limit : 10;
+
+        return queryFactory
+                .selectFrom(resume)
+                .join(resume.user, user).fetchJoin()
+                .where(
+                        resume.isDeleted.eq(false),
+                        positionIn(position),
+                        yearIn(year),
+                        categoryEq(category)
+                )
+                .orderBy(resume.title.asc())
+                .offset(defaultOffset)
+                .limit(defaultLimit)
+                .fetch();
+    }
+
+    private BooleanExpression positionIn(List<String> position) {
+        return (position != null && !position.isEmpty()) ? resume.position.in(position) : null;
+    }
+
+    private BooleanExpression yearIn(List<Integer> year) {
+        return (year != null && !year.isEmpty()) ? resume.user.year.in(year) : null;
+    }
+
+    private BooleanExpression categoryEq(String category) {
+        return (category != null && !category.isBlank()) ? resume.category.eq(category) : null;
+    }
+}
