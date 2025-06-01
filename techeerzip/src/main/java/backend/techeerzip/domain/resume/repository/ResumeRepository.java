@@ -11,11 +11,8 @@ import org.springframework.data.repository.query.Param;
 import backend.techeerzip.domain.resume.entity.Resume;
 
 public interface ResumeRepository extends JpaRepository<Resume, Long>, ResumeRepositoryCustom {
-    List<Resume> findByUserId(Long userId);
 
     Optional<Resume> findByIdAndIsDeletedFalse(Long id);
-
-    List<Resume> findByUserIdAndIsDeletedFalse(Long userId);
 
     @Modifying
     @Query("UPDATE Resume r SET r.isDeleted = true WHERE r.user.id = :userId")

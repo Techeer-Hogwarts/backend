@@ -95,36 +95,39 @@ public class ResumeService {
     // 단일 이력서 조회
     @Transactional(readOnly = true)
     public ResumeResponse getResumeById(Long resumeId) {
-        logger.debug("이력서 조회 요청 처리 중 - ID: {}", resumeId);
+        logger.info("이력서 조회 요청 처리 중 - ID: {}", resumeId);
 
-        // TODO: 커스텀 에러 처리
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new IllegalArgumentException("이력서를 찾을 수 없습니다."));
+        Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
+                .orElseThrow(() -> {
+                    logger.warn("이력서 조회 실패 - ID: {}", resumeId, CONTEXT);
+                    return new ResumeNotFoundException();
+                });
 
-        logger.debug("이력서 조회 완료 - ID: {}", resume.getId());
+        logger.info("이력서 조회 완료 - ID: {}", resume.getId());
 
         return new ResumeResponse(resume);
     }
 
     @Transactional
     public void deleteResumeById(Long userId, Long resumeId) {
-        logger.debug("이력서 삭제 요청 처리 중 - UserID: {}, ResumeID: {}", userId, resumeId);
+        logger.info("이력서 삭제 요청 처리 중 - UserID: {}, ResumeID: {}", userId, resumeId);
 
         Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
-                .orElseThrow(() -> new IllegalArgumentException("이력서를 찾을 수 없습니다."));
+                .orElseThrow(() -> {
+                    logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
+                    return new ResumeNotFoundException();
+                });
 
-        // TODO: 권한처리 미들웨어로 분리 및 Forbidden에러 발생
         if(!resume.getUser().getId().equals(userId)) {
             logger.warn("이력서 삭제 권한 없음 - UserID: {}, ResumeID: {}", userId, resumeId);
-            throw new IllegalArgumentException("이력서를 삭제할 권한이 없습니다.");
+            throw new ResumeUnAuthorizedException();
         }
 
-        // TODO: 메인 이력서에서 해제해야 함
         resume.delete();
 
         // TODO: 인덱스 제거
 
-        logger.debug("이력서 삭제 완료 - UserID: {}, ResumeID: {}", userId, resumeId);
+        logger.info("이력서 삭제 완료 - UserID: {}, ResumeID: {}", userId, resumeId);
     }
 
     @Transactional
@@ -132,7 +135,7 @@ public class ResumeService {
         logger.info("메인 이력서 업데이트 요청 처리 중 - ResumeID: {}, UserID: {}", resumeId, userId);
         Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
                 .orElseThrow(() -> {
-                    logger.warn("메인 이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
+                    logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
                     return new ResumeNotFoundException();
                 });
 
