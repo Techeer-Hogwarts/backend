@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.resume.repository;
 
 import java.util.List;
+import java.time.LocalDateTime;
 import backend.techeerzip.domain.resume.entity.Resume;
 
 public interface ResumeRepositoryCustom {
@@ -20,4 +21,11 @@ public interface ResumeRepositoryCustom {
             Integer offset,
             Integer limit
     );
+
+    /**
+     * 최근 2주 이내 생성된(isDeleted=false) 이력서 목록을 조회
+     * @param createdAt 기준일(2주 전)
+     * @return 이력서 목록
+     */
+    List<Resume> findBestResumes(LocalDateTime createdAt);
 }

@@ -93,4 +93,13 @@ public class ResumeController implements ResumeSwagger {
         List<ResumeResponse> responses = resumeService.getResumesByUserId(userId);
         return ResponseEntity.ok(responses);
     }
+
+    // 인기 이력서 목록 조회
+    @GetMapping("/best")
+    public ResponseEntity<List<ResumeResponse>> getBestResumes(
+            // TODO: 오프셋 or 커서
+    ) {
+        List<ResumeResponse> bestResumes = resumeService.getBestResumes();
+        return ResponseEntity.ok(bestResumes);
+    }
 }
