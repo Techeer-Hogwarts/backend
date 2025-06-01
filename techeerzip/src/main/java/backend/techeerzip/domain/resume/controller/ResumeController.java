@@ -2,6 +2,7 @@ package backend.techeerzip.domain.resume.controller;
 
 import backend.techeerzip.domain.resume.dto.request.ResumeCreateRequest;
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
+import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.global.resolver.UserId;
 import org.springframework.http.ResponseEntity;
@@ -37,9 +38,9 @@ public class ResumeController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getResumesByUserId(@PathVariable Long userId) {
-        // TODO: Implement getting resumes by user ID
-        return ResponseEntity.ok().build();
+    @GetMapping("/{resumeId}")
+    public ResponseEntity<ResumeResponse> getResumesByUserId(@PathVariable Long resumeId) {
+        ResumeResponse response = resumeService.getResumeById(resumeId);
+        return ResponseEntity.ok(response);
     }
 }

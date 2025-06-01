@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.resume.service;
 
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
+import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.domain.resume.entity.Resume;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
@@ -70,5 +71,19 @@ public class ResumeService {
 
         return new ResumeCreateResponse(createdResume);
 
+    }
+
+    // 단일 이력서 조회
+    @Transactional(readOnly = true)
+    public ResumeResponse getResumeById(Long resumeId) {
+        logger.debug("이력서 조회 요청 처리 중 - ID: {}", resumeId);
+
+        // TODO: 커스텀 에러 처리
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("이력서를 찾을 수 없습니다."));
+
+        logger.debug("이력서 조회 완료 - ID: {}", resume.getId());
+
+        return new ResumeResponse(resume);
     }
 }
