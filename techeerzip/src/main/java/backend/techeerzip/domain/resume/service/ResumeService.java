@@ -160,26 +160,18 @@ public class ResumeService {
                 .toList();
 
         logger.info("이력서 목록 조회 완료 - 개수: {}", resumeResponses.size(), CONTEXT);
-
         return new ResumeListResponse(resumeResponses, limit);
     }
 
     @Transactional(readOnly = true)
-    public List<ResumeResponse> getBestResumes() {
-        logger.debug("인기 이력서 목록 조회 요청 처리 중");
+    public ResumeListResponse getBestResumes(Long cursorId, Integer limit) {
+        logger.info("인기 이력서 목록 커서 기반 조회 요청 처리 중 - CursorId: {}, Limit: {}", cursorId, limit, CONTEXT);
 
-        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
-        List<Resume> resumes = resumeRepository.findByIsDeletedFalseAndCreatedAtAfter(twoWeeksAgo);
+        List<Resume> resumes = resumeRepository.findBestResumesWithCursor(cursorId, limit);
+        List<ResumeResponse> responseList = resumes.stream().map(ResumeResponse::new).toList();
 
-        resumes.sort((a, b) ->
-            Integer.compare(
-                (b.getViewCount() + b.getLikeCount() * 10),
-                (a.getViewCount() + a.getLikeCount() * 10)
-            )
-        );
-
-        logger.info("{}개의 인기 이력서 목록 조회 성공", resumes.size());
-        return resumes.stream().map(ResumeResponse::new).toList();
+        logger.info("{}개의 인기 이력서 목록 조회 성공", resumes.size(), CONTEXT);
+        return new ResumeListResponse(responseList, limit);
     }
 
     @Transactional(readOnly = true)

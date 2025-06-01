@@ -2,6 +2,7 @@ package backend.techeerzip.domain.resume.controller;
 
 import backend.techeerzip.domain.resume.dto.request.ResumeCreateRequest;
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
+import backend.techeerzip.domain.resume.dto.response.ResumeListResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Operation;
@@ -140,20 +141,23 @@ public interface ResumeSwagger {
     }
 
     @Operation(
-        summary = "인기 이력서 목록 조회",
-        description = "최근 2주 이내 생성된 이력서 중 (viewCount + likeCount * 10) 내림차순으로 정렬된 인기 이력서 목록을 조회합니다."
+        summary = "인기 이력서 목록 커서 기반 조회",
+        description = "최근 2주 이내 생성된 이력서 중 인기(계산식: viewCount + likeCount * 10)순으로 정렬된 이력서 목록을 조회합니다."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "인기 이력서 목록 조회 성공",
-            content = @Content(schema = @Schema(implementation = ResumeResponse.class)))
+            content = @Content(schema = @Schema(implementation = ResumeListResponse.class)))
     })
-    default ResponseEntity<List<ResumeResponse>> getBestResumes() {
+    default ResponseEntity<ResumeListResponse> getBestResumes(
+        @Parameter(description = "커서 ID(이전 페이지의 마지막 이력서 ID)", example = "10") Long cursorId,
+        @Parameter(description = "가져올 개수", example = "10") Integer limit
+    ) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }
 
     @Operation(
         summary = "특정 유저의 이력서 목록 커서 기반 조회",
-        description = "특정 유저의 id로 이력서 목록을 커서 기반 페이지네이션 방식으로 조회합니다. 커서(cursorId)는 이전 페이지의 마지막 이력서 ID입니다."
+        description = "특정 유저의 id로 이력서 목록을 커서 기반 페이지네이션 방식으로 조회합니다."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공",

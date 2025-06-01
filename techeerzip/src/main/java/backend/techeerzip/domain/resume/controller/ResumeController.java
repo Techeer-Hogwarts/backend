@@ -86,22 +86,24 @@ public class ResumeController implements ResumeSwagger {
         return ResponseEntity.ok(response);
     }
 
-    // 특정 유저의 이력서 목록 조회
+    // 특정 유저의 이력서 목록 조회 (커서 기반 페이지네이션)
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ResumeResponse>> getUserResumes(
-            // TODO: 오프셋 or 커서
-            @PathVariable Long userId
-            ) {
-        List<ResumeResponse> responses = resumeService.getResumesByUserId(userId);
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<ResumeListResponse> getUserResumes(
+            @PathVariable Long userId,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(required = false) Integer limit
+    ) {
+        ResumeListResponse response = resumeService.getUserRessumes(userId, cursorId, limit);
+        return ResponseEntity.ok(response);
     }
 
-    // 인기 이력서 목록 조회
+    // 인기 이력서 목록 조회 (커서 기반 페이지네이션)
     @GetMapping("/best")
-    public ResponseEntity<List<ResumeResponse>> getBestResumes(
-            // TODO: 오프셋 or 커서
+    public ResponseEntity<ResumeListResponse> getBestResumes(
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(required = false) Integer limit
     ) {
-        List<ResumeResponse> bestResumes = resumeService.getBestResumes();
+        ResumeListResponse bestResumes = resumeService.getBestResumes(cursorId, limit);
         return ResponseEntity.ok(bestResumes);
     }
 }
