@@ -1,7 +1,12 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
+import backend.techeerzip.domain.projectTeam.type.SortType;
+import backend.techeerzip.domain.projectTeam.type.TeamType;
+import jakarta.validation.constraints.Min;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -116,12 +121,46 @@ public interface ProjectTeamSwagger {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
     }
 
-    @Operation(summary = "모든 프로젝트/스터디 팀 조회", description = "조건에 따라 전체 팀 목록을 조회합니다.")
+    @Operation(
+            summary = "모든 프로젝트/스터디 팀 조회",
+            description = "조건에 따라 전체 팀 목록을 조회합니다. teamTypes, isRecruited, isFinished, positions, sortType, 커서 등을 활용한 페이징이 가능합니다."
+    )
     @ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = SliceTeamsResponse.class)))
-    default void getAllTeams() {}
+            content = @Content(schema = @Schema(implementation = SliceTeamsResponse.class))
+    )
+    default ResponseEntity<SliceTeamsResponse> getAllTeams(
+            @Parameter(description = "팀 타입 리스트 (project, study)", example = "project")
+            List<TeamType> teamTypes,
+
+            @Parameter(description = "모집 중 여부", example = "true")
+            Boolean isRecruited,
+
+            @Parameter(description = "진행 완료 여부", example = "false")
+            Boolean isFinished,
+
+            @Parameter(description = "포지션 필터 (프로젝트에만 적용됨)", example = "backend")
+            List<String> positions,
+
+            @Parameter(description = "정렬 기준 (UPDATE_AT_DESC, VIEW_COUNT_DESC, LIKE_COUNT_DESC)", example = "UPDATE_AT_DESC")
+            SortType sortType,
+
+            @Parameter(description = "커서: 마지막 팀의 ID", example = "102")
+            Long id,
+
+            @Parameter(description = "커서: 마지막 팀의 생성일", example = "2024-12-01T00:00:00")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime dateCursor,
+
+            @Parameter(description = "커서: 마지막 팀의 기준 수치 (조회수 or 좋아요 수)", example = "87")
+            Integer countCursor,
+
+            @Parameter(description = "가져올 최대 개수", example = "10")
+            @Min(1) Integer limit
+    ) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 
     @Operation(summary = "프로젝트 모집 마감", description = "프로젝트 팀의 모집 상태를 마감합니다.")
     @ApiResponse(responseCode = "200", description = "모집 마감 완료")

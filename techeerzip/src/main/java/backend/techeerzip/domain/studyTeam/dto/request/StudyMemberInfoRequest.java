@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.studyTeam.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
@@ -11,9 +12,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "스터디 멤버 정보 요청")
 public class StudyMemberInfoRequest {
 
-    @NotNull private Long userId;
+    @NotNull
+    @Schema(description = "사용자 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long userId;
 
-    @NotNull private Boolean isLeader;
+    @NotNull
+    @Schema(description = "리더 여부", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Boolean isLeader;
 }
