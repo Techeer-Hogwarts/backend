@@ -36,14 +36,6 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         super(StudyTeam.class, em, factory);
     }
 
-    private static BooleanExpression setBuilder(Boolean isRecruited, Boolean isFinished) {
-        return DslBooleanBuilder.builder()
-                .andIfNotNull(isRecruited, ST.isRecruited::eq)
-                .andIfNotNull(isFinished, ST.isFinished::eq)
-                .and(ST.isDeleted.isFalse())
-                .build();
-    }
-
     /**
      * 날짜 기반 커서 조건을 적용하여 스터디 팀을 조회합니다. 정렬 기준: updatedAt DESC, id DESC
      *
