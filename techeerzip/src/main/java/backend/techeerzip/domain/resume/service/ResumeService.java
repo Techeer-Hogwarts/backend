@@ -41,6 +41,7 @@ public class ResumeService {
         return fileName;
     }
 
+    @Transactional
     public ResumeCreateResponse createResume(Long userId, MultipartFile file, String title, String position, String category, Boolean isMain) {
         this.logger.debug("이력서 생성 요청 처리 중 - Title: {}, Position: {}, Category: {}, IsMain: {}", title, position, category, isMain);
 
@@ -85,5 +86,25 @@ public class ResumeService {
         logger.debug("이력서 조회 완료 - ID: {}", resume.getId());
 
         return new ResumeResponse(resume);
+    }
+
+    @Transactional
+    public void deleteResume(Long userId, Long resumeId) {
+        logger.debug("이력서 삭제 요청 처리 중 - UserID: {}, ResumeID: {}", userId, resumeId);
+
+        Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("이력서를 찾을 수 없습니다."));
+
+        // TODO: 권한처리 미들웨어로 분리 및 Forbidden에러 발생
+        if(!resume.getUser().getId().equals(userId)) {
+            logger.warn("이력서 삭제 권한 없음 - UserID: {}, ResumeID: {}", userId, resumeId);
+            throw new IllegalArgumentException("이력서를 삭제할 권한이 없습니다.");
+        }
+
+        resume.delete();
+
+        // TODO: 인덱스 제거
+
+        logger.debug("이력서 삭제 완료 - UserID: {}, ResumeID: {}", userId, resumeId);
     }
 }
