@@ -1,10 +1,14 @@
 package backend.techeerzip.domain.projectTeam.repository.querydsl;
 
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamInvalidSortType;
+import backend.techeerzip.domain.projectTeam.exception.TeamInvalidSliceQueryException;
+import com.querydsl.core.types.OrderSpecifier;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -22,6 +26,7 @@ import backend.techeerzip.domain.projectTeam.type.PositionNumType;
 import backend.techeerzip.domain.projectTeam.type.SortType;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
 
+@Slf4j
 @Repository
 public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         implements ProjectTeamDslRepository {
@@ -48,10 +53,14 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
      */
     public static BooleanExpression countCursorConditionBuilder(
             SortType sortType, Integer count, Long id) {
+        log.info("ProjectTeam countCursorConditionBuilder: 커서 조건 생성 시작 - sortType={}, count={}, id={}", sortType, count, id);
         return switch (sortType) {
             case VIEW_COUNT_DESC -> buildCountCursor(PT.viewCount, count, id);
             case LIKE_COUNT_DESC -> buildCountCursor(PT.likeCount, count, id);
-            default -> throw new UnsupportedOperationException("count 기반 sortType 아님");
+            default -> {
+                log.error("ProjectTeam countCursorConditionBuilder: 유효하지 않은 정렬 방식 - sortType={}", sortType);
+                throw new ProjectTeamInvalidSortType();
+            }
         };
     }
 
@@ -67,6 +76,8 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
      */
     private static BooleanExpression buildCountCursor(
             NumberPath<Integer> field, Integer count, Long id) {
+        log.info("ProjectTeam buildCountCursor: count 기준 커서 조건 생성 - count={}, id={}", count, id);
+
         if (count == null) return null;
         if (id == null) return field.lt(count);
         return field.lt(count).or(field.eq(count).and(PT.id.lt(id)));
@@ -88,6 +99,8 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
             Boolean isRecruited,
             Boolean isFinished,
             List<PositionNumType> numTypes) {
+        log.info("ProjectTeam setBuilderWithPosAndDate: 조건 조립 시작 - id={}, dateCursor={}, isRecruited={}, isFinished={}, positionSize={}",
+                id, dateTime, isRecruited, isFinished, (numTypes != null ? numTypes.size() : 0));
         return DslBooleanBuilder.builder()
                 .andIfNotNull(dateCursorConditionBuilder(dateTime, id))
                 .andIfNotNull(isRecruited, PT.isRecruited::eq)
@@ -115,6 +128,8 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
             Boolean isFinished,
             List<PositionNumType> numTypes,
             SortType sortType) {
+        log.info("ProjectTeam setBuilderWithPosAndCount: 조건 조립 시작 - id={}, countCursor={}, isRecruited={}, isFinished={}, sortType={}, positionSize={}",
+                id, count, isRecruited, isFinished, sortType, (numTypes != null ? numTypes.size() : 0));
         return DslBooleanBuilder.builder()
                 .andIfNotNull(countCursorConditionBuilder(sortType, count, id))
                 .andIfNotNull(isRecruited, PT.isRecruited::eq)
@@ -134,6 +149,8 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         if (positionNumTypes == null || positionNumTypes.isEmpty()) {
             return null;
         }
+        log.info("ProjectTeam buildPositionFilter: 포지션 필터 생성 - size={}", positionNumTypes.size());
+
         BooleanExpression expression = null;
         for (PositionNumType p : positionNumTypes) {
             BooleanExpression condition = p.getField(PT).gt(0);
@@ -167,6 +184,8 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
      * @throws IllegalArgumentException 정렬 타입이 count, date 모두 아닌 경우
      */
     public List<ProjectTeam> sliceTeams(GetProjectTeamsQuery query) {
+        log.info("ProjectTeam sliceTeams: 커서 기반 팀 조회 시작 - sortType={}", query.getSortType());
+
         if (query.getSortType().isDate()) {
             return sliceTeamsByDate(query);
         }
@@ -174,7 +193,8 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
         if (query.getSortType().isCount()) {
             return sliceTeamsByCount(query);
         }
-        throw new IllegalArgumentException();
+        log.error("ProjectTeam sliceTeams: 조회 쿼리 오류 - sortType={}", query.getSortType());
+        throw new TeamInvalidSliceQueryException();
     }
 
     /**
@@ -184,22 +204,26 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
      * @return 조건에 부합하는 ProjectTeam 리스트 (limit + 1개)
      */
     public List<ProjectTeam> sliceTeamsByDate(GetProjectTeamsQuery query) {
-        final Long id = query.getIdCursor();
-        final List<PositionNumType> numTypes = query.getPositionNumTypes();
-        final SortType sortType = query.getSortType();
-        final LocalDateTime dateCursor = query.getDateCursor();
-        final int limit = query.getLimit();
-        final Boolean isRecruited = query.getIsRecruited();
-        final Boolean isFinished = query.getIsFinished();
-
+        log.info("ProjectTeam sliceTeamsByDate: 날짜 정렬 기준 조회 시작 - limit={}, dateCursor={}", query.getLimit(), query.getDateCursor());
         final BooleanExpression condition =
-                setBuilderWithPosAndDate(id, dateCursor, isRecruited, isFinished, numTypes);
+                setBuilderWithPosAndDate(
+                        query.getIdCursor(),
+                        query.getDateCursor(),
+                        query.getIsRecruited(),
+                        query.getIsFinished(),
+                        query.getPositionNumTypes());
+        final OrderSpecifier<LocalDateTime> setOrder = DateSortOption.setOrder(query.getSortType(), TeamType.PROJECT);
+        log.info("ProjectTeam sliceTeamsByDate: 조건식 정보 - condition={}", condition != null ? condition.toString() : "null");
+        log.info("ProjectTeam sliceTeamsByDate: 정렬 정보 - condition={}", setOrder != null ? setOrder.toString() : "null");
 
-        return selectFrom(PT)
+        final List<ProjectTeam> result = selectFrom(PT)
                 .where(condition)
-                .orderBy(DateSortOption.setOrder(sortType, TeamType.PROJECT))
-                .limit(limit + 1L)
+                .orderBy(setOrder)
+                .limit(query.getLimit() + 1L)
                 .fetch();
+
+        log.info("ProjectTeam sliceTeamsByDate: 조회 완료 - resultSize={}", result.size());
+        return result;
     }
 
     /**
@@ -209,22 +233,27 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
      * @return 조건에 부합하는 ProjectTeam 리스트 (limit + 1개)
      */
     public List<ProjectTeam> sliceTeamsByCount(GetProjectTeamsQuery query) {
-        final Long id = query.getIdCursor();
-        final List<PositionNumType> numTypes = query.getPositionNumTypes();
-        final SortType sortType = query.getSortType();
-        final Integer countCursor = query.getCountCursor();
-        final int limit = query.getLimit();
-        final boolean isRecruited = query.getIsRecruited();
-        final boolean isFinished = query.getIsFinished();
-
+        log.info("ProjectTeam sliceTeamsByCount: 카운트 정렬 기준 조회 시작 - limit={}, countCursor={}", query.getLimit(), query.getCountCursor());
         final BooleanExpression condition =
                 setBuilderWithPosAndCount(
-                        id, countCursor, isRecruited, isFinished, numTypes, sortType);
+                        query.getIdCursor(),
+                        query.getCountCursor(),
+                        query.getIsRecruited(),
+                        query.getIsFinished(),
+                        query.getPositionNumTypes(),
+                        query.getSortType());
 
-        return selectFrom(PT)
+        final OrderSpecifier<LocalDateTime> setOrder = DateSortOption.setOrder(query.getSortType(), TeamType.PROJECT);
+        log.info("ProjectTeam sliceTeamsByCount: 조건식 정보 - condition={}", condition != null ? condition.toString() : "null");
+        log.info("ProjectTeam sliceTeamsByCount: 정렬 정보 - condition={}", setOrder != null ? setOrder.toString() : "null");
+
+        final List<ProjectTeam> result = selectFrom(PT)
                 .where(condition)
-                .orderBy(CountSortOption.setOrder(sortType.name(), TeamType.PROJECT))
-                .limit(limit + 1L)
+                .orderBy(CountSortOption.setOrder(query.getSortType(), TeamType.PROJECT))
+                .limit(query.getLimit() + 1L)
                 .fetch();
+
+        log.info("ProjectTeam sliceTeamsByCount: 조회 완료 - resultSize={}", result.size());
+        return result;
     }
 }
