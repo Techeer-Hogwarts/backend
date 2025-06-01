@@ -2,6 +2,7 @@ package backend.techeerzip.domain.resume.controller;
 
 import backend.techeerzip.domain.resume.dto.request.ResumeCreateRequest;
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
+import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
 import backend.techeerzip.global.resolver.UserId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,6 +33,21 @@ public interface ResumeSwagger {
         @Parameter(description = "업로드할 이력서 파일") MultipartFile file,
         @RequestPart("request")
         @Parameter(description = "이력서 정보") ResumeCreateRequest request
+    ) {
+        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
+    }
+
+    @Operation(
+        summary = "이력서 단일 조회",
+        description = "이력서 ID로 단일 이력서를 조회합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "이력서 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResumeResponse.class))),
+        @ApiResponse(responseCode = "404", description = "이력서를 찾을 수 없음")
+    })
+    default ResponseEntity<ResumeResponse> getResumesByUserId(
+        @Parameter(description = "이력서 ID", required = true, example = "1") Long resumeId
     ) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }
