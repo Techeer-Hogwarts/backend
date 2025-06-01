@@ -17,6 +17,8 @@ import backend.techeerzip.domain.resume.entity.Resume;
 public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
+    static final Integer DEFAULT_LIMIT = 10;
+
     public ResumeRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
     }
@@ -44,7 +46,7 @@ public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
                         cursorResume != null ? resume.title.gt(cursorResume.getTitle()) : null
                 )
                 .orderBy(resume.createdAt.desc())
-                .limit((limit != null && limit > 0) ? limit + 1 : 11)
+                .limit((limit != null && limit > 0) ? limit + 1 : DEFAULT_LIMIT + 1)
                 .fetch();
     }
 
@@ -57,6 +59,25 @@ public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
                         resume.isDeleted.eq(false),
                         resume.createdAt.goe(createdAt)
                 )
+                .fetch();
+    }
+
+    @Override
+    public List<Resume> findUserResumesWithCursor(Long userId, Long cursorId, Integer limit) {
+        Resume cursorResume = (cursorId != null)
+                ? queryFactory.selectFrom(resume).where(resume.id.eq(cursorId)).fetchOne()
+                : null;
+
+        return queryFactory
+                .selectFrom(resume)
+                .join(resume.user, user).fetchJoin()
+                .where(
+                        resume.isDeleted.eq(false),
+                        resume.user.id.eq(userId),
+                        cursorResume != null ? resume.createdAt.lt(cursorResume.getCreatedAt()) : null
+                )
+                .orderBy(resume.createdAt.desc())
+                .limit((limit != null && limit > 0) ? limit + 1 : DEFAULT_LIMIT + 1)
                 .fetch();
     }
 

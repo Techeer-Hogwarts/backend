@@ -165,19 +165,6 @@ public class ResumeService {
     }
 
     @Transactional(readOnly = true)
-    public List<ResumeResponse> getResumesByUserId(
-        Long userId
-    ) {
-        logger.debug("사용자 이력서 목록 조회 요청 처리 중 - UserID: {}", userId);
-
-        List<Resume> resumes = resumeRepository.findByUserIdAndIsDeletedFalse(userId);
-
-        return resumes.stream()
-                .map(ResumeResponse::new)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
     public List<ResumeResponse> getBestResumes() {
         logger.debug("인기 이력서 목록 조회 요청 처리 중");
 
@@ -191,7 +178,18 @@ public class ResumeService {
             )
         );
 
-        logger.debug("{}개의 인기 이력서 목록 조회 성공", resumes.size());
+        logger.info("{}개의 인기 이력서 목록 조회 성공", resumes.size());
         return resumes.stream().map(ResumeResponse::new).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ResumeListResponse getUserRessumes(Long userId, Long cursorId, Integer limit) {
+        logger.info("사용자 이력서 목록 커서 기반 조회 요청 처리 중 - UserID: {}, CursorId: {}, Limit: {}", userId, cursorId, limit, CONTEXT);
+
+        List<Resume> resumes = resumeRepository.findUserResumesWithCursor(userId, cursorId, limit);
+        List<ResumeResponse> responseList = resumes.stream().map(ResumeResponse::new).toList();
+
+        logger.info("{}개의 인기 이력서 목록 조회 성공", resumes.size());
+        return new ResumeListResponse(responseList, limit);
     }
 }

@@ -150,4 +150,20 @@ public interface ResumeSwagger {
     default ResponseEntity<List<ResumeResponse>> getBestResumes() {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }
+
+    @Operation(
+        summary = "특정 유저의 이력서 목록 커서 기반 조회",
+        description = "특정 유저의 id로 이력서 목록을 커서 기반 페이지네이션 방식으로 조회합니다. 커서(cursorId)는 이전 페이지의 마지막 이력서 ID입니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공",
+            content = @Content(schema = @Schema(implementation = ResumeListResponse.class)))
+    })
+    default ResponseEntity<ResumeListResponse> getUserResumesWithCursor(
+        @Parameter(description = "유저 ID", required = true, example = "1") Long userId,
+        @Parameter(description = "커서 ID(이전 페이지의 마지막 이력서 ID)", example = "10") Long cursorId,
+        @Parameter(description = "가져올 개수", example = "10") Integer limit
+    ) {
+        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
+    }
 }

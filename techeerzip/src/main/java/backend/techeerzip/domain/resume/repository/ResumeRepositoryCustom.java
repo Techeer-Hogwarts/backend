@@ -29,4 +29,13 @@ public interface ResumeRepositoryCustom {
      * @return 이력서 목록
      */
     List<Resume> findBestResumes(LocalDateTime createdAt);
+
+    /**
+     * 특정 사용자의 이력서 목록을 커서 기반 페이지네이션으로 조회
+     * @param userId 유저 ID
+     * @param cursorId 커서 ID(이전 페이지의 마지막 이력서 ID)
+     * @param limit 가져올 개수
+     * @return 이력서 목록
+     */
+    List<Resume> findUserResumesWithCursor(Long userId, Long cursorId, Integer limit);
 }
