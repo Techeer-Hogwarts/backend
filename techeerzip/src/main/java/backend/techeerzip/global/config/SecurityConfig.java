@@ -32,44 +32,44 @@ public class SecurityConfig {
     @Bean
     @Order(1)
     public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http.securityMatcher(
-                        "api/v3/api-docs/**",
-                        "/api/v3/docs/**",
-                        "/api/v3/docs",
-                        "/api/v3/swagger-ui/**",
-                        "/api/v3/swagger-resources/**",
-                        "/api/v3/swagger-ui/**",
-                        "/api/v3/swagger-ui.html",
-                        "/api/v3/webjars/**")
+        http.securityMatcher("/api/v3/docs/**", "/api/v3/swagger-ui/**", "/api/v3/api-docs/**")
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .httpBasic(httpBasic -> httpBasic.realmName("Swagger API Documentation"))
                 .csrf(csrf -> csrf.disable())
-                .build();
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
     }
 
     // jwt 인증
     @Bean
     @Order(2)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(
+        http.authorizeHttpRequests(
                         auth ->
                                 auth
                                         // jwt 인증 필요 없는 엔드 포인트
-                                        .requestMatchers("api/v3/auth/**")
+                                        .requestMatchers(
+                                                "/api/v3/auth/email",
+                                                "/api/v3/auth/code",
+                                                "/api/v3/auth/login",
+                                                "/api/v3/users/signup",
+                                                "/api/v3/users/findPwd")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())
+                .csrf(csrf -> csrf.disable())
                 .exceptionHandling(
                         ex ->
                                 ex.authenticationEntryPoint(customAuthenticationEntryPoint)
                                         .accessDeniedHandler(customAccessDeniedHandler))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenProvider, logger),
-                        UsernamePasswordAuthenticationFilter.class)
-                .build();
+                        UsernamePasswordAuthenticationFilter.class);
+        return http.build();
     }
 
     @Bean

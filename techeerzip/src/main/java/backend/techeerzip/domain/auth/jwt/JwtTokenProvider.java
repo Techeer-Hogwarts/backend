@@ -92,7 +92,6 @@ public class JwtTokenProvider {
 
         CustomUserPrincipal principal = new CustomUserPrincipal(userId, email, "", authorities);
 
-        logger.info(String.format("사용자 권한 인증 완료 - email: %s", email));
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
