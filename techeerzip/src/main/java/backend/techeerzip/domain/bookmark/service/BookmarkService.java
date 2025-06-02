@@ -95,113 +95,101 @@ public class BookmarkService {
 
         List<BookmarkedContentResponse> contents =
                 bookmarks.stream()
-                        .map(
-                                bookmark -> {
-                                    return switch (bookmark.getCategory()) {
-                                        case "BLOG" -> {
-                                            Blog blog =
-                                                    blogRepository
-                                                            .findByIdAndIsDeletedFalse(
-                                                                    bookmark.getContentId())
-                                                            .orElse(null);
-                                            if (blog != null) {
-                                                yield new BookmarkedBlogResponse(
-                                                        blog.getId(),
-                                                        blog.getTitle(),
-                                                        blog.getUrl(),
-                                                        blog.getDate(),
-                                                        blog.getCategory(),
-                                                        blog.getCreatedAt(),
-                                                        blog.getLikeCount(),
-                                                        blog.getViewCount(),
-                                                        blog.getThumbnail(),
-                                                        new BlogAuthorResponse(
-                                                                blog.getAuthor(),
-                                                                blog.getAuthorImage()),
-                                                        new BlogUserResponse(
-                                                                blog.getUser().getId(),
-                                                                blog.getUser().getName(),
-                                                                blog.getUser().getNickname(),
-                                                                blog.getUser().getRole().getId(),
-                                                                blog.getUser().getProfileImage()));
-                                            }
-                                            yield null;
-                                        }
-                                        case "SESSION" -> {
-                                            Session session =
-                                                    sessionRepository
-                                                            .findByIdAndIsDeletedFalse(
-                                                                    bookmark.getContentId())
-                                                            .orElse(null);
-                                            if (session != null) {
-                                                yield new BookmarkedSessionResponse(
-                                                        session.getId(),
-                                                        session.getUser().getId(),
-                                                        session.getThumbnail(),
-                                                        session.getTitle(),
-                                                        session.getPresenter(),
-                                                        session.getDate(),
-                                                        session.getPosition(),
-                                                        session.getCategory(),
-                                                        session.getVideoUrl(),
-                                                        session.getFileUrl(),
-                                                        session.getLikeCount(),
-                                                        session.getViewCount(),
-                                                        new SessionUserResponse(
-                                                                session.getUser().getName(),
-                                                                session.getUser().getNickname(),
-                                                                session.getUser()
-                                                                        .getProfileImage()));
-                                            }
-                                            yield null;
-                                        }
-                                        case "RESUME" -> {
-                                            Resume resume =
-                                                    resumeRepository
-                                                            .findByIdAndIsDeletedFalse(
-                                                                    bookmark.getContentId())
-                                                            .orElse(null);
-                                            if (resume != null) {
-                                                yield new BookmarkedResumeResponse(
-                                                        resume.getId(),
-                                                        resume.getCreatedAt(),
-                                                        resume.getUpdatedAt(),
-                                                        resume.getTitle(),
-                                                        resume.getUrl(),
-                                                        resume.isMain(),
-                                                        resume.getCategory(),
-                                                        resume.getPosition(),
-                                                        resume.getLikeCount(),
-                                                        resume.getViewCount(),
-                                                        new ResumeUserResponse(
-                                                                resume.getUser().getId(),
-                                                                resume.getUser().getName(),
-                                                                resume.getUser().getNickname(),
-                                                                resume.getUser().getProfileImage(),
-                                                                resume.getUser().getYear(),
-                                                                resume.getUser().getMainPosition(),
-                                                                resume.getUser().getSubPosition(),
-                                                                resume.getUser().getSchool(),
-                                                                resume.getUser().getGrade(),
-                                                                resume.getUser().getEmail(),
-                                                                resume.getUser().getGithubUrl(),
-                                                                resume.getUser().getMediumUrl(),
-                                                                resume.getUser().getTistoryUrl(),
-                                                                resume.getUser().getVelogUrl(),
-                                                                resume.getUser()
-                                                                        .getRole()
-                                                                        .getId()));
-                                            }
-                                            yield null;
-                                        }
-                                        default -> null;
-                                    };
-                                })
-                        //                        .filter(content -> content != null)
+                        .map(bookmark -> {
+                            // Use a switch expression for conciseness
+                            return switch (bookmark.getCategory()) {
+                                case "BLOG" -> createBookmarkedBlogResponse(bookmark.getContentId());
+                                case "SESSION" -> createBookmarkedSessionResponse(bookmark.getContentId());
+                                case "RESUME" -> createBookmarkedResumeResponse(bookmark.getContentId());
+                                default -> null;
+                            };
+                        })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
 
         logger.info("북마크 목록 조회 요청 처리 완료 | context: {}", CONTEXT);
         return new BookmarkListResponse(contents, limit);
+    }
+
+    private BookmarkedBlogResponse createBookmarkedBlogResponse(Long contentId) {
+        Blog blog = blogRepository.findByIdAndIsDeletedFalse(contentId).orElse(null);
+        if (blog != null) {
+            return new BookmarkedBlogResponse(
+                    blog.getId(),
+                    blog.getTitle(),
+                    blog.getUrl(),
+                    blog.getDate(),
+                    blog.getCategory(),
+                    blog.getCreatedAt(),
+                    blog.getLikeCount(),
+                    blog.getViewCount(),
+                    blog.getThumbnail(),
+                    new BlogAuthorResponse(blog.getAuthor(), blog.getAuthorImage()),
+                    new BlogUserResponse(
+                            blog.getUser().getId(),
+                            blog.getUser().getName(),
+                            blog.getUser().getNickname(),
+                            blog.getUser().getRole().getId(),
+                            blog.getUser().getProfileImage()));
+        }
+        return null;
+    }
+
+    private BookmarkedSessionResponse createBookmarkedSessionResponse(Long contentId) {
+        Session session = sessionRepository.findByIdAndIsDeletedFalse(contentId).orElse(null);
+        if (session != null) {
+            return new BookmarkedSessionResponse(
+                    session.getId(),
+                    session.getUser().getId(),
+                    session.getThumbnail(),
+                    session.getTitle(),
+                    session.getPresenter(),
+                    session.getDate(),
+                    session.getPosition(),
+                    session.getCategory(),
+                    session.getVideoUrl(),
+                    session.getFileUrl(),
+                    session.getLikeCount(),
+                    session.getViewCount(),
+                    new SessionUserResponse(
+                            session.getUser().getName(),
+                            session.getUser().getNickname(),
+                            session.getUser().getProfileImage()));
+        }
+        return null;
+    }
+
+    private BookmarkedResumeResponse createBookmarkedResumeResponse(Long contentId) {
+        Resume resume = resumeRepository.findByIdAndIsDeletedFalse(contentId).orElse(null);
+        if (resume != null) {
+            return new BookmarkedResumeResponse(
+                    resume.getId(),
+                    resume.getCreatedAt(),
+                    resume.getUpdatedAt(),
+                    resume.getTitle(),
+                    resume.getUrl(),
+                    resume.isMain(),
+                    resume.getCategory(),
+                    resume.getPosition(),
+                    resume.getLikeCount(),
+                    resume.getViewCount(),
+                    new ResumeUserResponse(
+                            resume.getUser().getId(),
+                            resume.getUser().getName(),
+                            resume.getUser().getNickname(),
+                            resume.getUser().getProfileImage(),
+                            resume.getUser().getYear(),
+                            resume.getUser().getMainPosition(),
+                            resume.getUser().getSubPosition(),
+                            resume.getUser().getSchool(),
+                            resume.getUser().getGrade(),
+                            resume.getUser().getEmail(),
+                            resume.getUser().getGithubUrl(),
+                            resume.getUser().getMediumUrl(),
+                            resume.getUser().getTistoryUrl(),
+                            resume.getUser().getVelogUrl(),
+                            resume.getUser().getRole().getId()));
+        }
+        return null;
     }
 }
