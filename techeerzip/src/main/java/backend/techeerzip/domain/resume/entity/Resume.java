@@ -37,14 +37,6 @@ public class Resume extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_id_seq_gen")
     private Long id;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
     @Column(nullable = false)
     private boolean isDeleted;
 

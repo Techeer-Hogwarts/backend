@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.resume.dto.request;
 
+import backend.techeerzip.domain.resume.entity.ResumeCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
@@ -28,7 +29,7 @@ public class ResumeListGetRequest {
         example = "OTHER",
         allowableValues = {"RESUME", "PORTFOLIO", "ICT", "OTHER"}
     )
-    private String category;
+    private ResumeCategory category;
 
     @Schema(
         description = "마지막으로 조회한 이력서의 ID",
