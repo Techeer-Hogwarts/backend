@@ -14,4 +14,7 @@ public interface BookmarkRepository
     Optional<Bookmark> findByUserIdAndContentIdAndCategory(
             Long userId, Long contentId, String category);
 
+    @Modifying
+    @Query("UPDATE Bookmark b SET b.isDeleted = true WHERE b.user.id = :userId")
+    void updateIsDeletedByUserId(@Param("userId") Long userId);
 }
