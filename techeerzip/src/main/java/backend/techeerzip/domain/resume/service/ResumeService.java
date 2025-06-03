@@ -91,6 +91,11 @@ public class ResumeService {
             throw new RuntimeException("Google Drive 파일 업로드 실패", e);
         }
 
+        // 메인 이력서 중복 방지 처리
+        if(isMain) {
+            this.unsetMainResumeByUserId(userId);
+        }
+
         final Resume resume = Resume.builder()
                 .user(user)
                 .title(fileName)
@@ -101,9 +106,6 @@ public class ResumeService {
                 .build();
 
         Resume createdResume = resumeRepository.save(resume);
-
-        // 메인 이력서 중복 방지 처리
-        this.unsetMainResumeByUserId(userId);
 
         // TODO: 인덱스 업데이트
 

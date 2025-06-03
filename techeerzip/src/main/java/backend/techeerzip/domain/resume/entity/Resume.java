@@ -85,7 +85,6 @@ public class Resume extends BaseEntity {
         this.url = url;
         this.position = position;
         this.category = category;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void setMain(boolean isMain) {

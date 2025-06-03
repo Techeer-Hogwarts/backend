@@ -88,7 +88,8 @@ public class GoogleDriveService {
 
     public String uploadFileBuffer(byte[] fileBuffer, String fileName) throws IOException {
         if(folderId == null || folderId.isEmpty()) {
-            throw new IllegalArgumentException("Google Drive folder ID is not set.");
+            logger.error("드라이브 업로드 실패 - 폴더 ID가 유효하지 않습니다.");
+            throw new IllegalArgumentException("구글 드라이브 폴더 ID가 유효하지 않습니다.");
         }
 
         File fileMetadata = new File();
@@ -119,8 +120,8 @@ public class GoogleDriveService {
 
         List<File> files = result.getFiles();
         if (files.isEmpty()) {
-            logger.error("파일 {}을(를) 찾을 수 없습니다.", fileName);
-            // TODO: 예외처리
+            logger.error("드라이브 업로드 실패 - 파일 {}을(를) 찾을 수 없습니다.", fileName);
+            throw new IllegalArgumentException("드라이브 업로드 실패 - 파일을 찾을 수 없습니다.");
             return;
         }
 

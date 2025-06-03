@@ -24,6 +24,9 @@ public class ResumeResponse {
 
     public ResumeResponse(Resume resume) {
         User resumeUser = resume.getUser();
+        if (resumeUser == null) {
+            throw new IllegalArgumentException("Resume must have a valid user");
+        }
         this.id = resume.getId();
         this.title = resume.getTitle();
         this.url = resume.getUrl();
