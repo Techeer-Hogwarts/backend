@@ -1,7 +1,8 @@
 package backend.techeerzip.domain.bookmark.service;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -96,10 +97,9 @@ public class BookmarkService {
         List<BookmarkedContentResponse> contents =
                 bookmarks.stream()
                         .map(bookmark -> {
-                            String categoryNameString = bookmark.getCategory(); // 엔티티의 getCategory()가 String을 반환한다고 가정
+                            String categoryNameString = bookmark.getCategory();
                             BookmarkCategory categoryEnum;
                             try {
-                                // DB에 저장된 문자열이 대소문자 구분 없이 Enum 상수와 일치하도록 toUpperCase() 사용
                                 categoryEnum = BookmarkCategory.valueOf(categoryNameString.toUpperCase());
                             } catch (IllegalArgumentException e) {
                                 logger.warn(
@@ -107,28 +107,48 @@ public class BookmarkService {
                                         categoryNameString,
                                         bookmark.getContentId(),
                                         CONTEXT);
-                                return null; // .filter(Objects::nonNull)에 의해 처리됨
+                                return Optional.<BookmarkedContentResponse>empty();
                             }
 
                             return switch (categoryEnum) {
                                 case BLOG -> createBookmarkedBlogResponse(bookmark.getContentId());
                                 case SESSION -> createBookmarkedSessionResponse(bookmark.getContentId());
                                 case RESUME -> createBookmarkedResumeResponse(bookmark.getContentId());
-                                // BookmarkCategory Enum에 새로운 값이 추가되었으나, 여기에 매핑 로직이 없는 경우를 대비
-                                // Java 14+ 필요
+                                default -> {
+                                    logger.warn(
+                                            "처리 로직이 정의되지 않은 북마크 카테고리 Enum '{}' (contentId: {})입니다. 이 북마크는 결과에서 제외됩니다. | context: {}",
+                                            categoryEnum,
+                                            bookmark.getContentId(),
+                                            CONTEXT);
+                                    yield Optional.<BookmarkedContentResponse>empty();
+                                }
                             };
                         })
-                        .filter(Objects::nonNull)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
                         .collect(Collectors.toList());
 
         logger.info("북마크 목록 조회 요청 처리 완료 | context: {}", CONTEXT);
         return new BookmarkListResponse(contents, limit);
     }
 
-    private BookmarkedBlogResponse createBookmarkedBlogResponse(Long contentId) {
-        Blog blog = blogRepository.findByIdAndIsDeletedFalse(contentId).orElse(null);
-        if (blog != null) {
-            return new BookmarkedBlogResponse(
+    private <T> Optional<BookmarkedContentResponse> createResponse(
+        Optional<T> entityOpt,
+        Function<T, BookmarkedContentResponse> mapper,
+        String entityType,
+        Long contentId) {
+        return entityOpt.map(entity -> {
+            logger.debug("{} 엔티티 (ID: {}) 조회 성공 | context: {}", entityType, contentId, CONTEXT);
+            return mapper.apply(entity);
+        }).or(() -> {
+            logger.warn("{} 엔티티 (ID: {})를 찾을 수 없습니다 | context: {}", entityType, contentId, CONTEXT);
+            return Optional.empty();
+        });
+    }
+
+    private Optional<BookmarkedContentResponse> createBookmarkedBlogResponse(Long contentId) {
+        Optional<Blog> blogOpt = blogRepository.findByIdAndIsDeletedFalse(contentId);
+        Function<Blog, BookmarkedContentResponse> mapper = blog -> new BookmarkedBlogResponse(
                     blog.getId(),
                     blog.getTitle(),
                     blog.getUrl(),
@@ -145,14 +165,12 @@ public class BookmarkService {
                             blog.getUser().getNickname(),
                             blog.getUser().getRole().getId(),
                             blog.getUser().getProfileImage()));
-        }
-        return null;
+        return createResponse(blogOpt, mapper, "Blog", contentId);
     }
 
-    private BookmarkedSessionResponse createBookmarkedSessionResponse(Long contentId) {
-        Session session = sessionRepository.findByIdAndIsDeletedFalse(contentId).orElse(null);
-        if (session != null) {
-            return new BookmarkedSessionResponse(
+    private Optional<BookmarkedContentResponse> createBookmarkedSessionResponse(Long contentId) {
+        Optional<Session> sessionOpt = sessionRepository.findByIdAndIsDeletedFalse(contentId);
+        Function<Session, BookmarkedContentResponse> mapper = session -> new BookmarkedSessionResponse(
                     session.getId(),
                     session.getUser().getId(),
                     session.getThumbnail(),
@@ -169,14 +187,12 @@ public class BookmarkService {
                             session.getUser().getName(),
                             session.getUser().getNickname(),
                             session.getUser().getProfileImage()));
-        }
-        return null;
+        return createResponse(sessionOpt, mapper, "Session", contentId);
     }
 
-    private BookmarkedResumeResponse createBookmarkedResumeResponse(Long contentId) {
-        Resume resume = resumeRepository.findByIdAndIsDeletedFalse(contentId).orElse(null);
-        if (resume != null) {
-            return new BookmarkedResumeResponse(
+    private Optional<BookmarkedContentResponse> createBookmarkedResumeResponse(Long contentId) {
+        Optional<Resume> resumeOpt = resumeRepository.findByIdAndIsDeletedFalse(contentId);
+        Function<Resume, BookmarkedContentResponse> mapper = resume -> new BookmarkedResumeResponse(
                     resume.getId(),
                     resume.getCreatedAt(),
                     resume.getUpdatedAt(),
@@ -203,7 +219,6 @@ public class BookmarkService {
                             resume.getUser().getTistoryUrl(),
                             resume.getUser().getVelogUrl(),
                             resume.getUser().getRole().getId()));
-        }
-        return null;
+        return createResponse(resumeOpt, mapper, "Resume", contentId);
     }
 }
