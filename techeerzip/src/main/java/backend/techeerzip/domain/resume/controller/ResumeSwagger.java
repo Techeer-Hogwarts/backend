@@ -49,7 +49,7 @@ public interface ResumeSwagger {
             content = @Content(schema = @Schema(implementation = ResumeResponse.class))),
         @ApiResponse(responseCode = "404", description = "이력서를 찾을 수 없음")
     })
-    default ResponseEntity<ResumeResponse> getResumesByUserId(
+    default ResponseEntity<ResumeResponse> getResumeById(
         @Parameter(description = "이력서 ID", required = true, example = "1") Long resumeId
     ) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
@@ -94,9 +94,9 @@ public interface ResumeSwagger {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공",
-            content = @Content(schema = @Schema(implementation = ResumeResponse.class)))
+            content = @Content(schema = @Schema(implementation = ResumeListResponse.class)))
     })
-    default ResponseEntity<List<ResumeResponse>> getResumes(
+    default ResponseEntity<ResumeListResponse> getResumes(
         @Parameter(
             description = "검색할 직책 (여러 개 가능) - BACKEND, FRONTEND, DEVOPS, FULL_STACK, DATA_ENGINEER",
             example = "[\"BACKEND\", \"FRONTEND\"]",
@@ -127,20 +127,6 @@ public interface ResumeSwagger {
     }
 
     @Operation(
-        summary = "특정 유저의 이력서 목록 조회",
-        description = "특정 유저의 id로 이력서 목록을 조회합니다."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공",
-            content = @Content(schema = @Schema(implementation = ResumeResponse.class)))
-    })
-    default ResponseEntity<List<ResumeResponse>> getUserResumes(
-        @Parameter(description = "유저 ID", required = true, example = "1") Long userId
-    ) {
-        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
-    }
-
-    @Operation(
         summary = "인기 이력서 목록 커서 기반 조회",
         description = "최근 2주 이내 생성된 이력서 중 인기(계산식: viewCount + likeCount * 10)순으로 정렬된 이력서 목록을 조회합니다."
     )
@@ -163,7 +149,7 @@ public interface ResumeSwagger {
         @ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공",
             content = @Content(schema = @Schema(implementation = ResumeListResponse.class)))
     })
-    default ResponseEntity<ResumeListResponse> getUserResumesWithCursor(
+    default ResponseEntity<ResumeListResponse> getUserResumes(
         @Parameter(description = "유저 ID", required = true, example = "1") Long userId,
         @Parameter(description = "커서 ID(이전 페이지의 마지막 이력서 ID)", example = "10") Long cursorId,
         @Parameter(description = "가져올 개수", example = "10") Integer limit

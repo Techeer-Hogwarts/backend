@@ -44,7 +44,7 @@ public class ResumeController implements ResumeSwagger {
     }
 
     @GetMapping("/{resumeId}")
-    public ResponseEntity<ResumeResponse> getResumesByUserId(
+    public ResponseEntity<ResumeResponse> getResumeById(
             @PathVariable Long resumeId
     ) {
         ResumeResponse response = resumeService.getResumeById(resumeId);
