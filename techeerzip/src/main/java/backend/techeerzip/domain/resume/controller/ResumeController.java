@@ -73,14 +73,18 @@ public class ResumeController implements ResumeSwagger {
     // 이력서 목록 조회
     @GetMapping()
     public ResponseEntity<ResumeListResponse> getResumes(
-        ResumeListGetRequest request
+        @RequestParam (required = false) List<String> position,
+        @RequestParam (required = false) List<Integer> year,
+        @RequestParam (required = false) String category,
+        @RequestParam (required = false) Long cursorId,
+        @RequestParam (required = false, defaultValue = "10") Integer limit
     ) {
         ResumeListResponse resumes = resumeService.getResumes(
-            request.getPosition(),
-            request.getYear(),
-            request.getCategory(),
-            request.getCursorId(),
-            request.getLimit()
+            position,
+            year,
+            category,
+            cursorId,
+            limit
         );
 
         return ResponseEntity.ok(resumes);
