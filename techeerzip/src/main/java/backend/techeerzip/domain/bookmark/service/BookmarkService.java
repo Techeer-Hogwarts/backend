@@ -95,15 +95,32 @@ public class BookmarkService {
 
         List<BookmarkedContentResponse> contents =
                 bookmarks.stream()
-                        .map(bookmark -> {
-                            // Use a switch expression for conciseness
-                            return switch (bookmark.getCategory()) {
-                                case "BLOG" -> createBookmarkedBlogResponse(bookmark.getContentId());
-                                case "SESSION" -> createBookmarkedSessionResponse(bookmark.getContentId());
-                                case "RESUME" -> createBookmarkedResumeResponse(bookmark.getContentId());
-                                default -> null;
-                            };
-                        })
+                        .map(
+                                bookmark -> {
+                                    // Use a switch expression for conciseness
+                                    String categoryName =
+                                            bookmark.getCategory(); // 엔티티의 getCategory()가 String을
+                                    // 반환한다고 가정
+                                    return switch (categoryName) {
+                                        case "BLOG" ->
+                                                createBookmarkedBlogResponse(
+                                                        bookmark.getContentId());
+                                        case "SESSION" ->
+                                                createBookmarkedSessionResponse(
+                                                        bookmark.getContentId());
+                                        case "RESUME" ->
+                                                createBookmarkedResumeResponse(
+                                                        bookmark.getContentId());
+                                        default -> {
+                                            logger.warn(
+                                                    "지원하지 않는 북마크 카테고리 '{}' (contentId: {})입니다. 이 북마크는 결과에서 제외됩니다. | context: {}",
+                                                    categoryName,
+                                                    bookmark.getContentId(),
+                                                    CONTEXT);
+                                            yield null; // Java 14+ 필요
+                                        }
+                                    };
+                                })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
 

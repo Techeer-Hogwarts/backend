@@ -20,6 +20,6 @@ public class BookmarkListResponse {
     public BookmarkListResponse(List<BookmarkedContentResponse> contents, int limit) {
         this.hasNext = contents.size() > limit;
         this.data = hasNext ? contents.subList(0, limit) : contents;
-        this.nextCursor = hasNext ? contents.get(limit - 1).id() : null;
+        this.nextCursor = hasNext && !data.isEmpty() ? data.getLast().id() : null;
     }
 }

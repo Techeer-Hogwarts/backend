@@ -12,6 +12,8 @@ import jakarta.persistence.EntityManager;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import backend.techeerzip.domain.bookmark.entity.Bookmark;
@@ -29,21 +31,29 @@ public class BookmarkRepositoryImpl extends QuerydslRepositorySupport
     @Override
     public List<Bookmark> findBookmarksWithCursor(
             Long userId, String category, Long cursorId, int limit) {
-        return queryFactory
-                .selectFrom(bookmark)
-                .leftJoin(blog)
-                .on(bookmark.category.eq("BLOG").and(bookmark.contentId.eq(blog.id)))
-                .leftJoin(session)
-                .on(bookmark.category.eq("SESSION").and(bookmark.contentId.eq(session.id)))
-                .leftJoin(resume)
-                .on(bookmark.category.eq("RESUME").and(bookmark.contentId.eq(resume.id)))
-                .where(
-                        bookmark.user.id.eq(userId),
-                        bookmark.category.eq(category),
-                        bookmark.isDeleted.eq(false),
-                        cursorId != null ? bookmark.contentId.lt(cursorId) : null)
-                .orderBy(bookmark.contentId.desc())
-                .limit(limit + 1)
-                .fetch();
+        BooleanBuilder whereBuilder =
+                new BooleanBuilder()
+                        .and(bookmark.user.id.eq(userId))
+                        .and(bookmark.category.eq(category))
+                        .and(bookmark.isDeleted.eq(false));
+
+        if (cursorId != null) {
+            whereBuilder.and(bookmark.contentId.lt(cursorId));
+        }
+
+        JPAQuery<Bookmark> query =
+                queryFactory
+                        .selectFrom(bookmark)
+                        .where(whereBuilder)
+                        .orderBy(bookmark.contentId.desc())
+                        .limit(limit + 1);
+
+        switch (category) {
+            case "BLOG" -> query.leftJoin(blog).on(bookmark.contentId.eq(blog.id));
+            case "SESSION" -> query.leftJoin(session).on(bookmark.contentId.eq(session.id));
+            case "RESUME" -> query.leftJoin(resume).on(bookmark.contentId.eq(resume.id));
+        }
+
+        return query.fetch();
     }
 }
