@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "bookmarks", description = "북마크 API")
 @RestController
-@RequestMapping("/api/v3/bookmark")
+@RequestMapping("/api/v3/bookmarks")
 @RequiredArgsConstructor
 public class BookmarkController implements BookmarkSwagger {
     private final BookmarkService bookmarkService;
