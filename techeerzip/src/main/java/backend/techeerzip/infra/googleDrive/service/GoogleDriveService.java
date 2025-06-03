@@ -122,7 +122,6 @@ public class GoogleDriveService {
         if (files.isEmpty()) {
             logger.error("드라이브 업로드 실패 - 파일 {}을(를) 찾을 수 없습니다.", fileName);
             throw new IllegalArgumentException("드라이브 업로드 실패 - 파일을 찾을 수 없습니다.");
-            return;
         }
 
         String fileId = files.get(0).getId();

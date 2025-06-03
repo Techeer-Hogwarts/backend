@@ -29,7 +29,7 @@ public class ResumeListGetRequest {
         example = "OTHER",
         allowableValues = {"RESUME", "PORTFOLIO", "ICT", "OTHER"}
     )
-    private ResumeCategory category;
+    private String category;
 
     @Schema(
         description = "마지막으로 조회한 이력서의 ID",

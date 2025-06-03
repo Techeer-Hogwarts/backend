@@ -132,7 +132,7 @@ public class ResumeService {
     }
 
     @Transactional
-    public void deleteResumeById(Long userId, Long resumeId) {
+    public void deleteResumeById(Long resumeId, Long userId) {
         logger.info("이력서 삭제 요청 처리 중 - UserID: {}, ResumeID: {}", userId, resumeId);
 
         Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
