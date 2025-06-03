@@ -43,7 +43,7 @@ public class ResumeRepositoryImpl implements ResumeRepositoryCustom {
                         positionIn(position),
                         yearIn(year),
                         categoryEq(category),
-                        cursorResume != null ? resume.title.gt(cursorResume.getTitle()) : null
+                        cursorResume != null ? resume.createdAt.lt(cursorResume.getCreatedAt()) : null
                 )
                 .orderBy(resume.createdAt.desc())
                 .limit((limit != null && limit > 0) ? limit + 1 : DEFAULT_LIMIT + 1)
