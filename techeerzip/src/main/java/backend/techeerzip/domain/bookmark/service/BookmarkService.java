@@ -95,32 +95,29 @@ public class BookmarkService {
 
         List<BookmarkedContentResponse> contents =
                 bookmarks.stream()
-                        .map(
-                                bookmark -> {
-                                    // Use a switch expression for conciseness
-                                    String categoryName =
-                                            bookmark.getCategory(); // 엔티티의 getCategory()가 String을
-                                    // 반환한다고 가정
-                                    return switch (categoryName) {
-                                        case "BLOG" ->
-                                                createBookmarkedBlogResponse(
-                                                        bookmark.getContentId());
-                                        case "SESSION" ->
-                                                createBookmarkedSessionResponse(
-                                                        bookmark.getContentId());
-                                        case "RESUME" ->
-                                                createBookmarkedResumeResponse(
-                                                        bookmark.getContentId());
-                                        default -> {
-                                            logger.warn(
-                                                    "지원하지 않는 북마크 카테고리 '{}' (contentId: {})입니다. 이 북마크는 결과에서 제외됩니다. | context: {}",
-                                                    categoryName,
-                                                    bookmark.getContentId(),
-                                                    CONTEXT);
-                                            yield null; // Java 14+ 필요
-                                        }
-                                    };
-                                })
+                        .map(bookmark -> {
+                            String categoryNameString = bookmark.getCategory(); // 엔티티의 getCategory()가 String을 반환한다고 가정
+                            BookmarkCategory categoryEnum;
+                            try {
+                                // DB에 저장된 문자열이 대소문자 구분 없이 Enum 상수와 일치하도록 toUpperCase() 사용
+                                categoryEnum = BookmarkCategory.valueOf(categoryNameString.toUpperCase());
+                            } catch (IllegalArgumentException e) {
+                                logger.warn(
+                                        "DB에 저장된 북마크 카테고리 문자열 '{}' (contentId: {})이(가) 유효한 Enum 값이 아닙니다. 이 북마크는 결과에서 제외됩니다. | context: {}",
+                                        categoryNameString,
+                                        bookmark.getContentId(),
+                                        CONTEXT);
+                                return null; // .filter(Objects::nonNull)에 의해 처리됨
+                            }
+
+                            return switch (categoryEnum) {
+                                case BLOG -> createBookmarkedBlogResponse(bookmark.getContentId());
+                                case SESSION -> createBookmarkedSessionResponse(bookmark.getContentId());
+                                case RESUME -> createBookmarkedResumeResponse(bookmark.getContentId());
+                                // BookmarkCategory Enum에 새로운 값이 추가되었으나, 여기에 매핑 로직이 없는 경우를 대비
+                                // Java 14+ 필요
+                            };
+                        })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
 
