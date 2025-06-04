@@ -36,9 +36,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "User",
@@ -211,5 +213,9 @@ public class User extends BaseEntity {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

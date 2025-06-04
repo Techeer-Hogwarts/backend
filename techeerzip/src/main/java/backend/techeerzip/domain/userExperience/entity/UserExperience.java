@@ -22,9 +22,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "UserExperience",
@@ -73,6 +75,9 @@ public class UserExperience {
     @Column(nullable = false)
     private boolean isFinished;
 
+    @Column(length = 2000)
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", insertable = false, updatable = false)
     private User user;
@@ -85,7 +90,8 @@ public class UserExperience {
             LocalDateTime startDate,
             LocalDateTime endDate,
             String category,
-            boolean isFinished) {
+            boolean isFinished,
+            String description) {
         this.userId = userId;
         this.position = position;
         this.companyName = companyName;
@@ -93,6 +99,7 @@ public class UserExperience {
         this.endDate = endDate;
         this.category = category;
         this.isFinished = isFinished;
+        this.description = description;
     }
 
     public void update(
@@ -101,7 +108,8 @@ public class UserExperience {
             LocalDateTime startDate,
             LocalDateTime endDate,
             String category,
-            boolean isFinished) {
+            boolean isFinished,
+            String description) {
         this.position = position;
         this.companyName = companyName;
         this.startDate = startDate;
@@ -109,10 +117,15 @@ public class UserExperience {
         this.category = category;
         this.isFinished = isFinished;
         this.updatedAt = LocalDateTime.now();
+        this.description = description;
     }
 
     public void delete() {
         this.isDeleted = true;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setIsFinished(boolean isFinished) {
+        this.isFinished = isFinished;
     }
 }

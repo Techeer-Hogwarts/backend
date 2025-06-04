@@ -22,4 +22,10 @@ public class BlogListResponse {
         this.data = hasNext ? blogs.subList(0, limit) : blogs;
         this.nextCursor = hasNext ? blogs.get(limit - 1).getId() : null;
     }
+
+    public BlogListResponse(List<BlogResponse> data, boolean hasNext, Long nextCursor) {
+        this.data = data;
+        this.hasNext = hasNext;
+        this.nextCursor = nextCursor;
+    }
 }

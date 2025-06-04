@@ -12,18 +12,28 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "Internal Server Error"),
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "Invalid Type Value"),
     HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "Access is Denied"),
+    INVALID_CURSOR_ID(HttpStatus.BAD_REQUEST, "C006", "유효하지 않은 커서 ID입니다."),
     EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "CT06", "결과 이미지는 10개까지만 등록 가능합니다."),
 
-    // Jwt
+    // Auth
     AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "A001", "이메일 또는 비밀번호가 올바르지 않습니다."),
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "A002", "유효하지 않은 JWT 토큰입니다."),
     AUTH_EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "A003", "JWT 토큰이 만료 되었습니다."),
     AUTH_MISSING_TOKEN(HttpStatus.UNAUTHORIZED, "A004", "JWT 토큰이 필요합니다."),
+    AUTH_EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "A005", "이메일 인증 코드 전송이 실패했습니다."),
+    AUTH_INVALID_EMAIL_CODE(HttpStatus.BAD_REQUEST, "A006", "잘못된 이메일 인증 코드입니다."),
+    AUTH_NOT_VERIFIED_EMAIL(HttpStatus.UNAUTHORIZED, "A007", "이메일 인증이 완료되지 않았습니다."),
+    AUTH_NOT_TECHEER(HttpStatus.BAD_REQUEST, "A008", "테커가 아닌 사용자입니다."),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "사용자를 찾을 수 없습니다."),
-    EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "U002", "Email is Duplication"),
-    LOGIN_INPUT_INVALID(HttpStatus.BAD_REQUEST, "U003", "Login input is invalid"),
+    USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "U003", "이미 가입한 이메일입니다."),
+    USER_NOT_RESUME(HttpStatus.BAD_REQUEST, "U004", "이력서 파일이 없습니다."),
+    USER_UNAUTHORIZED_ADMIN(HttpStatus.FORBIDDEN, "U005", "권한이 없는 사용자입니다."),
+    USER_PROFILE_IMG_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "U006", "프로필 이미지를 가져오지 못했습니다."),
+
+    // UserExperience
+    USER_EXPERIENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "UE001", "해당 경력을 찾을 수 없습니다."),
 
     // Blog
     BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "블로그를 찾을 수 없습니다."),
@@ -74,6 +84,11 @@ public enum ErrorCode {
     PROJECT_TEAM_INVALID_DELETE_IMAGE(HttpStatus.BAD_REQUEST, "PT016", "삭제하는 결과이미지가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "PT017", "프로젝트 멤버가 유효하지 않습니다."),
 
+    // Resume
+    RESUME_NOT_FOUND(HttpStatus.NOT_FOUND, "RS001", "이력서를 찾을 수 없습니다."),
+    RESUME_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "RS002", "이력서에 대한 권한이 없습니다."),
+    RESUME_INVALID_TYPE(HttpStatus.BAD_REQUEST, "RS003", "유효하지 않은 이력서 타입입니다. PDF 형식만 가능합니다."),
+
     // Session
     SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "SS001", "해당 세션을 찾을 수 없습니다"),
     SESSION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "SS002", "해당 세션이 이미 존재합니다."),
@@ -111,6 +126,9 @@ public enum ErrorCode {
     REDIS_MESSAGE_PROCESSING_ERROR(
             HttpStatus.INTERNAL_SERVER_ERROR, "R002", "Redis message processing error"),
     REDIS_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "R003", "Redis task not found"),
+
+    // Role
+    ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "RL001", "해당 권한을 찾을 수 없습니다."),
 
     // Event
     EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "이벤트를 찾을 수 없습니다."),

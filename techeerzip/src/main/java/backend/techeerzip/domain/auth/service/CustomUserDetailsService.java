@@ -54,16 +54,13 @@ public class CustomUserDetailsService implements UserDetailsService {
                         .findByEmail(email)
                         .orElseThrow(
                                 () -> {
-                                    logger.warn(
-                                            String.format("사용자 조회 실패 - email: %s", email), CONTEXT);
+                                    logger.warn("사용자 조회 실패 - email: {}", email, CONTEXT);
                                     return new UserNotFoundException();
                                 });
 
-        logger.debug(
-                String.format("사용자 조회 성공 - userId: %d, email: %s", user.getId(), user.getEmail()),
-                CONTEXT);
+        logger.info("사용자 조회 성공 - userId: {}, email: {}", user.getId(), user.getEmail(), CONTEXT);
 
-        GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().toString());
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().getName());
 
         return new CustomUserPrincipal(
                 user.getId(),
