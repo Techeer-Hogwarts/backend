@@ -25,7 +25,7 @@ public class CreateResumeRequest {
 
     @NotNull
     @Schema(description = "이력서 타입", example = "PORTFOLIO")
-    private ResumeCategory category;
+    private String category;
 
     @NotBlank
     @Schema(description = "이력서 포지션", example = "BACKEND")

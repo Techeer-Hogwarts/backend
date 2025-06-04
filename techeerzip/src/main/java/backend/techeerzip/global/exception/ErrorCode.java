@@ -79,6 +79,11 @@ public enum ErrorCode {
     PROJECT_TEAM_INVALID_DELETE_IMAGE(HttpStatus.BAD_REQUEST, "PT016", "삭제하는 결과이미지가 유효하지 않습니다."),
     PROJECT_TEAM_INVALID_PROJECT_MEMBER(HttpStatus.BAD_REQUEST, "PT017", "프로젝트 멤버가 유효하지 않습니다."),
 
+    // Resume
+    RESUME_NOT_FOUND(HttpStatus.NOT_FOUND, "RS001", "이력서를 찾을 수 없습니다."),
+    RESUME_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "RS002", "이력서에 대한 권한이 없습니다."),
+    RESUME_INVALID_TYPE(HttpStatus.BAD_REQUEST, "RS003", "유효하지 않은 이력서 타입입니다. PDF 형식만 가능합니다."),
+
     // Session
     SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "SS001", "해당 세션을 찾을 수 없습니다"),
     SESSION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "SS002", "해당 세션이 이미 존재합니다."),
