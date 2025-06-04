@@ -96,34 +96,43 @@ public class BookmarkService {
 
         List<BookmarkedContentResponse> contents =
                 bookmarks.stream()
-                        .map(bookmark -> {
-                            String categoryNameString = bookmark.getCategory();
-                            BookmarkCategory categoryEnum;
-                            try {
-                                categoryEnum = BookmarkCategory.valueOf(categoryNameString.toUpperCase());
-                            } catch (IllegalArgumentException e) {
-                                logger.warn(
-                                        "DB에 저장된 북마크 카테고리 문자열 '{}' (contentId: {})이(가) 유효한 Enum 값이 아닙니다. 이 북마크는 결과에서 제외됩니다. | context: {}",
-                                        categoryNameString,
-                                        bookmark.getContentId(),
-                                        CONTEXT);
-                                return Optional.<BookmarkedContentResponse>empty();
-                            }
+                        .map(
+                                bookmark -> {
+                                    String categoryNameString = bookmark.getCategory();
+                                    BookmarkCategory categoryEnum;
+                                    try {
+                                        categoryEnum =
+                                                BookmarkCategory.valueOf(
+                                                        categoryNameString.toUpperCase());
+                                    } catch (IllegalArgumentException e) {
+                                        logger.warn(
+                                                "DB에 저장된 북마크 카테고리 문자열 '{}' (contentId: {})이(가) 유효한 Enum 값이 아닙니다. 이 북마크는 결과에서 제외됩니다. | context: {}",
+                                                categoryNameString,
+                                                bookmark.getContentId(),
+                                                CONTEXT);
+                                        return Optional.<BookmarkedContentResponse>empty();
+                                    }
 
-                            return switch (categoryEnum) {
-                                case BLOG -> createBookmarkedBlogResponse(bookmark.getContentId());
-                                case SESSION -> createBookmarkedSessionResponse(bookmark.getContentId());
-                                case RESUME -> createBookmarkedResumeResponse(bookmark.getContentId());
-                                default -> {
-                                    logger.warn(
-                                            "처리 로직이 정의되지 않은 북마크 카테고리 Enum '{}' (contentId: {})입니다. 이 북마크는 결과에서 제외됩니다. | context: {}",
-                                            categoryEnum,
-                                            bookmark.getContentId(),
-                                            CONTEXT);
-                                    yield Optional.<BookmarkedContentResponse>empty();
-                                }
-                            };
-                        })
+                                    return switch (categoryEnum) {
+                                        case BLOG ->
+                                                createBookmarkedBlogResponse(
+                                                        bookmark.getContentId());
+                                        case SESSION ->
+                                                createBookmarkedSessionResponse(
+                                                        bookmark.getContentId());
+                                        case RESUME ->
+                                                createBookmarkedResumeResponse(
+                                                        bookmark.getContentId());
+                                        default -> {
+                                            logger.warn(
+                                                    "처리 로직이 정의되지 않은 북마크 카테고리 Enum '{}' (contentId: {})입니다. 이 북마크는 결과에서 제외됩니다. | context: {}",
+                                                    categoryEnum,
+                                                    bookmark.getContentId(),
+                                                    CONTEXT);
+                                            yield Optional.<BookmarkedContentResponse>empty();
+                                        }
+                                    };
+                                })
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .collect(Collectors.toList());
@@ -133,92 +142,110 @@ public class BookmarkService {
     }
 
     private <T> Optional<BookmarkedContentResponse> createResponse(
-        Optional<T> entityOpt,
-        Function<T, BookmarkedContentResponse> mapper,
-        String entityType,
-        Long contentId) {
-        return entityOpt.map(entity -> {
-            logger.debug("{} 엔티티 (ID: {}) 조회 성공 | context: {}", entityType, contentId, CONTEXT);
-            return mapper.apply(entity);
-        }).or(() -> {
-            logger.warn("{} 엔티티 (ID: {})를 찾을 수 없습니다 | context: {}", entityType, contentId, CONTEXT);
-            return Optional.empty();
-        });
+            Optional<T> entityOpt,
+            Function<T, BookmarkedContentResponse> mapper,
+            String entityType,
+            Long contentId) {
+        return entityOpt
+                .map(
+                        entity -> {
+                            logger.debug(
+                                    "{} 엔티티 (ID: {}) 조회 성공 | context: {}",
+                                    entityType,
+                                    contentId,
+                                    CONTEXT);
+                            return mapper.apply(entity);
+                        })
+                .or(
+                        () -> {
+                            logger.warn(
+                                    "{} 엔티티 (ID: {})를 찾을 수 없습니다 | context: {}",
+                                    entityType,
+                                    contentId,
+                                    CONTEXT);
+                            return Optional.empty();
+                        });
     }
 
     private Optional<BookmarkedContentResponse> createBookmarkedBlogResponse(Long contentId) {
         Optional<Blog> blogOpt = blogRepository.findByIdAndIsDeletedFalse(contentId);
-        Function<Blog, BookmarkedContentResponse> mapper = blog -> new BookmarkedBlogResponse(
-                    blog.getId(),
-                    blog.getTitle(),
-                    blog.getUrl(),
-                    blog.getDate(),
-                    blog.getCategory(),
-                    blog.getCreatedAt(),
-                    blog.getLikeCount(),
-                    blog.getViewCount(),
-                    blog.getThumbnail(),
-                    new BlogAuthorResponse(blog.getAuthor(), blog.getAuthorImage()),
-                    new BlogUserResponse(
-                            blog.getUser().getId(),
-                            blog.getUser().getName(),
-                            blog.getUser().getNickname(),
-                            blog.getUser().getRole().getId(),
-                            blog.getUser().getProfileImage()));
+        Function<Blog, BookmarkedContentResponse> mapper =
+                blog ->
+                        new BookmarkedBlogResponse(
+                                blog.getId(),
+                                blog.getTitle(),
+                                blog.getUrl(),
+                                blog.getDate(),
+                                blog.getCategory(),
+                                blog.getCreatedAt(),
+                                blog.getLikeCount(),
+                                blog.getViewCount(),
+                                blog.getThumbnail(),
+                                new BlogAuthorResponse(blog.getAuthor(), blog.getAuthorImage()),
+                                new BlogUserResponse(
+                                        blog.getUser().getId(),
+                                        blog.getUser().getName(),
+                                        blog.getUser().getNickname(),
+                                        blog.getUser().getRole().getId(),
+                                        blog.getUser().getProfileImage()));
         return createResponse(blogOpt, mapper, "Blog", contentId);
     }
 
     private Optional<BookmarkedContentResponse> createBookmarkedSessionResponse(Long contentId) {
         Optional<Session> sessionOpt = sessionRepository.findByIdAndIsDeletedFalse(contentId);
-        Function<Session, BookmarkedContentResponse> mapper = session -> new BookmarkedSessionResponse(
-                    session.getId(),
-                    session.getUser().getId(),
-                    session.getThumbnail(),
-                    session.getTitle(),
-                    session.getPresenter(),
-                    session.getDate(),
-                    session.getPosition(),
-                    session.getCategory(),
-                    session.getVideoUrl(),
-                    session.getFileUrl(),
-                    session.getLikeCount(),
-                    session.getViewCount(),
-                    new SessionUserResponse(
-                            session.getUser().getName(),
-                            session.getUser().getNickname(),
-                            session.getUser().getProfileImage()));
+        Function<Session, BookmarkedContentResponse> mapper =
+                session ->
+                        new BookmarkedSessionResponse(
+                                session.getId(),
+                                session.getUser().getId(),
+                                session.getThumbnail(),
+                                session.getTitle(),
+                                session.getPresenter(),
+                                session.getDate(),
+                                session.getPosition(),
+                                session.getCategory(),
+                                session.getVideoUrl(),
+                                session.getFileUrl(),
+                                session.getLikeCount(),
+                                session.getViewCount(),
+                                new SessionUserResponse(
+                                        session.getUser().getName(),
+                                        session.getUser().getNickname(),
+                                        session.getUser().getProfileImage()));
         return createResponse(sessionOpt, mapper, "Session", contentId);
     }
 
     private Optional<BookmarkedContentResponse> createBookmarkedResumeResponse(Long contentId) {
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndIsDeletedFalse(contentId);
-        Function<Resume, BookmarkedContentResponse> mapper = resume -> new BookmarkedResumeResponse(
-                    resume.getId(),
-                    resume.getCreatedAt(),
-                    resume.getUpdatedAt(),
-                    resume.getTitle(),
-                    resume.getUrl(),
-                    resume.isMain(),
-                    resume.getCategory(),
-                    resume.getPosition(),
-                    resume.getLikeCount(),
-                    resume.getViewCount(),
-                    new ResumeUserResponse(
-                            resume.getUser().getId(),
-                            resume.getUser().getName(),
-                            resume.getUser().getNickname(),
-                            resume.getUser().getProfileImage(),
-                            resume.getUser().getYear(),
-                            resume.getUser().getMainPosition(),
-                            resume.getUser().getSubPosition(),
-                            resume.getUser().getSchool(),
-                            resume.getUser().getGrade(),
-                            resume.getUser().getEmail(),
-                            resume.getUser().getGithubUrl(),
-                            resume.getUser().getMediumUrl(),
-                            resume.getUser().getTistoryUrl(),
-                            resume.getUser().getVelogUrl(),
-                            resume.getUser().getRole().getId()));
+        Function<Resume, BookmarkedContentResponse> mapper =
+                resume ->
+                        new BookmarkedResumeResponse(
+                                resume.getId(),
+                                resume.getCreatedAt(),
+                                resume.getUpdatedAt(),
+                                resume.getTitle(),
+                                resume.getUrl(),
+                                resume.isMain(),
+                                resume.getCategory(),
+                                resume.getPosition(),
+                                resume.getLikeCount(),
+                                resume.getViewCount(),
+                                new ResumeUserResponse(
+                                        resume.getUser().getId(),
+                                        resume.getUser().getName(),
+                                        resume.getUser().getNickname(),
+                                        resume.getUser().getProfileImage(),
+                                        resume.getUser().getYear(),
+                                        resume.getUser().getMainPosition(),
+                                        resume.getUser().getSubPosition(),
+                                        resume.getUser().getSchool(),
+                                        resume.getUser().getGrade(),
+                                        resume.getUser().getEmail(),
+                                        resume.getUser().getGithubUrl(),
+                                        resume.getUser().getMediumUrl(),
+                                        resume.getUser().getTistoryUrl(),
+                                        resume.getUser().getVelogUrl(),
+                                        resume.getUser().getRole().getId()));
         return createResponse(resumeOpt, mapper, "Resume", contentId);
     }
 }

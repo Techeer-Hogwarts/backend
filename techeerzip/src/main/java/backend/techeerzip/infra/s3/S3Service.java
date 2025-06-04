@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -81,8 +81,12 @@ public class S3Service {
                             .getUrl(GetUrlRequest.builder().bucket(bucketName).key(keyPath).build())
                             .toString());
         } catch (IOException e) {
-            logger.error("S3Service: Upload error - file: {}, folderPath: {}, urlPrefix: {}, error: {}",
-                    file, folderPath, urlPrefix, e);
+            logger.error(
+                    "S3Service: Upload error - file: {}, folderPath: {}, urlPrefix: {}, error: {}",
+                    file,
+                    folderPath,
+                    urlPrefix,
+                    e);
             throw new S3UploadFailException();
         }
     }
@@ -123,8 +127,11 @@ public class S3Service {
                                                 .build())
                                 .toString();
                     } catch (IOException e) {
-                        log.error("S3Service: uploadAsync error - file: {}, folderPath: {}",
-                                file, folderPath, e);
+                        log.error(
+                                "S3Service: uploadAsync error - file: {}, folderPath: {}",
+                                file,
+                                folderPath,
+                                e);
                         throw new S3UploadFailException();
                     }
                 });
@@ -132,7 +139,8 @@ public class S3Service {
 
     public void deleteMany(List<String> s3Urls) {
         List<CompletableFuture<Void>> futures = s3Urls.stream().map(this::deleteAsync).toList();
-        CompletableFuture<Void> all = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        CompletableFuture<Void> all =
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
         try {
             all.join(); // 여기서 내부 예외 발생 시 throw

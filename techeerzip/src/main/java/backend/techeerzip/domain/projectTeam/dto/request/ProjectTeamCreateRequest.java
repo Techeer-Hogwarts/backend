@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 import jakarta.annotation.Nullable;
@@ -10,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

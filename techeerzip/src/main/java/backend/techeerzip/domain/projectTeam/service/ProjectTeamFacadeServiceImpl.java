@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +35,7 @@ import backend.techeerzip.domain.studyTeam.service.StudyTeamService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.s3.S3Service;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -63,8 +63,10 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         if (mainImage != null && deleteMainImages.size() == 1) {
             return true;
         }
-        log.error("ProjectTeam FacadeService: Invalid Main Image - mainImage: {}, deleteMainImages: {}",
-                mainImage, deleteMainImages);
+        log.error(
+                "ProjectTeam FacadeService: Invalid Main Image - mainImage: {}, deleteMainImages: {}",
+                mainImage,
+                deleteMainImages);
         throw new ProjectTeamMainImageException();
     }
 
@@ -85,8 +87,10 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
         if (count > 10 || count < 0) {
             throw new TeamResultImageException();
         }
-        log.error("ProjectTeam FacadeService: Invalid Result Image - resultImages: {}, deleteResultImages: {}",
-                resultImages, deleteResultImages);
+        log.error(
+                "ProjectTeam FacadeService: Invalid Result Image - resultImages: {}, deleteResultImages: {}",
+                resultImages,
+                deleteResultImages);
         return count != 0;
     }
 
@@ -135,7 +139,12 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
 
             return projectTeamService.create(mainUrl, resultUrls, request);
         } catch (Exception e) {
-            log.error("ProjectTeam Create error - request: {}, mainImage: {}, resultImages: {}", request, mainImage, resultImages, e);
+            log.error(
+                    "ProjectTeam Create error - request: {}, mainImage: {}, resultImages: {}",
+                    request,
+                    mainImage,
+                    resultImages,
+                    e);
             s3Service.deleteMany(uploadedUrl);
             log.error("ProjectTeam Create: s3 롤백: uploadedUrl: {}", uploadedUrl);
             throw e;
@@ -184,7 +193,12 @@ public class ProjectTeamFacadeServiceImpl implements ProjectTeamFacadeService {
             return projectTeamService.update(
                     projectTeamId, userId, mainImagesUrl, resultImageUrls, request);
         } catch (Exception e) {
-            log.error("ProjectTeam update error - request: {}, mainImage: {}, resultImages: {}", request, mainImage, resultImages, e);
+            log.error(
+                    "ProjectTeam update error - request: {}, mainImage: {}, resultImages: {}",
+                    request,
+                    mainImage,
+                    resultImages,
+                    e);
             if (!mainImagesUrl.isEmpty() || !resultImageUrls.isEmpty()) {
                 resultImageUrls.addAll(mainImagesUrl);
                 s3Service.deleteMany(resultImageUrls);

@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.resume.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +18,7 @@ public interface ResumeRepository extends JpaRepository<Resume, Long>, ResumeRep
     void updateIsDeletedByUserId(@Param("userId") Long userId);
 
     @Modifying
-    @Query("UPDATE Resume r SET r.isMain = false WHERE r.user.id = :userId AND r.isMain = true AND r.isDeleted = false")
+    @Query(
+            "UPDATE Resume r SET r.isMain = false WHERE r.user.id = :userId AND r.isMain = true AND r.isDeleted = false")
     void unsetMainResumeByUserId(@Param("userId") Long userId);
 }

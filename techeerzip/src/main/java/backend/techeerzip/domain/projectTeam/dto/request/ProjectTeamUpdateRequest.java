@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -9,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,8 +23,7 @@ public class ProjectTeamUpdateRequest {
 
     @Schema(
             description = "변경할 팀원 목록 (팀원 ID, 역할, 리더 여부 포함)",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+            requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull
     @Valid
     @Builder.Default
@@ -32,29 +31,19 @@ public class ProjectTeamUpdateRequest {
 
     @Schema(
             description = "팀 기술 스택 목록 (스택 이름, 메인 스택 여부)",
-            example = "[{\"stack\": \"React.js\", \"isMain\": true}]"
-    )
+            example = "[{\"stack\": \"React.js\", \"isMain\": true}]")
     @Builder.Default
     private List<TeamStackInfo.WithName> teamStacks = List.of();
 
-    @Schema(
-            description = "삭제할 팀원 ID 목록",
-            example = "[1, 2]"
-    )
+    @Schema(description = "삭제할 팀원 ID 목록", example = "[1, 2]")
     @Builder.Default
     private List<Long> deleteMembers = List.of();
 
-    @Schema(
-            description = "삭제할 메인 이미지 ID 목록",
-            example = "[10, 11]"
-    )
+    @Schema(description = "삭제할 메인 이미지 ID 목록", example = "[10, 11]")
     @Builder.Default
     private List<Long> deleteMainImages = List.of();
 
-    @Schema(
-            description = "삭제할 결과 이미지 ID 목록",
-            example = "[21, 22]"
-    )
+    @Schema(description = "삭제할 결과 이미지 ID 목록", example = "[21, 22]")
     @Builder.Default
     private List<Long> deleteResultImages = List.of();
 

@@ -1,12 +1,12 @@
 package backend.techeerzip.domain.studyTeam.dto.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -49,6 +49,9 @@ public class StudySliceTeamsResponse implements SliceTeamsResponse {
     @Schema(description = "생성 시각", example = "2025-05-15T10:00:00")
     private final LocalDateTime createdAt;
 
-    @Schema(description = "팀 타입 (고정값: STUDY)", example = "STUDY", allowableValues = {"STUDY"})
+    @Schema(
+            description = "팀 타입 (고정값: STUDY)",
+            example = "STUDY",
+            allowableValues = {"STUDY"})
     private final TeamType type = TeamType.STUDY;
 }

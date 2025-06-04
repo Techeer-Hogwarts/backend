@@ -50,13 +50,10 @@ public class SwaggerConfig {
         httpsServer.setUrl(httpsServerUrl);
         httpsServer.setDescription("techeerzip https 서버");
 
-
-
-
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes("cookieAuth", securityScheme))
                 .addSecurityItem(securityRequirement)
                 .info(info)
-                .servers(List.of(httpsServer, stagingServer, localServer));
+                .servers(List.of(localServer, stagingServer, httpsServer));
     }
 }

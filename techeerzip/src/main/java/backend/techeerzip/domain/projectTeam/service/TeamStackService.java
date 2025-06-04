@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +16,7 @@ import backend.techeerzip.domain.projectTeam.repository.ProjectTeamStackReposito
 import backend.techeerzip.domain.stack.entity.Stack;
 import backend.techeerzip.domain.stack.repository.StackRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -33,7 +33,10 @@ public class TeamStackService {
 
     private static void validateStacks(List<Stack> stacks, Map<String, Boolean> updateInfo) {
         if (stacks.size() != updateInfo.size()) {
-            log.info("ProjectTeam validateStacks: 스택 갯수 불일치 - 요청={}, 조회={}", updateInfo.size(), stacks.size());
+            log.info(
+                    "ProjectTeam validateStacks: 스택 갯수 불일치 - 요청={}, 조회={}",
+                    updateInfo.size(),
+                    stacks.size());
             throw new ProjectInvalidTeamStackException();
         }
     }
@@ -55,7 +58,8 @@ public class TeamStackService {
      * @throws ProjectInvalidTeamStackException 존재하지 않는 스택 이름이 포함되어 있을 경우 (갯수 불일치)
      */
     public List<TeamStackInfo.WithStack> create(List<WithName> updateTeamStacksRequest) {
-        log.info("ProjectTeam createTeamStacks: 생성 요청 시작 - size={}", updateTeamStacksRequest.size());
+        log.info(
+                "ProjectTeam createTeamStacks: 생성 요청 시작 - size={}", updateTeamStacksRequest.size());
 
         final Map<String, Boolean> createInfo = mapToUpdateInfo(updateTeamStacksRequest);
         log.info("ProjectTeam createTeamStacks: isMain 매핑 완료 - keys={}", createInfo.keySet());
@@ -65,12 +69,15 @@ public class TeamStackService {
 
         validateStacks(stacks, createInfo);
 
-        final List<TeamStackInfo.WithStack> result = stacks.stream()
-                .map(s -> TeamStackInfo.WithStack.builder()
-                        .stack(s)
-                        .isMain(createInfo.get(s.getName()))
-                        .build())
-                .toList();
+        final List<TeamStackInfo.WithStack> result =
+                stacks.stream()
+                        .map(
+                                s ->
+                                        TeamStackInfo.WithStack.builder()
+                                                .stack(s)
+                                                .isMain(createInfo.get(s.getName()))
+                                                .build())
+                        .toList();
 
         log.info("ProjectTeam createTeamStacks: WithStack 변환 완료 - count={}", result.size());
         return result;
@@ -95,7 +102,10 @@ public class TeamStackService {
      */
     @Transactional
     public void update(List<WithName> updateTeamStacksRequest, ProjectTeam projectTeam) {
-        log.info("ProjectTeam updateTeamStacks: 수정 요청 시작 - teamId={}, size={}", projectTeam.getId(), updateTeamStacksRequest.size());
+        log.info(
+                "ProjectTeam updateTeamStacks: 수정 요청 시작 - teamId={}, size={}",
+                projectTeam.getId(),
+                updateTeamStacksRequest.size());
 
         Map<String, Boolean> updateInfo = mapToUpdateInfo(updateTeamStacksRequest);
         log.info("ProjectTeam updateTeamStacks: isMain 매핑 완료 - keys={}", updateInfo.keySet());
@@ -105,13 +115,16 @@ public class TeamStackService {
 
         validateStacks(stacks, updateInfo);
 
-        List<TeamStack> teamStacks = stacks.stream()
-                .map(s -> TeamStack.builder()
-                        .isMain(updateInfo.get(s.getName()))
-                        .stack(s)
-                        .projectTeam(projectTeam)
-                        .build())
-                .toList();
+        List<TeamStack> teamStacks =
+                stacks.stream()
+                        .map(
+                                s ->
+                                        TeamStack.builder()
+                                                .isMain(updateInfo.get(s.getName()))
+                                                .stack(s)
+                                                .projectTeam(projectTeam)
+                                                .build())
+                        .toList();
 
         projectTeamStackRepository.saveAll(teamStacks);
         log.info("ProjectTeam updateTeamStacks: 저장 완료 - saved={}", teamStacks.size());

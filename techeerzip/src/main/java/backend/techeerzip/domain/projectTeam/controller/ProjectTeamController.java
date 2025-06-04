@@ -1,10 +1,10 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +49,8 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     @GetMapping("/{projectTeamId}")
     public ResponseEntity<ProjectTeamDetailResponse> getDetail(@PathVariable Long projectTeamId) {
         log.info("ProjectTeam getDetail: 상세 정보 조회 시작 - teamId={}", projectTeamId);
-        final ProjectTeamDetailResponse response = projectTeamFacadeService.getDetail(projectTeamId);
+        final ProjectTeamDetailResponse response =
+                projectTeamFacadeService.getDetail(projectTeamId);
         log.info("ProjectTeam getDetail: 조회 완료 - teamId={}", projectTeamId);
         return ResponseEntity.ok(response);
     }
@@ -68,7 +69,9 @@ public class ProjectTeamController implements ProjectTeamSwagger {
         eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
         log.info("ProjectTeam createProjectTeam: Slack 이벤트 전송 완료");
 
-        eventPublisher.publishEvent(new IndexEvent.Create<>(response.indexRequest().getName(), response.indexRequest()));
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>(
+                        response.indexRequest().getName(), response.indexRequest()));
         log.info("ProjectTeam createProjectTeam: Index 이벤트 전송 완료");
 
         return ResponseEntity.ok(response.id());
@@ -83,7 +86,8 @@ public class ProjectTeamController implements ProjectTeamSwagger {
             @UserId Long userId) {
         log.info("ProjectTeam updateProjectTeam: 수정 요청 시작 - teamId={}", projectTeamId);
         final ProjectTeamUpdateResponse response =
-                projectTeamFacadeService.update(projectTeamId, userId, mainImage, resultImages, request);
+                projectTeamFacadeService.update(
+                        projectTeamId, userId, mainImage, resultImages, request);
         log.info("ProjectTeam updateProjectTeam: 수정 완료 - teamId={}", projectTeamId);
 
         if (response.slackRequest() != null) {
@@ -91,31 +95,41 @@ public class ProjectTeamController implements ProjectTeamSwagger {
             log.info("ProjectTeam updateProjectTeam: Slack 이벤트 전송 완료");
         }
 
-        eventPublisher.publishEvent(new IndexEvent.Create<>(response.indexRequest().getName(), response.indexRequest()));
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>(
+                        response.indexRequest().getName(), response.indexRequest()));
         log.info("ProjectTeam updateProjectTeam: Index 이벤트 전송 완료");
 
         return ResponseEntity.ok(response.id());
     }
 
     @GetMapping("/allTeams")
-    public ResponseEntity<GetAllTeamsResponse> getAllTeams(@ModelAttribute @Valid GetTeamsQueryRequest request) {
+    public ResponseEntity<GetAllTeamsResponse> getAllTeams(
+            @ModelAttribute @Valid GetTeamsQueryRequest request) {
         log.info("ProjectTeam getAllTeams: 전체 팀 목록 조회 시작 - request={}", request);
-        final GetAllTeamsResponse response = projectTeamFacadeService.getAllProjectAndStudyTeams(request);
+        final GetAllTeamsResponse response =
+                projectTeamFacadeService.getAllProjectAndStudyTeams(request);
         log.info("ProjectTeam getAllTeams: 조회 완료 - resultCount={}", response.teams().size());
         return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/close/{projectTeamId}")
-    public ResponseEntity<Void> closeRecruit(@PathVariable Long projectTeamId, @UserId Long userId) {
-        log.info("ProjectTeam closeRecruit: 모집 마감 요청 - teamId={}, userId={}", projectTeamId, userId);
+    public ResponseEntity<Void> closeRecruit(
+            @PathVariable Long projectTeamId, @UserId Long userId) {
+        log.info(
+                "ProjectTeam closeRecruit: 모집 마감 요청 - teamId={}, userId={}", projectTeamId, userId);
         projectTeamFacadeService.closeRecruit(projectTeamId, userId);
         log.info("ProjectTeam closeRecruit: 모집 마감 완료 - teamId={}", projectTeamId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/delete/{projectTeamId}")
-    public ResponseEntity<Void> deleteProjectTeam(@PathVariable Long projectTeamId, @UserId Long userId) {
-        log.info("ProjectTeam deleteProjectTeam: 삭제 요청 - teamId={}, userId={}", projectTeamId, userId);
+    public ResponseEntity<Void> deleteProjectTeam(
+            @PathVariable Long projectTeamId, @UserId Long userId) {
+        log.info(
+                "ProjectTeam deleteProjectTeam: 삭제 요청 - teamId={}, userId={}",
+                projectTeamId,
+                userId);
         projectTeamFacadeService.softDeleteTeam(projectTeamId, userId);
         log.info("ProjectTeam deleteProjectTeam: 삭제 완료 - teamId={}", projectTeamId);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -124,7 +138,10 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     @GetMapping("/{projectTeamId}/applicants")
     public ResponseEntity<List<ProjectMemberApplicantResponse>> getApplicants(
             @PathVariable Long projectTeamId, @UserId Long userId) {
-        log.info("ProjectTeam getApplicants: 지원자 목록 조회 - teamId={}, userId={}", projectTeamId, userId);
+        log.info(
+                "ProjectTeam getApplicants: 지원자 목록 조회 - teamId={}, userId={}",
+                projectTeamId,
+                userId);
         final List<ProjectMemberApplicantResponse> applicants =
                 projectTeamFacadeService.getApplicants(projectTeamId, userId);
         log.info("ProjectTeam getApplicants: 조회 완료 - 지원자 수={}", applicants.size());
@@ -143,8 +160,12 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     }
 
     @PatchMapping("/{projectTeamId}/cancel")
-    public ResponseEntity<Void> cancelApplication(@PathVariable Long projectTeamId, @UserId Long userId) {
-        log.info("ProjectTeam cancelApplication: 지원 취소 요청 - teamId={}, userId={}", projectTeamId, userId);
+    public ResponseEntity<Void> cancelApplication(
+            @PathVariable Long projectTeamId, @UserId Long userId) {
+        log.info(
+                "ProjectTeam cancelApplication: 지원 취소 요청 - teamId={}, userId={}",
+                projectTeamId,
+                userId);
         final List<ProjectSlackRequest.DM> slackRequest =
                 projectTeamFacadeService.cancelApplication(projectTeamId, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));

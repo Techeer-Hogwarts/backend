@@ -7,5 +7,4 @@ public class TeamInvalidSliceQueryException extends BusinessException {
     public TeamInvalidSliceQueryException() {
         super(ErrorCode.PROJECT_TEAM_INVALID_TEAM_ROLE);
     }
-
 }

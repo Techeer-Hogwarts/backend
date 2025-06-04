@@ -1,6 +1,7 @@
 package backend.techeerzip.global.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,7 +24,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
 
-        log.error("""
+        log.error(
+                """
                         [500 SERVER ERROR]
                         Method: {}
                         URI: {}
@@ -36,8 +38,7 @@ public class GlobalExceptionHandler {
                 request.getQueryString(),
                 request.getRemoteAddr(),
                 e.toString(),
-                e
-        );
+                e);
 
         return ResponseEntity.status(errorCode.getStatus())
                 .body(new ErrorResponse(errorCode.getCode(), errorCode.getMessage()));

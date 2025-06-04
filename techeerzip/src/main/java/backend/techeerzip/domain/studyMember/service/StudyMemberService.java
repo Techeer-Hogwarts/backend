@@ -2,7 +2,6 @@ package backend.techeerzip.domain.studyMember.service;
 
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +14,7 @@ import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -26,9 +26,13 @@ public class StudyMemberService {
     private final UserRepository userRepository;
 
     public boolean checkActiveMemberByTeamAndUser(Long studyTeamId, Long userId) {
-        log.info("StudyMemberService checkActiveMemberByTeamAndUser: teamId={}, userId={}", studyTeamId, userId);
-        final boolean exists = studyMemberRepository.existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(
-                userId, studyTeamId, StatusCategory.APPROVED);
+        log.info(
+                "StudyMemberService checkActiveMemberByTeamAndUser: teamId={}, userId={}",
+                studyTeamId,
+                userId);
+        final boolean exists =
+                studyMemberRepository.existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(
+                        userId, studyTeamId, StatusCategory.APPROVED);
         log.info("StudyMemberService checkActiveMemberByTeamAndUser: 존재 여부={}", exists);
         return exists;
     }
@@ -45,15 +49,20 @@ public class StudyMemberService {
      */
     @Transactional
     public StudyMember applyApplicant(StudyTeam team, Long applicantId, String summary) {
-        log.info("StudyMemberService applyApplicant: teamId={}, applicantId={}, summary={}",
-                team.getId(), applicantId, summary);
+        log.info(
+                "StudyMemberService applyApplicant: teamId={}, applicantId={}, summary={}",
+                team.getId(),
+                applicantId,
+                summary);
 
-        final StudyMember st = studyMemberRepository
-                .findByStudyTeamIdAndUserId(team.getId(), applicantId)
-                .orElseGet(() -> {
-                    log.info("StudyMemberService applyApplicant: 기존 지원자 없음, 새로 생성");
-                    return createApplicant(team, applicantId, summary);
-                });
+        final StudyMember st =
+                studyMemberRepository
+                        .findByStudyTeamIdAndUserId(team.getId(), applicantId)
+                        .orElseGet(
+                                () -> {
+                                    log.info("StudyMemberService applyApplicant: 기존 지원자 없음, 새로 생성");
+                                    return createApplicant(team, applicantId, summary);
+                                });
 
         if (!st.isPending()) {
             log.info("StudyMemberService applyApplicant: 상태가 PENDING이 아님 → 상태를 지원자로 변경");
@@ -72,16 +81,20 @@ public class StudyMemberService {
      * @return 생성된 StudyMember 엔티티
      */
     private StudyMember createApplicant(StudyTeam team, Long applicantId, String summary) {
-        log.info("StudyMemberService createApplicant: 팀={}, 유저={}, 요약={}",
-                team.getId(), applicantId, summary);
+        log.info(
+                "StudyMemberService createApplicant: 팀={}, 유저={}, 요약={}",
+                team.getId(),
+                applicantId,
+                summary);
 
-        final StudyMember sm = StudyMember.builder()
-                .status(StatusCategory.PENDING)
-                .summary(summary)
-                .isLeader(false)
-                .studyTeam(team)
-                .user(userRepository.getReferenceById(applicantId))
-                .build();
+        final StudyMember sm =
+                StudyMember.builder()
+                        .status(StatusCategory.PENDING)
+                        .summary(summary)
+                        .isLeader(false)
+                        .studyTeam(team)
+                        .user(userRepository.getReferenceById(applicantId))
+                        .build();
 
         final StudyMember saved = studyMemberRepository.save(sm);
         log.info("StudyMemberService createApplicant: 저장 완료, memberId={}", saved.getId());
@@ -98,17 +111,25 @@ public class StudyMemberService {
      */
     @Transactional
     public String acceptApplicant(Long teamId, Long applicantId) {
-        log.info("StudyMemberService acceptApplicant: teamId={}, applicantId={}", teamId, applicantId);
+        log.info(
+                "StudyMemberService acceptApplicant: teamId={}, applicantId={}",
+                teamId,
+                applicantId);
 
-        final StudyMember sm = studyMemberRepository
-                .findByStudyTeamIdAndUserIdAndStatus(teamId, applicantId, StatusCategory.PENDING)
-                .orElseThrow(() -> {
-                    log.error("StudyMemberService acceptApplicant: 지원자 없음 → 예외 발생");
-                    return new StudyMemberNotFoundException();
-                });
+        final StudyMember sm =
+                studyMemberRepository
+                        .findByStudyTeamIdAndUserIdAndStatus(
+                                teamId, applicantId, StatusCategory.PENDING)
+                        .orElseThrow(
+                                () -> {
+                                    log.error("StudyMemberService acceptApplicant: 지원자 없음 → 예외 발생");
+                                    return new StudyMemberNotFoundException();
+                                });
 
         sm.toActive();
-        log.info("StudyMemberService acceptApplicant: 상태를 APPROVED로 변경, userEmail={}", sm.getUser().getEmail());
+        log.info(
+                "StudyMemberService acceptApplicant: 상태를 APPROVED로 변경, userEmail={}",
+                sm.getUser().getEmail());
         return sm.getUser().getEmail();
     }
 
@@ -122,17 +143,25 @@ public class StudyMemberService {
      */
     @Transactional
     public String rejectApplicant(Long teamId, Long applicantId) {
-        log.info("StudyMemberService rejectApplicant: teamId={}, applicantId={}", teamId, applicantId);
+        log.info(
+                "StudyMemberService rejectApplicant: teamId={}, applicantId={}",
+                teamId,
+                applicantId);
 
-        final StudyMember sm = studyMemberRepository
-                .findByStudyTeamIdAndUserIdAndStatus(teamId, applicantId, StatusCategory.PENDING)
-                .orElseThrow(() -> {
-                    log.error("StudyMemberService rejectApplicant: 지원자 없음 → 예외 발생");
-                    return new StudyMemberNotFoundException();
-                });
+        final StudyMember sm =
+                studyMemberRepository
+                        .findByStudyTeamIdAndUserIdAndStatus(
+                                teamId, applicantId, StatusCategory.PENDING)
+                        .orElseThrow(
+                                () -> {
+                                    log.error("StudyMemberService rejectApplicant: 지원자 없음 → 예외 발생");
+                                    return new StudyMemberNotFoundException();
+                                });
 
         sm.toReject();
-        log.info("StudyMemberService rejectApplicant: 상태를 거절로 변경, userEmail={}", sm.getUser().getEmail());
+        log.info(
+                "StudyMemberService rejectApplicant: 상태를 거절로 변경, userEmail={}",
+                sm.getUser().getEmail());
         return sm.getUser().getEmail();
     }
 
@@ -144,7 +173,9 @@ public class StudyMemberService {
      */
     public List<StudyApplicantResponse> getApplicants(Long studyTeamId) {
         log.info("StudyMemberService getApplicants: teamId={}", studyTeamId);
-        List<StudyApplicantResponse> result = studyMemberDslRepository.findManyApplicants(studyTeamId);
+        List<StudyApplicantResponse> result =
+                studyMemberDslRepository.findManyApplicants(studyTeamId);
         log.info("StudyMemberService getApplicants: 응답 개수={}", result.size());
-        return result;    }
+        return result;
+    }
 }

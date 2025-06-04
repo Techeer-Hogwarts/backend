@@ -1,15 +1,13 @@
 package backend.techeerzip.domain.projectTeam.dto.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import backend.techeerzip.domain.projectTeam.type.TeamType;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * 팀 목록 슬라이스 응답의 공통 인터페이스입니다.
- */
+/** 팀 목록 슬라이스 응답의 공통 인터페이스입니다. */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @Schema(description = "팀 슬라이스 응답 공통 필드")
 public interface SliceTeamsResponse {

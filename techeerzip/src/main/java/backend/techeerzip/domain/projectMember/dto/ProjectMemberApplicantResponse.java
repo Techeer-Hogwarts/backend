@@ -29,7 +29,9 @@ public class ProjectMemberApplicantResponse {
     @Schema(description = "지원자 이름", example = "홍길동")
     private String name;
 
-    @Schema(description = "지원자 프로필 이미지 URL", example = "https://techeerzip.s3.ap-northeast-2.amazonaws.com/profile/user302.png")
+    @Schema(
+            description = "지원자 프로필 이미지 URL",
+            example = "https://techeerzip.s3.ap-northeast-2.amazonaws.com/profile/user302.png")
     private String profileImage;
 
     @Schema(description = "학번/기수 등 지원자의 학년 정보", example = "3")

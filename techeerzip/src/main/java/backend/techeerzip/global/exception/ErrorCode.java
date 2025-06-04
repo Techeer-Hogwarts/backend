@@ -147,7 +147,7 @@ public enum ErrorCode {
     TECH_BLOGGING_TERM_ALREADY_JOINED(HttpStatus.CONFLICT, "TBT003", "이미 해당 챌린지에 참여한 유저입니다."),
     TECH_BLOGGING_TERM_NO_ROUNDS(HttpStatus.NOT_FOUND, "TBT004", "해당 챌린지 기간에 회차가 존재하지 않습니다."),
 
-    //S3
+    // S3
     S3_UPLOAD_FAIL(HttpStatus.BAD_REQUEST, "S300", "S3 요청이 유효하지 않습니다."),
     S3_DELETE_FAIL(HttpStatus.BAD_REQUEST, "S301", "S3 요청이 유효하지 않습니다.");
 

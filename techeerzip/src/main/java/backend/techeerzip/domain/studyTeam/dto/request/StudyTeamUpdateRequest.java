@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.studyTeam.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,21 +33,14 @@ public class StudyTeamUpdateRequest {
     @Schema(
             description = "스터디 멤버 정보 목록",
             example = "[{\"userId\": 1, \"isLeader\": true}, {\"userId\": 2, \"isLeader\": false}]",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private List<StudyMemberInfoRequest> studyMember = new ArrayList<>();
 
     @Builder.Default
-    @Schema(
-            description = "삭제할 결과 이미지 ID 목록",
-            example = "[10, 12]"
-    )
+    @Schema(description = "삭제할 결과 이미지 ID 목록", example = "[10, 12]")
     private List<Long> deleteImages = new ArrayList<>();
 
     @Builder.Default
-    @Schema(
-            description = "삭제할 기존 스터디 멤버 ID 목록",
-            example = "[3, 4]"
-    )
+    @Schema(description = "삭제할 기존 스터디 멤버 ID 목록", example = "[3, 4]")
     private List<Long> deleteMembers = new ArrayList<>();
 }

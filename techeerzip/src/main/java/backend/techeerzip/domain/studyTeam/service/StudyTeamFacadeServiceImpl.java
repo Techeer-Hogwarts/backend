@@ -88,7 +88,8 @@ public class StudyTeamFacadeServiceImpl implements StudyTeamFacadeService {
 
     public StudyTeamDetailResponse getDetail(Long studyTeamId) {
         log.info("StudyTeam getDetail: 상세 조회 요청 - teamId={}", studyTeamId);
-        final StudyTeamDetailResponse response = studyTeamService.updateViewCountAndGetDetail(studyTeamId);
+        final StudyTeamDetailResponse response =
+                studyTeamService.updateViewCountAndGetDetail(studyTeamId);
         log.info("StudyTeam getDetail: 상세 조회 완료 - teamId={}", studyTeamId);
         return response;
     }
@@ -106,14 +107,19 @@ public class StudyTeamFacadeServiceImpl implements StudyTeamFacadeService {
     }
 
     public List<DM> cancelApplication(Long teamId, Long applicantId) {
-        log.info("StudyTeam cancelApplication: 지원 취소 요청 - teamId={}, userId={}", teamId, applicantId);
+        log.info(
+                "StudyTeam cancelApplication: 지원 취소 요청 - teamId={}, userId={}",
+                teamId,
+                applicantId);
         final List<DM> dms = studyTeamService.cancelApplication(teamId, applicantId);
         log.info("StudyTeam cancelApplication: 지원 취소 완료 - 전송 DM 수={}", dms.size());
-        return dms;    }
+        return dms;
+    }
 
     public List<StudyApplicantResponse> getApplicants(Long studyTeamId, Long userId) {
         log.info("StudyTeam getApplicants: 지원자 조회 요청 - teamId={}, userId={}", studyTeamId, userId);
-        final List<StudyApplicantResponse> applicants = studyTeamService.getApplicants(studyTeamId, userId);
+        final List<StudyApplicantResponse> applicants =
+                studyTeamService.getApplicants(studyTeamId, userId);
         log.info("StudyTeam getApplicants: 지원자 조회 완료 - 수={}", applicants.size());
         return applicants;
     }
@@ -121,7 +127,11 @@ public class StudyTeamFacadeServiceImpl implements StudyTeamFacadeService {
     public List<DM> acceptApplicant(StudyApplicantRequest request, Long userId) {
         final Long teamId = request.studyId();
         final Long applicantId = request.applicantId();
-        log.info("StudyTeam acceptApplicant: 수락 요청 - teamId={}, applicantId={}, userId={}", teamId, applicantId, userId);
+        log.info(
+                "StudyTeam acceptApplicant: 수락 요청 - teamId={}, applicantId={}, userId={}",
+                teamId,
+                applicantId,
+                userId);
         final List<DM> dms = studyTeamService.acceptApplicant(teamId, userId, applicantId);
         log.info("StudyTeam acceptApplicant: 수락 완료 - 전송 DM 수={}", dms.size());
         return dms;
@@ -130,7 +140,11 @@ public class StudyTeamFacadeServiceImpl implements StudyTeamFacadeService {
     public List<DM> rejectApplicant(StudyApplicantRequest request, Long userId) {
         final Long teamId = request.studyId();
         final Long applicantId = request.applicantId();
-        log.info("StudyTeam rejectApplicant: 거절 요청 - teamId={}, applicantId={}, userId={}", teamId, applicantId, userId);
+        log.info(
+                "StudyTeam rejectApplicant: 거절 요청 - teamId={}, applicantId={}, userId={}",
+                teamId,
+                applicantId,
+                userId);
         final List<DM> dms = studyTeamService.rejectApplicant(teamId, userId, applicantId);
         log.info("StudyTeam rejectApplicant: 거절 완료 - 전송 DM 수={}", dms.size());
         return dms;

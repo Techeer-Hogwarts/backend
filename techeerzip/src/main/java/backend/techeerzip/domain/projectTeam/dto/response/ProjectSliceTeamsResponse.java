@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.projectTeam.dto.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -8,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 

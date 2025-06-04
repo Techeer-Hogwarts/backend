@@ -1,8 +1,9 @@
 package backend.techeerzip.domain.resume.dto.response;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
-import java.util.List;
 
 @Getter
 @Schema

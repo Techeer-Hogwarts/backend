@@ -1,11 +1,10 @@
 package backend.techeerzip.domain.projectTeam.dto.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
-
 
 @Getter
 @Builder
@@ -79,7 +78,9 @@ public class ProjectTeamDetailResponse {
         @Schema(description = "삭제 여부", example = "false")
         private boolean isDeleted;
 
-        @Schema(description = "이미지 URL", example = "https://techeerzip.s3.amazonaws.com/result1.png")
+        @Schema(
+                description = "이미지 URL",
+                example = "https://techeerzip.s3.amazonaws.com/result1.png")
         private String imageUrl;
     }
 
@@ -145,7 +146,9 @@ public class ProjectTeamDetailResponse {
         @Schema(description = "팀 역할", example = "BACKEND")
         private String teamRole;
 
-        @Schema(description = "프로필 이미지 URL", example = "https://techeerzip.s3.amazonaws.com/user123.png")
+        @Schema(
+                description = "프로필 이미지 URL",
+                example = "https://techeerzip.s3.amazonaws.com/user123.png")
         private String profileImage;
 
         @Schema(description = "사용자 ID", example = "123")

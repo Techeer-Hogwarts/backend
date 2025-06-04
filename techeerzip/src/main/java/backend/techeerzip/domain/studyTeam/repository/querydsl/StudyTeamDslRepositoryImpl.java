@@ -1,12 +1,10 @@
 package backend.techeerzip.domain.studyTeam.repository.querydsl;
 
-import backend.techeerzip.domain.projectTeam.exception.TeamInvalidSliceQueryException;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -16,14 +14,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import backend.techeerzip.domain.common.repository.AbstractQuerydslRepository;
 import backend.techeerzip.domain.common.util.DslBooleanBuilder;
 import backend.techeerzip.domain.projectTeam.dto.request.GetStudyTeamsQuery;
+import backend.techeerzip.domain.projectTeam.exception.TeamInvalidSliceQueryException;
 import backend.techeerzip.domain.projectTeam.type.CountSortOption;
 import backend.techeerzip.domain.projectTeam.type.DateSortOption;
 import backend.techeerzip.domain.projectTeam.type.SortType;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
-import backend.techeerzip.domain.studyTeam.dto.response.StudySliceTeamsResponse;
 import backend.techeerzip.domain.studyTeam.entity.QStudyTeam;
 import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
-import backend.techeerzip.domain.studyTeam.mapper.StudyTeamMapper;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Repository
@@ -53,16 +51,23 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final BooleanExpression expression =
                 setBuilderWithAndDate(id, dateCursor, isRecruited, isFinished);
 
-        log.info("StudyTeam sliceTeamsByDate: 요청 - idCursor={}, dateCursor={}, isRecruited={}, isFinished={}, sortType={}, limit={}",
-                id, dateCursor, isRecruited, isFinished, sortType, limit);
+        log.info(
+                "StudyTeam sliceTeamsByDate: 요청 - idCursor={}, dateCursor={}, isRecruited={}, isFinished={}, sortType={}, limit={}",
+                id,
+                dateCursor,
+                isRecruited,
+                isFinished,
+                sortType,
+                limit);
         log.info("StudyTeam sliceTeamsByDate: expression = {}", expression);
 
         try {
-            final List<StudyTeam> result = selectFrom(ST)
-                    .where(expression)
-                    .orderBy(DateSortOption.setOrder(sortType, TeamType.STUDY))
-                    .limit(limit + 1L)
-                    .fetch();
+            final List<StudyTeam> result =
+                    selectFrom(ST)
+                            .where(expression)
+                            .orderBy(DateSortOption.setOrder(sortType, TeamType.STUDY))
+                            .limit(limit + 1L)
+                            .fetch();
 
             log.info("StudyTeam sliceTeamsByDate: 조회 결과 수 = {}", result.size());
             return result;
@@ -88,16 +93,23 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final BooleanExpression expression =
                 setBuilderWithAndCount(id, countCursor, isRecruited, isFinished, sortType);
 
-        log.info("StudyTeam sliceTeamsByCount: 요청 - idCursor={}, countCursor={}, isRecruited={}, isFinished={}, sortType={}, limit={}",
-                id, countCursor, isRecruited, isFinished, sortType, limit);
+        log.info(
+                "StudyTeam sliceTeamsByCount: 요청 - idCursor={}, countCursor={}, isRecruited={}, isFinished={}, sortType={}, limit={}",
+                id,
+                countCursor,
+                isRecruited,
+                isFinished,
+                sortType,
+                limit);
         log.info("StudyTeam sliceTeamsByCount: expression = {}", expression);
 
         try {
-            final List<StudyTeam> result = selectFrom(ST)
-                    .where(expression)
-                    .orderBy(CountSortOption.setOrder(sortType, TeamType.STUDY))
-                    .limit(limit + 1L)
-                    .fetch();
+            final List<StudyTeam> result =
+                    selectFrom(ST)
+                            .where(expression)
+                            .orderBy(CountSortOption.setOrder(sortType, TeamType.STUDY))
+                            .limit(limit + 1L)
+                            .fetch();
 
             log.info("StudyTeam sliceTeamsByCount: 조회 결과 수 = {}", result.size());
             return result;

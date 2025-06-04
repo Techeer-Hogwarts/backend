@@ -7,5 +7,4 @@ public class ProjectTeamInvalidSortType extends BusinessException {
     public ProjectTeamInvalidSortType() {
         super(ErrorCode.TEAM_INVALID_SORT_TYPE);
     }
-
 }
