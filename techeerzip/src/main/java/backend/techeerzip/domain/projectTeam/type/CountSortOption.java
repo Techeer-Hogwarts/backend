@@ -28,9 +28,9 @@ public enum CountSortOption {
         this.teamType = teamType;
     }
 
-    public static OrderSpecifier<Integer> setOrder(String sort, TeamType teamType) {
+    public static OrderSpecifier<Integer> setOrder(SortType sort, TeamType teamType) {
         return Arrays.stream(values())
-                .filter(s -> s.sortType.name().equals(sort) && s.teamType.equals(teamType))
+                .filter(s -> s.sortType.equals(sort) && s.teamType.equals(teamType))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new)
                 .getOrder();

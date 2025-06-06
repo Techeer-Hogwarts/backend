@@ -2,11 +2,13 @@ package backend.techeerzip.domain.projectTeam.service;
 
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
 
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMainImageException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -73,6 +75,7 @@ import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * ProjectTeamService는 프로젝트 팀의 생성, 수정, 지원, 모집 종료 등의 핵심 비즈니스 로직을 처리합니다.
@@ -97,6 +100,7 @@ import lombok.RequiredArgsConstructor;
  *
  * @author Generated
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProjectTeamService {
@@ -109,7 +113,6 @@ public class ProjectTeamService {
     private final UserRepository userRepository;
     private final ProjectMainImageRepository mainImgRepository;
     private final ProjectResultImageRepository resultImgRepository;
-    private final CustomLogger log;
 
     private static void ensureAllRequestedMembersExist(
             List<ProjectMemberInfoRequest> membersInfo, Map<Long, User> users) {
@@ -128,6 +131,7 @@ public class ProjectTeamService {
             List<T> membersInfo, Predicate<T> isLeaderPredicate) {
         boolean hasLeader = membersInfo.stream().anyMatch(isLeaderPredicate);
         if (!hasLeader) {
+            log.error("ProjectTeamService: 프로젝트 팀에 리더가 존재하지 않습니다");
             throw new ProjectTeamMissingLeaderException();
         }
     }
@@ -179,51 +183,64 @@ public class ProjectTeamService {
             @NotEmpty List<String> mainImage,
             List<String> resultImages,
             ProjectTeamCreateRequest request) {
-        this.log.debug("CreateProjectTeam: 시작");
+        log.info("CreateProjectTeam: 시작");
         final TeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> membersInfo = request.getProjectMember();
-        final List<TeamStackInfo.WithName> teamStacksInfo = request.getTeamStacks();
+        final List<TeamStackInfo.WithName> teamStacksInfo = Optional.ofNullable(request.getTeamStacks()).orElse(List.of());
 
         final boolean isRecruited = checkRecruit(recruitCounts, teamData.getIsRecruited());
+        log.info(
+                "CreateProjectTeam: 모집 여부 확인 완료 - isRecruitedRequest={}, resolved={}",
+                teamData.getIsRecruited(),
+                isRecruited);
+
         checkUniqueProjectName(teamData.getName());
-        log.info("CreateProjectTeam: 이름 중복 검증 완료");
-        List<TeamStackInfo.WithStack> teamStacks = teamStackService.create(teamStacksInfo);
-        log.info("CreateProjectTeam: 팀 스택 검증 완료");
+        log.info("CreateProjectTeam: 팀 이름 중복 검증 완료 - name={}", teamData.getName());
+
+        final List<TeamStackInfo.WithStack> teamStacks = teamStackService.create(teamStacksInfo);
+        log.info("CreateProjectTeam: 팀 스택 생성 완료 - count={}", teamStacks.size());
 
         final Map<Long, User> users = getIdAndUserMap(membersInfo);
-        log.info("CreateProjectTeam: 프로젝트 멤버 검증 완료");
+        log.info("CreateProjectTeam: 프로젝트 멤버 유저 조회 및 검증 완료 - userCount={}", users.size());
 
         final ProjectTeam teamEntity =
                 ProjectTeamMapper.toEntity(teamData, recruitCounts, isRecruited);
         final ProjectTeam team = projectTeamRepository.save(teamEntity);
-        log.info("CreateProjectTeam: 프로젝트 팀 엔티티 생성 완료");
+        log.info("CreateProjectTeam: 프로젝트 팀 엔티티 저장 완료 - id={}", team.getId());
 
         final List<ProjectMember> memberEntities =
                 mapToProjectMemberEntities(membersInfo, team, users);
         teamEntity.addProjectMembers(memberEntities);
-        log.info("CreateProjectTeam: 프로젝트 멤버 엔티티 생성 완료");
+        log.info("CreateProjectTeam: 프로젝트 멤버 저장 완료 - count={}", memberEntities.size());
 
+        if (mainImage.size() != 1) {
+            log.error("CreateProjectTeam: 메인 이미지 개수 비정상 - count={}", mainImage.size());
+            throw new ProjectTeamMainImageException();
+        }
         final ProjectMainImage mainImgEntity =
                 ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
         teamEntity.addProjectMainImages(List.of(mainImgEntity));
-        log.info("CreateProjectTeam: 프로젝트 팀 메인 이미지 엔티티 생성 완료");
+        log.info("CreateProjectTeam: 메인 이미지 저장 완료");
 
         if (!resultImages.isEmpty()) {
             final List<ProjectResultImage> resultImageEntities =
                     ProjectImageMapper.toResultEntities(resultImages, team);
             teamEntity.addProjectResultImages(resultImageEntities);
-            log.info("CreateProjectTeam: 프로젝트 팀 결과 이미지 엔티티 생성 완료");
+            log.info("CreateProjectTeam: 결과 이미지 저장 완료 - count={}", resultImageEntities.size());
         }
 
-        final List<TeamStack> teamStackEntities =
-                teamStacks.stream().map(s -> ProjectTeamStackMapper.toEntity(s, team)).toList();
-        teamEntity.addTeamStacks(teamStackEntities);
-        log.info("CreateProjectTeam: 프로젝트 팀 스택 엔티티 생성 완료");
+        if (!teamStacks.isEmpty()) {
+            final List<TeamStack> teamStackEntities =
+                    teamStacks.stream().map(s -> ProjectTeamStackMapper.toEntity(s, team)).toList();
+            teamEntity.addTeamStacks(teamStackEntities);
+            log.info("CreateProjectTeam: 팀 스택 엔티티 저장 완료 - count={}", teamStackEntities.size());
+
+        }
 
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
 
-        log.info("CreateProjectTeam: 프로젝트 팀 서비스 완료");
+        log.info("CreateProjectTeam: 프로젝트 팀 생성 완료 - teamId={}", team.getId());
         return new ProjectTeamCreateResponse(
                 team.getId(),
                 ProjectSlackMapper.toChannelRequest(team, leaders),
@@ -240,13 +257,18 @@ public class ProjectTeamService {
      * @throws ProjectInvalidProjectMemberException 일부 유저가 존재하지 않을 경우
      */
     private Map<Long, User> getIdAndUserMap(List<ProjectMemberInfoRequest> membersInfo) {
+        log.info("ProjectTeam getIdAndUserMap: 유저 조회 시작, memberCount={}", membersInfo.size());
         final Map<Long, User> users =
                 getUsers(membersInfo).stream().collect(Collectors.toMap(User::getId, user -> user));
+        log.info("ProjectTeam getIdAndUserMap: 유저 조회 완료, userCount={}", users.size());
         ensureAllRequestedMembersExist(membersInfo, users);
         return users;
     }
 
     private List<User> getUsers(List<ProjectMemberInfoRequest> membersInfo) {
+        log.info(
+                "ProjectTeam getUsers: 유저 ID 추출 시작, userIds={}",
+                membersInfo.stream().map(ProjectMemberInfoRequest::userId).toList());
         return userRepository.findAllById(
                 membersInfo.stream().map(ProjectMemberInfoRequest::userId).distinct().toList());
     }
@@ -268,13 +290,16 @@ public class ProjectTeamService {
                         + recruitCounts.getFullStackNum()
                         + recruitCounts.getDevOpsNum()
                         + recruitCounts.getDataEngineerNum();
+        log.info("ProjectTeam checkRecruit: 모집 인원 합계 계산 완료, totalRecruitNum={}", total);
         if (total < 0) {
-            log.error("ProjectTeamService: 프로젝트 팀 checkRecruit 음수 발생");
+            log.error("ProjectTeam checkRecruit: 총 모집 인원이 음수, 예외 발생 - total={}", total);
             throw new TeamInvalidRecruitNumException();
         }
         if (total == 0) {
+            log.info("ProjectTeam checkRecruit: 모집 인원이 0, 모집 false");
             return false;
         }
+        log.info("ProjectTeam checkRecruit: 모집 가능 상태 유지, isRecruit={}", isRecruit);
         return isRecruit;
     }
 
@@ -315,7 +340,7 @@ public class ProjectTeamService {
             List<String> mainImage,
             List<String> resultImages,
             ProjectTeamUpdateRequest request) {
-        log.info("UpdateProjectTeam: 시작");
+        log.info("ProjectTeam update: 시작, teamId={}, userId={}", projectTeamId, userId);
         final TeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> updateMembersInfo = request.getProjectMember();
@@ -323,73 +348,86 @@ public class ProjectTeamService {
         final List<Long> deleteMembersId = request.getDeleteMembers();
 
         verifyUserIsActiveProjectMember(userId, projectTeamId);
-        log.info("UpdateProjectTeam: 유저 검증 확인 완료");
+        log.info("ProjectTeam update: 유저 검증 완료, userId={}", userId);
 
         validateLeaderExists(updateMembersInfo, ProjectMemberInfoRequest::isLeader);
-        log.info("UpdateProjectTeam: updateMember 리더 존재 확인 완료");
+        log.info(
+                "ProjectTeam update: 리더 존재 검증 완료, leaderCount={}",
+                updateMembersInfo.stream().filter(ProjectMemberInfoRequest::isLeader).count());
 
         final ProjectTeam team =
                 projectTeamRepository
                         .findById(projectTeamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
         validateResultImageCount(projectTeamId, resultImages, request);
-        log.info("UpdateProjectTeam: 결과 이미지 개수 검증 완료");
+        log.info(
+                "ProjectTeam update: 결과 이미지 개수 검증 완료, newCount={}, deleteCount={}",
+                resultImages.size(),
+                request.getDeleteResultImages().size());
 
         final boolean wasRecruit = team.isRecruited();
         final boolean isRecruited = this.checkRecruit(recruitCounts, teamData.getIsRecruited());
+        log.info(
+                "ProjectTeam update: 모집 여부 확인 완료, wasRecruit={}, isRecruitedRequest={}, resolved={}",
+                wasRecruit,
+                teamData.getIsRecruited(),
+                isRecruited);
 
         if (!teamData.getName().equals(team.getName())) {
             checkUniqueProjectName(teamData.getName());
-            log.info("UpdateProjectTeam: 팀 이름 변경, 검증 완료");
+            log.info(
+                    "ProjectTeam update: 팀 이름 변경 확인 완료, oldName={}, newName={}",
+                    team.getName(),
+                    teamData.getName());
         }
 
         if (!request.getTeamStacks().isEmpty()) {
             team.clearTeamStacks();
             teamStackService.update(teamStacksInfo, team);
-            log.info("UpdateProjectTeam: 팀 스택 변경, 업데이트 적용");
+            log.info("ProjectTeam update: 팀 스택 업데이트 완료, newStackCount={}", teamStacksInfo.size());
         }
 
         if (!mainImage.isEmpty()) {
             final ProjectMainImage image =
                     ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
             mainImgRepository.save(image);
-            log.info("UpdateProjectTeam: 팀 메인 이미지 변경, 메인 이미지 저장", image.getId());
+            log.info("ProjectTeam update: 메인 이미지 저장 완료, imageId={}", image.getId());
         }
 
         if (!resultImages.isEmpty()) {
             final List<ProjectResultImage> images =
                     ProjectImageMapper.toResultEntities(resultImages, team);
             resultImgRepository.saveAll(images);
-            log.info("UpdateProjectTeam: 팀 결과 이미지 변경, 결과 이미지 저장", images);
+            log.info("ProjectTeam update: 결과 이미지 저장 완료, count={}", images.size());
         }
 
         final List<ProjectMember> existingMembers =
                 projectMemberRepository.findAllByProjectTeamId(projectTeamId);
-        log.info("UpdateProjectTeam: 기존 프로젝트 멤버 수", existingMembers.size());
+        log.info("ProjectTeam update: 기존 프로젝트 멤버 조회 완료, existingCount={}", existingMembers.size());
 
         final List<ProjectMemberInfoRequest> incomingMembersInfo =
                 updateExistMembersAndExtractIncomingMembers(
                         existingMembers, updateMembersInfo, deleteMembersId);
-        log.info("UpdateProjectTeam: 신규 프로젝트 멤버 수", incomingMembersInfo.size());
+        log.info("ProjectTeam update: 신규 멤버 추출 완료, incomingCount={}", incomingMembersInfo.size());
 
         team.update(teamData, isRecruited);
-        log.info("UpdateProjectTeam: 프로젝트 팀 엔티티 업데이트");
+        log.info("ProjectTeam update: 팀 엔티티 업데이트 완료");
 
         if (!incomingMembersInfo.isEmpty()) {
             final Map<Long, User> users = getIdAndUserMap(incomingMembersInfo);
             final List<ProjectMember> incomingMembers =
                     ProjectMemberMapper.toEntities(incomingMembersInfo, team, users);
             projectMemberRepository.saveAll(incomingMembers);
-            log.info("UpdateProjectTeam: 신규 ");
+            log.info("ProjectTeam update: 신규 멤버 저장 완료, count={}", incomingMembers.size());
         }
         /* 12.isRecruited 값이 false → true 로 변경되었을 때 Slack 알림 전송 **/
         if (!wasRecruit && isRecruited) {
-            // send Slack
+            log.info("ProjectTeam update: 모집 상태 변경됨, Slack 알림 대상");
             final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
             return ProjectTeamMapper.toUpdatedResponse(projectTeamId, team, leaders);
         }
 
-        /* 13. 인덱스 업데이트 */
+        log.info("ProjectTeam update: 인덱스 업데이트만 수행, teamId={}", projectTeamId);
         return ProjectTeamMapper.toNoneSlackUpdateResponse(projectTeamId, team);
     }
 
@@ -404,7 +442,20 @@ public class ProjectTeamService {
     private void validateResultImageCount(
             Long projectTeamId, List<String> resultImages, ProjectTeamUpdateRequest request) {
         final int resultImageCount = resultImgRepository.countByProjectTeamId(projectTeamId);
+        int deleteCount = request.getDeleteResultImages().size();
+        int newCount = resultImages.size();
+        int finalCount = resultImageCount - deleteCount + newCount;
+
+        log.info(
+                "ProjectTeam validateResultImageCount: 현재={}, 삭제예정={}, 추가예정={}, 최종={}",
+                resultImageCount,
+                deleteCount,
+                newCount,
+                finalCount);
         if (resultImageCount - request.getDeleteResultImages().size() + resultImages.size() > 10) {
+            log.info(
+                    "ProjectTeam validateResultImageCount: 결과 이미지 개수 초과 예외 발생 - limit=10, actual={}",
+                    finalCount);
             throw new ProjectExceededResultImageException();
         }
     }
@@ -438,11 +489,23 @@ public class ProjectTeamService {
         final Map<Long, ProjectMemberInfoRequest> updateMap =
                 toUserIdAndMemberInfoRequest(updateMember, ProjectMemberInfoRequest::userId);
         final Set<Long> deleteIdSet = new HashSet<>(deleteMemberIds);
+
+        log.info(
+                "ProjectTeam updateExistMembersAndExtractIncomingMembers: 수정 요청 수={}, 삭제 요청 수={}",
+                updateMap.size(),
+                deleteIdSet.size());
         checkDuplicateUpdateMembers(updateMap, updateMember);
         checkDuplicateDeleteMembers(deleteIdSet, deleteMemberIds);
+        log.info("ProjectTeam updateExistMembersAndExtractIncomingMembers: 중복 검증 완료");
+
         applyMemberStateChanges(existingMembers, updateMap, deleteIdSet);
 
-        return extractIncomingMembers(updateMap);
+        final List<ProjectMemberInfoRequest> incoming = extractIncomingMembers(updateMap);
+        log.info(
+                "ProjectTeam updateExistMembersAndExtractIncomingMembers: 신규 멤버 추출 완료, count={}",
+                incoming.size());
+
+        return incoming;
     }
 
     /**
@@ -455,6 +518,10 @@ public class ProjectTeamService {
     public static void checkDuplicateDeleteMembers(
             Set<Long> deleteIdSet, List<Long> deleteMemberIds) {
         if (deleteIdSet.size() != deleteMemberIds.size()) {
+            log.error(
+                    "ProjectTeam checkDuplicateDeleteMembers: 삭제 요청 중 중복 발생 - unique={}, total={}",
+                    deleteIdSet.size(),
+                    deleteMemberIds.size());
             throw new TeamDuplicateDeleteUpdateException();
         }
     }
@@ -469,6 +536,10 @@ public class ProjectTeamService {
     public static <T> void checkDuplicateUpdateMembers(
             Map<Long, T> updateMap, List<T> updateMember) {
         if (updateMap.size() != updateMember.size()) {
+            log.error(
+                    "ProjectTeam checkDuplicateUpdateMembers: 중복 userId 감지됨 - unique={}, total={}",
+                    updateMap.size(),
+                    updateMember.size());
             throw new TeamMissingUpdateMemberException();
         }
     }
@@ -492,6 +563,11 @@ public class ProjectTeamService {
         final Set<Integer> toActive = new HashSet<>();
         final Set<Integer> toInactive = new HashSet<>();
         final int updateCount = updateMap.size();
+        log.info(
+                "ProjectTeam applyMemberStateChanges: 요청된 수정 수={}, 삭제 수={}",
+                updateCount,
+                deleteIdSet.size());
+
         for (ProjectMember member : existingMembers) {
             final Long userId = member.getUser().getId();
             final boolean markedForDelete = deleteIdSet.contains(member.getId());
@@ -499,13 +575,22 @@ public class ProjectTeamService {
 
             if (markedForDelete) {
                 if (member.isDeleted()) {
+                    log.error(
+                            "ProjectTeam applyMemberStateChanges: 이미 삭제된 멤버 삭제 시도 - memberId={}",
+                            member.getId());
                     throw new ProjectMemberNotFoundException();
                 }
                 if (updateInfo != null) {
+                    log.error(
+                            "ProjectTeam applyMemberStateChanges: 동일 멤버가 수정/삭제 요청 모두 포함 - memberId={}",
+                            member.getId());
                     throw new ProjectTeamDuplicateDeleteUpdateException();
                 }
                 member.softDelete();
                 toInactive.add(member.getId().intValue());
+                log.info(
+                        "ProjectTeam applyMemberStateChanges: 멤버 soft delete 처리 - memberId={}",
+                        member.getId());
                 continue;
             }
 
@@ -513,10 +598,21 @@ public class ProjectTeamService {
                 member.toActive(updateInfo.teamRole(), updateInfo.isLeader());
                 toActive.add(member.getId().intValue());
                 updateMap.remove(userId);
+                log.info(
+                        "ProjectTeam applyMemberStateChanges: 멤버 상태 업데이트 - memberId={}, role={}, isLeader={}",
+                        member.getId(),
+                        updateInfo.teamRole(),
+                        updateInfo.isLeader());
             }
         }
+
         if (deleteIdSet.size() != toInactive.size()
                 || toActive.size() + toInactive.size() != updateCount) {
+            log.error(
+                    "ProjectTeam applyMemberStateChanges: 수정/삭제 처리 수 불일치 - expected={}, processed={}, deleted={}",
+                    updateCount,
+                    toActive.size() + toInactive.size(),
+                    toInactive.size());
             throw new ProjectTeamMissingUpdateMemberException();
         }
     }
@@ -540,8 +636,10 @@ public class ProjectTeamService {
     private void checkUniqueProjectName(String name) {
         final boolean exist = projectTeamRepository.existsByName(name);
         if (exist) {
+            log.info("ProjectTeam checkUniqueProjectName: 팀 이름 중복 발생 - name={}", name);
             throw new ProjectDuplicateTeamName();
         }
+        log.info("ProjectTeam checkUniqueProjectName: 팀 이름 중복 없음 - name={}", name);
     }
 
     /**
@@ -556,8 +654,16 @@ public class ProjectTeamService {
                 projectMemberRepository.existsByUserIdAndProjectTeamIdAndIsDeletedFalseAndStatus(
                         userId, projectTeamId, StatusCategory.APPROVED);
         if (!isMember) {
+            log.info(
+                    "ProjectTeam verifyUserIsActiveProjectMember: 활성 멤버 아님 - userId={}, teamId={}",
+                    userId,
+                    projectTeamId);
             throw new TeamInvalidActiveRequester();
         }
+        log.info(
+                "ProjectTeam verifyUserIsActiveProjectMember: 활성 멤버 확인 완료 - userId={}, teamId={}",
+                userId,
+                projectTeamId);
     }
 
     /**
@@ -569,8 +675,13 @@ public class ProjectTeamService {
      */
     @Transactional
     public ProjectTeamDetailResponse updateViewCountAndGetDetail(Long projectTeamId) {
+        log.info("ProjectTeam updateViewCountAndGetDetail: 조회 시작 - teamId={}", projectTeamId);
         final ProjectTeam project = projectTeamRepository.findById(projectTeamId).orElseThrow();
         project.increaseViewCount();
+        log.info(
+                "ProjectTeam updateViewCountAndGetDetail: 조회 수 증가 완료 - teamId={}, newViewCount={}",
+                projectTeamId,
+                project.getViewCount());
         final List<ProjectMember> pm = project.getProjectMembers();
         return ProjectTeamMapper.toDetailResponse(project, pm);
     }
@@ -583,8 +694,9 @@ public class ProjectTeamService {
      */
     @Transactional(readOnly = true)
     public List<ProjectSliceTeamsResponse> getProjectTeamsById(List<Long> keys) {
+        log.info("ProjectTeam getProjectTeamsById: 팀 목록 조회 시작, count={}", keys.size());
         final List<ProjectTeam> teams = projectTeamRepository.findAllById(keys);
-
+        log.info("ProjectTeam getProjectTeamsById: 팀 목록 조회 완료, found={}", teams.size());
         return teams.stream().map(ProjectTeamMapper::toGetAllResponse).toList();
     }
 
@@ -596,11 +708,22 @@ public class ProjectTeamService {
      */
     @Transactional(readOnly = true)
     public GetAllTeamsResponse getSliceTeams(GetProjectTeamsQuery query) {
+        log.info(
+                "ProjectTeam getSliceTeams: 팀 목록 커서 기반 조회 시작 - limit={}, sortType={}",
+                query.getLimit(),
+                query.getSortType());
+
         final int limit = query.getLimit();
         final SortType sortType = query.getSortType();
         final List<ProjectTeam> teams = projectTeamDslRepository.sliceTeams(query);
+
+        log.info("ProjectTeam getSliceTeams: 조회된 전체 팀 수={}", teams.size());
+
         final SliceNextCursor next = setNextInfo(teams, limit, sortType);
         final List<ProjectTeam> fitTeams = ensureMaxSize(teams, limit);
+
+        log.info("ProjectTeam getSliceTeams: 페이징 처리된 팀 수={}", fitTeams.size());
+
         final List<SliceTeamsResponse> responses =
                 new ArrayList<>(
                         fitTeams.stream().map(ProjectTeamMapper::toGetAllResponse).toList());
@@ -619,9 +742,18 @@ public class ProjectTeamService {
     private static SliceNextCursor setNextInfo(
             List<ProjectTeam> sortedTeams, Integer limit, SortType sortType) {
         if (sortedTeams.size() <= limit) {
+            log.info(
+                    "ProjectTeam setNextInfo: 다음 페이지 없음 - size={}, limit={}",
+                    sortedTeams.size(),
+                    limit);
             return SliceNextCursor.builder().hasNext(false).build();
         }
         final ProjectTeam last = sortedTeams.getLast();
+        log.info(
+                "ProjectTeam setNextInfo: 다음 커서 생성 - sortType={}, lastTeamId={}",
+                sortType,
+                last.getId());
+
         return getNextInfo(
                 sortType,
                 last.getId(),
@@ -646,6 +778,14 @@ public class ProjectTeamService {
             LocalDateTime updatedAt,
             Integer viewCount,
             Integer likeCount) {
+        log.info(
+                "ProjectTeam getNextInfo: 커서 정보 생성 - sortType={}, id={}, updatedAt={}, viewCount={}, likeCount={}",
+                sortType,
+                id,
+                updatedAt,
+                viewCount,
+                likeCount);
+
         return switch (sortType) {
             case SortType.UPDATE_AT_DESC ->
                     SliceNextCursor.builder()
@@ -681,6 +821,8 @@ public class ProjectTeamService {
      */
     @Transactional
     public void close(Long teamId, Long userId) {
+        log.info("ProjectTeam close: 모집 종료 요청 - teamId={}, userId={}", teamId, userId);
+
         projectMemberService.checkActive(teamId, userId);
 
         final ProjectTeam pt =
@@ -688,6 +830,8 @@ public class ProjectTeamService {
                         .findById(teamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
         pt.close();
+
+        log.info("ProjectTeam close: 모집 상태 종료 완료 - teamId={}", teamId);
     }
 
     /**
@@ -700,6 +844,8 @@ public class ProjectTeamService {
      */
     @Transactional
     public void softDelete(Long teamId, Long userId) {
+        log.info("ProjectTeam softDelete: 소프트 삭제 요청 - teamId={}, userId={}", teamId, userId);
+
         projectMemberService.checkActive(teamId, userId);
 
         final ProjectTeam pt =
@@ -707,6 +853,7 @@ public class ProjectTeamService {
                         .findById(teamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
         pt.softDelete();
+        log.info("ProjectTeam softDelete: 소프트 삭제 완료 - teamId={}", teamId);
     }
 
     //    //삭제 대기
@@ -743,20 +890,38 @@ public class ProjectTeamService {
         final TeamRole teamRole = request.teamRole();
         final String summary = request.summary();
 
+        log.info(
+                "ProjectTeam apply: 지원 요청 시작 - teamId={}, applicantId={}, role={}",
+                teamId,
+                applicantId,
+                teamRole);
+
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
-                        .orElseThrow(ProjectTeamNotFoundException::new);
+                        .orElseThrow(
+                                () -> {
+                                    log.error("ProjectTeam apply: 존재하지 않는 팀 - teamId={}", teamId);
+                                    return new ProjectTeamNotFoundException();
+                                });
+
         if (!pt.isRecruited()) {
+            log.error("ProjectTeam apply: 팀 모집 종료됨 - teamId={}", teamId);
             throw new ProjectTeamRecruitmentClosedException();
         }
+
         if (!pt.isRecruitPosition(teamRole)) {
+            log.info("ProjectTeam apply: 포지션 모집 종료됨 - teamId={}, role={}", teamId, teamRole);
             throw new ProjectTeamPositionClosedException();
         }
+
         final ProjectMember pm =
                 projectMemberService.applyApplicant(pt, applicantId, teamRole, summary);
-        final List<LeaderInfo> leaders = pt.getLeaders();
         final String applicantEmail = pm.getUser().getEmail();
+        final List<LeaderInfo> leaders = pt.getLeaders();
+
+        log.info(
+                "ProjectTeam apply: 지원 완료 - applicantId={}, email={}", applicantId, applicantEmail);
 
         return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.PENDING);
     }
@@ -773,19 +938,41 @@ public class ProjectTeamService {
      */
     @Transactional
     public List<ProjectSlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
+        log.info(
+                "ProjectTeam cancelApplication: 지원 취소 요청 - teamId={}, applicantId={}",
+                teamId,
+                applicantId);
+
         final ProjectMember pm =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(ProjectMemberNotFoundException::new);
+                        .orElseThrow(
+                                () -> {
+                                    log.error(
+                                            "ProjectTeam cancelApplication: 지원 정보 없음 - teamId={}, applicantId={}",
+                                            teamId,
+                                            applicantId);
+                                    return new ProjectMemberNotFoundException();
+                                });
+
         final ProjectTeam pt =
                 projectTeamRepository
                         .findById(teamId)
-                        .orElseThrow(ProjectTeamNotFoundException::new);
-        final String applicantEmail = pm.getUser().getEmail();
-        pt.remove(pm);
+                        .orElseThrow(
+                                () -> {
+                                    log.error(
+                                            "ProjectTeam cancelApplication: 팀 없음 - teamId={}",
+                                            teamId);
+                                    return new ProjectTeamNotFoundException();
+                                });
 
+        pt.remove(pm);
+        final String applicantEmail = pm.getUser().getEmail();
         final List<LeaderInfo> leaders = pt.getLeaders();
+
+        log.info("ProjectTeam cancelApplication: 지원 취소 완료 - email={}", applicantEmail);
+
         return ProjectSlackMapper.toDmRequest(
                 pt, leaders, applicantEmail, StatusCategory.CANCELLED);
     }
@@ -800,10 +987,18 @@ public class ProjectTeamService {
      * @return 지원자 목록
      */
     public List<ProjectMemberApplicantResponse> getApplicants(Long teamId, Long userId) {
+        log.info("ProjectTeam getApplicants: 지원자 조회 요청 - teamId={}, userId={}", teamId, userId);
+
         if (!projectMemberService.isActive(teamId, userId)) {
+            log.info("ProjectTeam getApplicants: 비활성 유저 요청, 빈 리스트 반환 - userId={}", userId);
             return List.of();
         }
-        return projectMemberService.getApplicants(teamId);
+
+        List<ProjectMemberApplicantResponse> applicants =
+                projectMemberService.getApplicants(teamId);
+        log.info("ProjectTeam getApplicants: 지원자 수 조회 완료 - count={}", applicants.size());
+
+        return applicants;
     }
 
     /**
@@ -818,6 +1013,12 @@ public class ProjectTeamService {
      */
     public List<ProjectSlackRequest.DM> acceptApplicant(
             Long teamId, Long userId, Long applicantId) {
+        log.info(
+                "ProjectTeam acceptApplicant: 지원자 승인 요청 - teamId={}, userId={}, applicantId={}",
+                teamId,
+                userId,
+                applicantId);
+
         verifyUserIsActiveProjectMember(userId, teamId);
         final String applicantEmail = projectMemberService.acceptApplicant(teamId, applicantId);
         final ProjectTeam pt =
@@ -825,6 +1026,8 @@ public class ProjectTeamService {
                         .findById(teamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
         final List<LeaderInfo> leaders = pt.getLeaders();
+
+        log.info("ProjectTeam acceptApplicant: 승인 완료 - applicantEmail={}", applicantEmail);
 
         return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.APPROVED);
     }
@@ -841,6 +1044,12 @@ public class ProjectTeamService {
      */
     public List<ProjectSlackRequest.DM> rejectApplicant(
             Long teamId, Long userId, Long applicantId) {
+        log.info(
+                "ProjectTeam rejectApplicant: 지원자 거절 요청 - teamId={}, userId={}, applicantId={}",
+                teamId,
+                userId,
+                applicantId);
+
         verifyUserIsActiveProjectMember(userId, teamId);
         final String applicantEmail = projectMemberService.rejectApplicant(teamId, applicantId);
         final ProjectTeam pt =
@@ -848,6 +1057,8 @@ public class ProjectTeamService {
                         .findById(teamId)
                         .orElseThrow(ProjectTeamNotFoundException::new);
         final List<LeaderInfo> leaders = pt.getLeaders();
+
+        log.info("ProjectTeam rejectApplicant: 거절 완료 - applicantEmail={}", applicantEmail);
 
         return ProjectSlackMapper.toDmRequest(pt, leaders, applicantEmail, StatusCategory.REJECT);
     }

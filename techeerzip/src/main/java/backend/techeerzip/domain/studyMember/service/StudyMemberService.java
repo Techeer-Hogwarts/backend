@@ -14,7 +14,9 @@ import backend.techeerzip.domain.studyTeam.entity.StudyTeam;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,8 +26,15 @@ public class StudyMemberService {
     private final UserRepository userRepository;
 
     public boolean checkActiveMemberByTeamAndUser(Long studyTeamId, Long userId) {
-        return studyMemberRepository.existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(
-                userId, studyTeamId, StatusCategory.APPROVED);
+        log.info(
+                "StudyMemberService checkActiveMemberByTeamAndUser: teamId={}, userId={}",
+                studyTeamId,
+                userId);
+        final boolean exists =
+                studyMemberRepository.existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(
+                        userId, studyTeamId, StatusCategory.APPROVED);
+        log.info("StudyMemberService checkActiveMemberByTeamAndUser: 존재 여부={}", exists);
+        return exists;
     }
 
     /**
@@ -40,14 +49,26 @@ public class StudyMemberService {
      */
     @Transactional
     public StudyMember applyApplicant(StudyTeam team, Long applicantId, String summary) {
+        log.info(
+                "StudyMemberService applyApplicant: teamId={}, applicantId={}, summary={}",
+                team.getId(),
+                applicantId,
+                summary);
+
         final StudyMember st =
                 studyMemberRepository
                         .findByStudyTeamIdAndUserId(team.getId(), applicantId)
-                        .orElseGet(() -> createApplicant(team, applicantId, summary));
+                        .orElseGet(
+                                () -> {
+                                    log.info("StudyMemberService applyApplicant: 기존 지원자 없음, 새로 생성");
+                                    return createApplicant(team, applicantId, summary);
+                                });
 
         if (!st.isPending()) {
-            st.toApplicant(); // 상태 변경이 필요한 경우에만 수행
+            log.info("StudyMemberService applyApplicant: 상태가 PENDING이 아님 → 상태를 지원자로 변경");
+            st.toApplicant();
         }
+
         return st;
     }
 
@@ -60,7 +81,13 @@ public class StudyMemberService {
      * @return 생성된 StudyMember 엔티티
      */
     private StudyMember createApplicant(StudyTeam team, Long applicantId, String summary) {
-        final StudyMember pm =
+        log.info(
+                "StudyMemberService createApplicant: 팀={}, 유저={}, 요약={}",
+                team.getId(),
+                applicantId,
+                summary);
+
+        final StudyMember sm =
                 StudyMember.builder()
                         .status(StatusCategory.PENDING)
                         .summary(summary)
@@ -68,7 +95,10 @@ public class StudyMemberService {
                         .studyTeam(team)
                         .user(userRepository.getReferenceById(applicantId))
                         .build();
-        return studyMemberRepository.save(pm);
+
+        final StudyMember saved = studyMemberRepository.save(sm);
+        log.info("StudyMemberService createApplicant: 저장 완료, memberId={}", saved.getId());
+        return saved;
     }
 
     /**
@@ -81,12 +111,25 @@ public class StudyMemberService {
      */
     @Transactional
     public String acceptApplicant(Long teamId, Long applicantId) {
+        log.info(
+                "StudyMemberService acceptApplicant: teamId={}, applicantId={}",
+                teamId,
+                applicantId);
+
         final StudyMember sm =
                 studyMemberRepository
                         .findByStudyTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(StudyMemberNotFoundException::new);
+                        .orElseThrow(
+                                () -> {
+                                    log.error("StudyMemberService acceptApplicant: 지원자 없음 → 예외 발생");
+                                    return new StudyMemberNotFoundException();
+                                });
+
         sm.toActive();
+        log.info(
+                "StudyMemberService acceptApplicant: 상태를 APPROVED로 변경, userEmail={}",
+                sm.getUser().getEmail());
         return sm.getUser().getEmail();
     }
 
@@ -100,12 +143,25 @@ public class StudyMemberService {
      */
     @Transactional
     public String rejectApplicant(Long teamId, Long applicantId) {
+        log.info(
+                "StudyMemberService rejectApplicant: teamId={}, applicantId={}",
+                teamId,
+                applicantId);
+
         final StudyMember sm =
                 studyMemberRepository
                         .findByStudyTeamIdAndUserIdAndStatus(
                                 teamId, applicantId, StatusCategory.PENDING)
-                        .orElseThrow(StudyMemberNotFoundException::new);
+                        .orElseThrow(
+                                () -> {
+                                    log.error("StudyMemberService rejectApplicant: 지원자 없음 → 예외 발생");
+                                    return new StudyMemberNotFoundException();
+                                });
+
         sm.toReject();
+        log.info(
+                "StudyMemberService rejectApplicant: 상태를 거절로 변경, userEmail={}",
+                sm.getUser().getEmail());
         return sm.getUser().getEmail();
     }
 
@@ -116,6 +172,10 @@ public class StudyMemberService {
      * @return 지원자 응답 리스트
      */
     public List<StudyApplicantResponse> getApplicants(Long studyTeamId) {
-        return studyMemberDslRepository.findManyApplicants(studyTeamId);
+        log.info("StudyMemberService getApplicants: teamId={}", studyTeamId);
+        List<StudyApplicantResponse> result =
+                studyMemberDslRepository.findManyApplicants(studyTeamId);
+        log.info("StudyMemberService getApplicants: 응답 개수={}", result.size());
+        return result;
     }
 }

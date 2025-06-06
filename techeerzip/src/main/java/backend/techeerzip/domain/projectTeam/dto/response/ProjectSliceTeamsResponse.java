@@ -7,12 +7,14 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import backend.techeerzip.domain.projectTeam.dto.request.TeamStackInfo;
 import backend.techeerzip.domain.projectTeam.type.TeamType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
 @JsonTypeName("PROJECT")
+@Schema(description = "프로젝트 팀 정보 (전체 목록 응답용)", name = "ProjectSliceTeamsResponse")
 public class ProjectSliceTeamsResponse implements SliceTeamsResponse {
 
     private final Long id;

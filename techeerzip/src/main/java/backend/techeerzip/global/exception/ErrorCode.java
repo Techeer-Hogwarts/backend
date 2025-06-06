@@ -51,10 +51,15 @@ public enum ErrorCode {
     BOOKMARK_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "BM002", "Bookmark already exists"),
     BOOKMARK_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "BM003", "Unauthorized to access this bookmark"),
 
+    //  Team
+    TEAM_INVALID_RECRUIT_NUM(HttpStatus.BAD_REQUEST, "ST004", "모집 인원이 음수 입니다."),
+    TEAM_INVALID_ACTIVE_REQUESTER(HttpStatus.BAD_REQUEST, "PM003", "팀 멤버만 접근할 수 있습니다."),
+    TEAM_INVALID_SORT_TYPE(HttpStatus.BAD_REQUEST, "PM003", "유효하지 않은 팀 정렬 방식 입니다.."),
+    TEAM_INVALID_SLICE_QUERY(HttpStatus.BAD_REQUEST, "PM003", "유효하지 않은 팀 정렬 쿼리 입니다.."),
+
     // ==== ProjectMember ====
     PROJECT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "PM001", "존재하지 않는 프로젝트 멤버입니다."),
     PROJECT_MEMBER_INVALID_TEAM_ROLE(HttpStatus.BAD_REQUEST, "PM002", "프로젝트 멤버의 팀 역할이 유효하지 않습니다."),
-    TEAM_INVALID_ACTIVE_REQUESTER(HttpStatus.BAD_REQUEST, "PM003", "팀 멤버만 접근할 수 있습니다."),
     PROJECT_MEMBER_APPLICATION_EXISTS(HttpStatus.BAD_REQUEST, "PM004", "이미 해당 프로젝트에 지원하셨습니다."),
     PROJECT_MEMBER_ALREADY_ACTIVE(HttpStatus.BAD_REQUEST, "PM005", "이미 해당 프로젝트에서 활동 중인 멤버입니다."),
     PROJECT_MEMBER_NOT_APPLICANT(HttpStatus.BAD_REQUEST, "PM006", "해당 프로젝트 지원자가 아닙니다."),
@@ -99,7 +104,6 @@ public enum ErrorCode {
     STUDY_TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "ST001", "요청한 스터디 팀을 찾을 수 없습니다."),
     STUDY_TEAM_BAD_REQUEST(HttpStatus.BAD_REQUEST, "ST002", "유효하지 않은 요청입니다."),
     STUDY_TEAM_DUPLICATE_TEAM_NAME(HttpStatus.CONFLICT, "ST003", "존재하는 스터디 이름입니다."),
-    TEAM_INVALID_RECRUIT_NUM(HttpStatus.BAD_REQUEST, "ST004", "모집 인원이 음수 입니다."),
     STUDY_TEAM_MISSING_LEADER(HttpStatus.BAD_REQUEST, "ST005", "스터디 팀 리더가 존재하지 않습니다."),
     STUDY_TEAM_INVALID_UPDATE_MEMBER(HttpStatus.BAD_REQUEST, "ST006", "스터디 업데이트 멤버가 유효하지 않습니다."),
     STUDY_TEAM_ALREADY_ACTIVE_MEMBER(HttpStatus.BAD_REQUEST, "ST007", "이미 활동중인 스터디 멤버입니다."),
@@ -143,6 +147,10 @@ public enum ErrorCode {
     TECH_BLOGGING_TERM_ALREADY_JOINED(HttpStatus.CONFLICT, "TBT003", "이미 해당 챌린지에 참여한 유저입니다."),
     TECH_BLOGGING_TERM_NO_ROUNDS(HttpStatus.NOT_FOUND, "TBT004", "해당 챌린지 기간에 회차가 존재하지 않습니다."),
     TECH_BLOGGING_TERM_REQUIRED(HttpStatus.BAD_REQUEST, "TBT005", "챌린지 기간(termId)을 함께 입력해주세요.");
+
+    // S3
+    S3_UPLOAD_FAIL(HttpStatus.BAD_REQUEST, "S300", "S3 요청이 유효하지 않습니다."),
+    S3_DELETE_FAIL(HttpStatus.BAD_REQUEST, "S301", "S3 요청이 유효하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;
