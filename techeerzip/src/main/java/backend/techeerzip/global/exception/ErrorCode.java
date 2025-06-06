@@ -149,7 +149,8 @@ public enum ErrorCode {
         TECH_BLOGGING_TERM_REQUIRED(HttpStatus.BAD_REQUEST, "TBT005", "챌린지 기간(termId)을 함께 입력해주세요."),
 
         // S3
-        S3_DELETE_FAIL(HttpStatus.BAD_REQUEST, "S301", "S3 요청이 유효하지 않습니다.");
+        S3_UPLOAD_FAIL(HttpStatus.BAD_REQUEST, "S300", "S3 업로드 요청이 유효하지 않습니다."),
+        S3_DELETE_FAIL(HttpStatus.BAD_REQUEST, "S301", "S3 삭제 요청이 유효하지 않습니다.");
 
         private final HttpStatus status;
         private final String code;
