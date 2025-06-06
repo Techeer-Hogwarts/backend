@@ -1,6 +1,6 @@
 package backend.techeerzip.domain.auth.service;
 
-import java.util.Collections;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import backend.techeerzip.domain.auth.jwt.CustomUserPrincipal;
+import backend.techeerzip.domain.role.entity.RoleType;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.repository.UserRepository;
@@ -44,7 +45,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (email.equals(swaggerUsername)) {
             return org.springframework.security.core.userdetails.User.withUsername(swaggerUsername)
                     .password(passwordEncoder.encode(swaggerPassword))
-                    .roles("USER")
+                    .roles("BOOTCAMP")
                     .build();
         }
 
@@ -58,14 +59,21 @@ public class CustomUserDetailsService implements UserDetailsService {
                                     return new UserNotFoundException();
                                 });
 
-        logger.info("사용자 조회 성공 - userId: {}, email: {}", user.getId(), user.getEmail(), CONTEXT);
-
-        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().getName());
-
-        return new CustomUserPrincipal(
+        logger.info(
+                "사용자 조회 성공 - userId: {}, email: {}, role: {}",
                 user.getId(),
                 user.getEmail(),
-                user.getPassword(),
-                Collections.singleton(authority));
+                user.getRole().getName(),
+                CONTEXT);
+
+        String roleName = user.getRole().getName();
+        RoleType roleType = RoleType.valueOf(roleName.toUpperCase());
+
+        GrantedAuthority authority =
+                new SimpleGrantedAuthority(roleType.getRoleName().toUpperCase());
+        List<GrantedAuthority> authorities = List.of(authority);
+
+        return new CustomUserPrincipal(
+                user.getId(), user.getEmail(), user.getPassword(), roleType, authorities);
     }
 }

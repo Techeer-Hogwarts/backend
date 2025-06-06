@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.user.dto.request.CreateExternalUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
 import backend.techeerzip.domain.user.dto.request.GetUserProfileListRequest;
@@ -40,6 +41,22 @@ public interface UserSwagger {
                                                 implementation = ErrorResponse.class)))
     })
     default ResponseEntity<Void> signup(MultipartFile file, CreateUserWithResumeRequest req) {
+        throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
+    }
+
+    @Operation(summary = "외부인 회원가입", description = "새로운 외부인 회원을 생성합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "회원가입 성공"),
+        @ApiResponse(
+                responseCode = "400",
+                description = "잘못된 회원가입 요청",
+                content =
+                        @io.swagger.v3.oas.annotations.media.Content(
+                                schema =
+                                        @io.swagger.v3.oas.annotations.media.Schema(
+                                                implementation = ErrorResponse.class)))
+    })
+    default ResponseEntity<Void> signupExternal(CreateExternalUserRequest req) {
         throw new UnsupportedOperationException("Swagger 전용 인터페이스입니다.");
     }
 
