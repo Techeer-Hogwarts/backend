@@ -2,6 +2,7 @@ package backend.techeerzip.domain.user.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import backend.techeerzip.domain.user.entity.JoinReason;
@@ -28,7 +29,7 @@ public class CreateExternalUserRequest {
     @Schema(description = "비밀번호", example = "Passw0rd!")
     private String password;
 
-    @NotBlank
+    @NotNull
     @Schema(description = "가입 동기", example = "BOOTCAMP")
     private JoinReason joinReason;
 }
