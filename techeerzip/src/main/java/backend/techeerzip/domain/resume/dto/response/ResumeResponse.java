@@ -37,11 +37,11 @@ public class ResumeResponse {
         this.viewCount = resume.getViewCount();
         this.createdAt = resume.getCreatedAt();
         this.updatedAt = resume.getUpdatedAt();
-        this.user = new UserInfo(
-            resumeUser.getName(),
-            resumeUser.getNickname(),
-            resumeUser.getProfileImage()
-        );
+        this.user =
+                new UserInfo(
+                        resumeUser.getName(),
+                        resumeUser.getNickname(),
+                        resumeUser.getProfileImage());
     }
 
     @Getter

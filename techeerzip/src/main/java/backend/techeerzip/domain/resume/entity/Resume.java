@@ -2,7 +2,6 @@ package backend.techeerzip.domain.resume.entity;
 
 import java.time.LocalDateTime;
 
-import backend.techeerzip.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,10 +13,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -66,7 +63,8 @@ public class Resume extends BaseEntity {
     private String category;
 
     @Builder
-    public Resume(User user, String title, String url, String position, String category, boolean isMain) {
+    public Resume(
+            User user, String title, String url, String position, String category, boolean isMain) {
         this.user = user;
         this.title = title;
         this.url = url;
