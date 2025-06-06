@@ -1,19 +1,18 @@
 package backend.techeerzip.global.exception;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
-        // Common
-        INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "Invalid Input Value"),
-        METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "C002", "Method Not Allowed"),
-        INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "Internal Server Error"),
-        INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "Invalid Type Value"),
-        HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "Access is Denied"),
-        INVALID_CURSOR_ID(HttpStatus.BAD_REQUEST, "C006", "유효하지 않은 커서 ID입니다."),
-        EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "CT06", "결과 이미지는 10개까지만 등록 가능합니다."),
+    // Common
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "Invalid Input Value"),
+    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "C002", "Method Not Allowed"),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "Internal Server Error"),
+    INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C004", "Invalid Type Value"),
+    HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "C005", "접근 권한이 없습니다."),
+    INVALID_CURSOR_ID(HttpStatus.BAD_REQUEST, "C006", "유효하지 않은 커서 ID입니다."),
+    EXCEEDED_RESULT_IMAGE(HttpStatus.BAD_REQUEST, "CT06", "결과 이미지는 10개까지만 등록 가능합니다."),
 
         // Auth
         AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "A001", "이메일 또는 비밀번호가 올바르지 않습니다."),
