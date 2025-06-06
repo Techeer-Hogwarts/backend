@@ -1,27 +1,6 @@
 package backend.techeerzip.domain.user.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
-
+import backend.techeerzip.domain.auth.exception.AuthNotTecheerException;
 import backend.techeerzip.domain.auth.exception.AuthNotVerifiedEmailException;
 import backend.techeerzip.domain.auth.service.AuthService;
 import backend.techeerzip.domain.blog.repository.BlogRepository;
@@ -38,6 +17,7 @@ import backend.techeerzip.domain.role.repository.RoleRepository;
 import backend.techeerzip.domain.session.repository.SessionRepository;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
 import backend.techeerzip.domain.task.service.TaskService;
+import backend.techeerzip.domain.user.dto.request.CreateExternalUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
 import backend.techeerzip.domain.user.dto.request.GetUserProfileListRequest;
@@ -63,8 +43,27 @@ import backend.techeerzip.domain.userExperience.exception.UserExperienceNotFound
 import backend.techeerzip.domain.userExperience.repository.UserExperienceRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import backend.techeerzip.global.logger.CustomLogger;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -112,6 +111,10 @@ public class UserService {
         CreateResumeRequest resumeRequest = createUserWithResumeRequest.getCreateResumeRequest();
         List<CreateUserExperienceRequest> experiences =
                 createUserWithResumeRequest.getCreateUserExperienceRequest().getExperiences();
+
+        if (!authService.checkTecheer(createUserRequest.getEmail())) {
+            throw new AuthNotTecheerException();
+        }
 
         if (!authService.checkEmailVerified(createUserRequest.getEmail())) {
             logger.warn("이메일 인증 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
@@ -220,6 +223,44 @@ public class UserService {
 
         userExperienceRepository.saveAll(experiencesData);
         logger.info("경력 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
+    }
+
+    public void signUpExternal(CreateExternalUserRequest createExternalUserRequest) {
+
+        String email = createExternalUserRequest.getEmail();
+
+        if (!authService.checkEmailVerified(email)) {
+            logger.warn("이메일 인증 필요 - email: {}", createExternalUserRequest.getEmail(), CONTEXT);
+            throw new AuthNotVerifiedEmailException();
+        }
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new UserAlreadyExistsException();
+        }
+
+        Long roleId =
+                switch (createExternalUserRequest.getJoinReason()) {
+                    case COMPANY -> 4L;
+                    case BOOTCAMP -> 5L;
+                };
+
+        Role role = roleRepository.findById(roleId).orElseThrow(RoleNotFoundException::new);
+
+        String name = createExternalUserRequest.getName();
+        String password = createExternalUserRequest.getPassword();
+        String hashedPassword = passwordEncoder.encode(password);
+
+        User user =
+                User.builder()
+                        .email(email)
+                        .password(hashedPassword)
+                        .name(name)
+                        .role(role)
+                        .isAuth(true)
+                        .build();
+
+        userRepository.save(user);
+        logger.info("외부 회원가입 완료 - email: {}, role: {}", email, role.getName(), CONTEXT);
     }
 
     @Transactional
