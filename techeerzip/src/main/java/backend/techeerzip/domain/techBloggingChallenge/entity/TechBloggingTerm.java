@@ -69,11 +69,7 @@ public class TechBloggingTerm extends BaseEntity {
     }
 
     public static TechBloggingTerm create(int year, TermPeriod period) {
-        return TechBloggingTerm.builder()
-                .year(year)
-                .period(period)
-                .isDeleted(false)
-                .build();
+        return TechBloggingTerm.builder().year(year).period(period).isDeleted(false).build();
     }
 
     @Deprecated

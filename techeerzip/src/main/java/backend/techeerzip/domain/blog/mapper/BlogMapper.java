@@ -3,21 +3,22 @@ package backend.techeerzip.domain.blog.mapper;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import backend.techeerzip.domain.blog.dto.request.BlogIndexRequest;
 import backend.techeerzip.domain.blog.dto.request.BlogSaveRequest;
 import backend.techeerzip.domain.blog.dto.response.BlogAuthorResponse;
 import backend.techeerzip.domain.blog.dto.response.BlogListResponse;
 import backend.techeerzip.domain.blog.dto.response.BlogResponse;
 import backend.techeerzip.domain.blog.dto.response.BlogUrlsResponse;
+import backend.techeerzip.domain.blog.dto.response.CrawlingBlogResponse;
 import backend.techeerzip.domain.blog.entity.Blog;
 import backend.techeerzip.domain.blog.entity.BlogCategory;
+import backend.techeerzip.domain.blog.exception.BlogCrawlingException;
 import backend.techeerzip.domain.blog.exception.BlogInvalidRequestException;
 import backend.techeerzip.domain.user.entity.User;
-import backend.techeerzip.domain.blog.dto.response.CrawlingBlogResponse;
-import backend.techeerzip.domain.blog.exception.BlogCrawlingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 public class BlogMapper {
     private BlogMapper() {
@@ -137,8 +138,10 @@ public class BlogMapper {
             return CrawlingBlogResponse.builder()
                     .userId(userIdNode.asLong())
                     .blogUrl(blogUrlNode.asText())
-                    .posts(mapper.convertValue(node.get("posts"), new TypeReference<List<BlogSaveRequest>>() {
-                    }))
+                    .posts(
+                            mapper.convertValue(
+                                    node.get("posts"),
+                                    new TypeReference<List<BlogSaveRequest>>() {}))
                     .category(category)
                     .build();
         } catch (BlogCrawlingException e) {
@@ -148,8 +151,8 @@ public class BlogMapper {
         }
     }
 
-    public static CrawlingBlogResponse fromParams(Long userId, String blogUrl, List<BlogSaveRequest> posts,
-            String category) {
+    public static CrawlingBlogResponse fromParams(
+            Long userId, String blogUrl, List<BlogSaveRequest> posts, String category) {
         return CrawlingBlogResponse.builder()
                 .userId(userId)
                 .blogUrl(blogUrl)

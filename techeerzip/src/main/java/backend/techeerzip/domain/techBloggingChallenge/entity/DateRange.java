@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,9 +42,9 @@ public class DateRange {
     }
 
     public boolean overlaps(DateRange other) {
-        return other != null &&
-                !this.endDate.isBefore(other.startDate) &&
-                !other.endDate.isBefore(this.startDate);
+        return other != null
+                && !this.endDate.isBefore(other.startDate)
+                && !other.endDate.isBefore(this.startDate);
     }
 
     public static DateRange of(LocalDate startDate, LocalDate endDate) {

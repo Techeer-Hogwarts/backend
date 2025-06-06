@@ -23,7 +23,9 @@ public class TermRoundsSummaryResponse {
     @Schema(description = "챌린지 종료일", example = "2025-08-03")
     private final LocalDate endDate;
 
-    @Schema(description = "회차 요약", example = "[{ 'roundId': 1, 'name': '1회차', 'period': '2025-03-03 - 2025-03-16' }, ...]")
+    @Schema(
+            description = "회차 요약",
+            example = "[{ 'roundId': 1, 'name': '1회차', 'period': '2025-03-03 - 2025-03-16' }, ...]")
     private final List<RoundSummary> rounds;
 
     @Getter

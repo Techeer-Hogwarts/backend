@@ -40,8 +40,7 @@ public class TechBloggingRound extends BaseEntity {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
-    @Embedded
-    private DateRange dateRange;
+    @Embedded private DateRange dateRange;
 
     // 회차 순서
     @Column(nullable = false)

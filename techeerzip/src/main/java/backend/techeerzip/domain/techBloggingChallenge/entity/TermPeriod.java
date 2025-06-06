@@ -28,12 +28,11 @@ public enum TermPeriod {
     public LocalDate getEndDate(int year) {
         if (this == SECOND_HALF) {
             // 하반기는 다음 해 2월까지
-            return LocalDate.of(year + 1, endMonth,
-                    YearMonth.of(year + 1, endMonth).lengthOfMonth());
+            return LocalDate.of(
+                    year + 1, endMonth, YearMonth.of(year + 1, endMonth).lengthOfMonth());
         }
         // 상반기는 같은 해 7월까지
-        return LocalDate.of(year, endMonth,
-                YearMonth.of(year, endMonth).lengthOfMonth());
+        return LocalDate.of(year, endMonth, YearMonth.of(year, endMonth).lengthOfMonth());
     }
 
     public String getTermName(int year) {

@@ -22,60 +22,89 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "blogs", description = "블로그 API")
 public interface BlogSwagger {
 
-        @Operation(summary = "외부 블로그 게시", description = "외부 블로그를 게시합니다.")
-        @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "게시 성공"),
-                        @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-        })
-        default ResponseEntity<Void> createSharedBlog(
-                        @Parameter(hidden = true) @UserId Long userId,
-                        @Parameter(description = "블로그 URL") @RequestParam String url) {
-                throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
-        }
+    @Operation(summary = "외부 블로그 게시", description = "외부 블로그를 게시합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "게시 성공"),
+        @ApiResponse(
+                responseCode = "400",
+                description = "잘못된 요청",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    default ResponseEntity<Void> createSharedBlog(
+            @Parameter(hidden = true) @UserId Long userId,
+            @Parameter(description = "블로그 URL") @RequestParam String url) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 
-        @Operation(summary = "블로그 조회수 증가", description = "블로그 조회수 증가시킵니다.")
-        @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "조회수 증가 성공"),
-                        @ApiResponse(responseCode = "404", description = "블로그를 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-        })
-        default ResponseEntity<Void> increaseBlogViewCount(
-                        @Parameter(description = "블로그 ID") @PathVariable Long blogId) {
-                throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
-        }
+    @Operation(summary = "블로그 조회수 증가", description = "블로그 조회수 증가시킵니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회수 증가 성공"),
+        @ApiResponse(
+                responseCode = "404",
+                description = "블로그를 찾을 수 없음",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    default ResponseEntity<Void> increaseBlogViewCount(
+            @Parameter(description = "블로그 ID") @PathVariable Long blogId) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 
-        @Operation(summary = "블로그 게시물의 인기글 목록 조회", description = "2주간의 글 중 (조회수 + 좋아요수*10)을 기준으로 인기글을 조회합니다.")
-        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = BlogListResponse.class)))
-        default ResponseEntity<BlogListResponse> getBestBlogs(
-                        @ModelAttribute BlogBestQueryRequest query) {
-                throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
-        }
+    @Operation(
+            summary = "블로그 게시물의 인기글 목록 조회",
+            description = "2주간의 글 중 (조회수 + 좋아요수*10)을 기준으로 인기글을 조회합니다.")
+    @ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = BlogListResponse.class)))
+    default ResponseEntity<BlogListResponse> getBestBlogs(
+            @ModelAttribute BlogBestQueryRequest query) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 
-        @Operation(summary = "블로그 게시물 목록 조회 및 검색", description = "블로그 게시물을 조회하고 검색합니다. sortBy에는 latest, viewCount, name (최신순, 조회순, 가나다순의 옵션이 있습니다), 기본값은 latest입니다.")
-        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = BlogListResponse.class)))
-        default ResponseEntity<BlogListResponse> getBlogList(
-                        @ModelAttribute BlogListQueryRequest query) {
-                throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
-        }
+    @Operation(
+            summary = "블로그 게시물 목록 조회 및 검색",
+            description =
+                    "블로그 게시물을 조회하고 검색합니다. sortBy에는 latest, viewCount, name (최신순, 조회순, 가나다순의 옵션이 있습니다), 기본값은 latest입니다.")
+    @ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = BlogListResponse.class)))
+    default ResponseEntity<BlogListResponse> getBlogList(
+            @ModelAttribute BlogListQueryRequest query) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 
-        @Operation(summary = "블로그 단일 조회", description = "블로그 ID를 기반으로 단일 블로그 게시물을 조회합니다.")
-        @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = BlogResponse.class))),
-                        @ApiResponse(responseCode = "404", description = "블로그를 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-        })
-        default ResponseEntity<BlogResponse> getBlog(
-                        @Parameter(description = "블로그 ID") @PathVariable Long blogId) {
-                throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
-        }
+    @Operation(summary = "블로그 단일 조회", description = "블로그 ID를 기반으로 단일 블로그 게시물을 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "조회 성공",
+                content = @Content(schema = @Schema(implementation = BlogResponse.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "블로그를 찾을 수 없음",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    default ResponseEntity<BlogResponse> getBlog(
+            @Parameter(description = "블로그 ID") @PathVariable Long blogId) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 
-        @Operation(summary = "블로그 삭제", description = "블로그 ID를 기반으로 단일 블로그 게시물을 삭제합니다.")
-        @ApiResponses({
-                        @ApiResponse(responseCode = "204", description = "삭제 성공"),
-                        @ApiResponse(responseCode = "404", description = "블로그를 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-        })
-        default ResponseEntity<BlogResponse> deleteBlog(
-                        @Parameter(hidden = true) @UserId Long userId,
-                        @Parameter(description = "블로그 ID") @PathVariable Long blogId) {
-                throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
-        }
+    @Operation(summary = "블로그 삭제", description = "블로그 ID를 기반으로 단일 블로그 게시물을 삭제합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "삭제 성공"),
+        @ApiResponse(
+                responseCode = "404",
+                description = "블로그를 찾을 수 없음",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "권한 없음",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    default ResponseEntity<BlogResponse> deleteBlog(
+            @Parameter(hidden = true) @UserId Long userId,
+            @Parameter(description = "블로그 ID") @PathVariable Long blogId) {
+        throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
+    }
 }

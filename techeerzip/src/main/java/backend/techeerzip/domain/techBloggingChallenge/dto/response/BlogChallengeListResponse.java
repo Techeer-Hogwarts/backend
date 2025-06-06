@@ -18,5 +18,4 @@ public class BlogChallengeListResponse {
 
     @Schema(description = "다음 페이지 조회를 위한 커서 ID")
     private final Long nextCursor;
-
 }
