@@ -2,9 +2,11 @@ package backend.techeerzip.domain.user.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -35,6 +37,7 @@ import backend.techeerzip.domain.role.exception.RoleNotFoundException;
 import backend.techeerzip.domain.role.repository.RoleRepository;
 import backend.techeerzip.domain.session.repository.SessionRepository;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
+import backend.techeerzip.domain.task.service.TaskService;
 import backend.techeerzip.domain.user.dto.request.CreateUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
 import backend.techeerzip.domain.user.dto.request.GetUserProfileListRequest;
@@ -79,8 +82,8 @@ public class UserService {
 
     private final RestTemplate restTemplate;
     private final AuthService authService;
-    //    private final ResumeService resumeService;
-    //    private final IndexService indexService;
+    // private final ResumeService resumeService;
+    // private final IndexService indexService;
     private final PasswordEncoder passwordEncoder;
 
     private final UserRepository userRepository;
@@ -99,6 +102,8 @@ public class UserService {
     private final UserMapper userMapper;
     private final CustomLogger logger;
     private static final String CONTEXT = "UserService";
+
+    private final TaskService taskService;
 
     @Transactional
     public void signUp(
@@ -182,6 +187,19 @@ public class UserService {
         }
 
         // 블로그 크롤링 실행
+        List<String> blogUrls =
+                Stream.of(
+                                savedUser.getTistoryUrl(),
+                                savedUser.getVelogUrl(),
+                                savedUser.getMediumUrl())
+                        .filter(Objects::nonNull)
+                        .filter(url -> !url.trim().isEmpty())
+                        .toList();
+
+        if (!blogUrls.isEmpty()) {
+            taskService.requestSignUpBlogFetchForUser(savedUser.getId(), blogUrls);
+        }
+
         // 이력서 저장
 
         List<UserExperience> experiencesData =

@@ -257,6 +257,19 @@ public class TaskService {
         return String.format("task-%s-%d-%d", type, System.currentTimeMillis(), userId);
     }
 
+    /** 신규 유저의 모든 블로그 URL에 대해 크롤링 요청 */
+    @Transactional
+    public void requestSignUpBlogFetchForUser(Long userId, List<String> blogUrls) {
+        logger.info("사용자 블로그 크롤링 시작 - userId: {}, 블로그 수: {}", userId, blogUrls.size(), CONTEXT);
+
+        for (String blogUrl : blogUrls) {
+            requestSignUpBlogFetch(userId, blogUrl);
+            logger.info("블로그 크롤링 요청 - userId: {}, url: {}", userId, blogUrl, CONTEXT);
+        }
+
+        logger.info("사용자 블로그 크롤링 요청 완료 - userId: {}", userId, CONTEXT);
+    }
+
     @Transactional
     public void processTask(String taskId, String taskData, TaskType type) {
         switch (type) {
