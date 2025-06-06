@@ -3,9 +3,11 @@ package backend.techeerzip.domain.blog.dto.response;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
+@Getter
+@Builder
 @Schema(name = "BlogUrlsResponse", description = "블로그 URL 목록 응답 DTO")
 public class BlogUrlsResponse {
 
@@ -16,9 +18,4 @@ public class BlogUrlsResponse {
             description = "블로그 URL 리스트",
             example = "[\"https://example.com/blog1\", \"https://example.com/blog2\"]")
     private List<String> blogUrls;
-
-    public BlogUrlsResponse(Long userId, List<String> blogUrls) {
-        this.userId = userId;
-        this.blogUrls = blogUrls;
-    }
 }

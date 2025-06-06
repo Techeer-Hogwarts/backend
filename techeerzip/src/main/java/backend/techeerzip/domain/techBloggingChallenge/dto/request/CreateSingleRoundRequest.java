@@ -12,12 +12,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import backend.techeerzip.domain.techBloggingChallenge.validator.ValidDateRange;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @ValidDateRange
 @Schema(name = "CreateSingleRoundRequest", description = "단일 회차 생성 요청 DTO")
 public class CreateSingleRoundRequest {
