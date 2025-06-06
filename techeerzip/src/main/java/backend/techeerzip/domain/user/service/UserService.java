@@ -155,8 +155,10 @@ public class UserService {
             existingUser.setVelogUrl(createUserRequest.getVelogUrl());
             existingUser.setMediumUrl(createUserRequest.getMediumUrl());
             existingUser.setSchool(createUserRequest.getSchool());
-            existingUser.setYear(createUserRequest.getYear());
-            existingUser.setLft(createUserRequest.getIsLft());
+            existingUser.setLft(
+                    createUserRequest.getIsLft() != null ? createUserRequest.getIsLft() : false);
+            existingUser.setYear(
+                    createUserRequest.getYear() != null ? createUserRequest.getYear() : -1);
             existingUser.setProfileImage(profileImage);
             existingUser.setAuth(true);
             existingUser.setRole(defaultRole);
@@ -531,14 +533,23 @@ public class UserService {
                         : "year";
 
         List<User> users =
-                userRepository.findUsersWithCursor(
-                        getUserProfileListRequest.getCursorId(),
-                        getUserProfileListRequest.getPosition(),
-                        getUserProfileListRequest.getYear(),
-                        getUserProfileListRequest.getUniversity(),
-                        getUserProfileListRequest.getGrade(),
-                        limit,
-                        sortBy);
+                userRepository
+                        .findUsersWithCursor(
+                                getUserProfileListRequest.getCursorId(),
+                                getUserProfileListRequest.getPosition(),
+                                getUserProfileListRequest.getYear(),
+                                getUserProfileListRequest.getUniversity(),
+                                getUserProfileListRequest.getGrade(),
+                                limit + 1,
+                                sortBy)
+                        .stream()
+                        .filter(
+                                user -> {
+                                    Long roleId =
+                                            user.getRole() != null ? user.getRole().getId() : null;
+                                    return roleId != null && roleId >= 0 && roleId <= 3;
+                                })
+                        .collect(Collectors.toList());
 
         boolean hasNext = users.size() > limit;
         if (hasNext) {
