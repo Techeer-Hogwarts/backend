@@ -2,6 +2,7 @@ package backend.techeerzip.domain.projectTeam.service;
 
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
 
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMainImageException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -130,7 +131,7 @@ public class ProjectTeamService {
             List<T> membersInfo, Predicate<T> isLeaderPredicate) {
         boolean hasLeader = membersInfo.stream().anyMatch(isLeaderPredicate);
         if (!hasLeader) {
-            log.error("ProjectTeamService: ");
+            log.error("ProjectTeamService: 프로젝트 팀에 리더가 존재하지 않습니다");
             throw new ProjectTeamMissingLeaderException();
         }
     }
@@ -214,7 +215,8 @@ public class ProjectTeamService {
         log.info("CreateProjectTeam: 프로젝트 멤버 저장 완료 - count={}", memberEntities.size());
 
         if (mainImage.size() != 1) {
-            log.warn("CreateProjectTeam: 메인 이미지 개수 비정상 - count={}", mainImage.size());
+            log.error("CreateProjectTeam: 메인 이미지 개수 비정상 - count={}", mainImage.size());
+            throw new ProjectTeamMainImageException();
         }
         final ProjectMainImage mainImgEntity =
                 ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
