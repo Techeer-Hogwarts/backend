@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import backend.techeerzip.domain.auth.dto.token.TokenPair;
 import backend.techeerzip.domain.auth.exception.InvalidJwtTokenException;
+import backend.techeerzip.domain.role.entity.RoleType;
 import backend.techeerzip.global.logger.CustomLogger;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -29,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
-    private static final String AUTHORITIES_KEY = "auth";
+    private static final String ROLE_KEY = "role";
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60 * 60; // 1시간
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60 * 60 * 24 * 7; // 7일
 
@@ -49,10 +50,9 @@ public class JwtTokenProvider {
 
     public TokenPair generateTokenPair(Authentication authentication) {
         // 각 유저당 권한 하나씩
-        String authority = authentication.getAuthorities().iterator().next().getAuthority();
-
         CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
         Long userId = principal.getUserId();
+        String role = principal.getRole().name();
 
         long now = new Date().getTime();
 
@@ -60,7 +60,7 @@ public class JwtTokenProvider {
                 Jwts.builder()
                         .setSubject(authentication.getName())
                         .claim("userId", userId)
-                        .claim(AUTHORITIES_KEY, authority)
+                        .claim(ROLE_KEY, role)
                         .setIssuedAt(new Date())
                         .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRE_TIME))
                         .signWith(key, SignatureAlgorithm.HS512)
@@ -70,7 +70,7 @@ public class JwtTokenProvider {
                 Jwts.builder()
                         .setSubject(authentication.getName())
                         .claim("userId", userId)
-                        .claim(AUTHORITIES_KEY, authority)
+                        .claim(ROLE_KEY, role)
                         .setIssuedAt(new Date())
                         .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                         .signWith(key, SignatureAlgorithm.HS512)
@@ -85,12 +85,13 @@ public class JwtTokenProvider {
 
         String email = claims.getSubject();
         Long userId = claims.get("userId", Long.class);
-        String role = claims.get(AUTHORITIES_KEY, String.class);
+        String roleName = claims.get(ROLE_KEY, String.class);
 
-        GrantedAuthority authority = new SimpleGrantedAuthority(role);
+        RoleType role = RoleType.valueOf(roleName);
+        GrantedAuthority authority = new SimpleGrantedAuthority(role.getRoleName().toUpperCase());
         List<GrantedAuthority> authorities = List.of(authority);
 
-        CustomUserPrincipal principal = new CustomUserPrincipal(userId, email, "", authorities);
+        CustomUserPrincipal principal = new CustomUserPrincipal(userId, email, "", role);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
