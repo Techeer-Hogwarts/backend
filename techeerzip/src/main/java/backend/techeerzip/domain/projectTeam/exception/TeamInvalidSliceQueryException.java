@@ -5,6 +5,6 @@ import backend.techeerzip.global.exception.ErrorCode;
 
 public class TeamInvalidSliceQueryException extends BusinessException {
     public TeamInvalidSliceQueryException() {
-        super(ErrorCode.PROJECT_TEAM_INVALID_TEAM_ROLE);
+        super(ErrorCode.TEAM_INVALID_SLICE_QUERY);
     }
 }

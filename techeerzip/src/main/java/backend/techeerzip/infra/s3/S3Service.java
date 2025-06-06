@@ -29,7 +29,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class S3Service {
 
     private final S3Client s3Client;
-    private final CustomLogger logger;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -75,14 +74,14 @@ public class S3Service {
         final String keyPath = makeKeyPath(fileName, folderPath);
         try {
             this.s3Client.putObject(this.setPutObjectRequest(keyPath, ext), this.getFile(file));
-            logger.info("S3Service: upload 완료");
+            log.info("S3Service: upload 완료");
             return List.of(
                     s3Client.utilities()
                             .getUrl(GetUrlRequest.builder().bucket(bucketName).key(keyPath).build())
                             .toString());
         } catch (IOException e) {
-            logger.error(
-                    "S3Service: Upload error - file: {}, folderPath: {}, urlPrefix: {}, error: {}",
+            log.error(
+                    "S3Service: Upload error - file: {}, folderPath: {}, urlPrefix: {}",
                     file,
                     folderPath,
                     urlPrefix,
@@ -104,7 +103,7 @@ public class S3Service {
         final List<String> uploaded = new ArrayList<>();
         try {
             uploadFuture.stream().map(CompletableFuture::join).forEach(uploaded::add);
-            logger.info("S3Service: uploadMany 완료");
+            log.info("S3Service: uploadMany 완료");
             return List.copyOf(uploaded);
         } catch (CompletionException e) {
             deleteMany(uploaded);

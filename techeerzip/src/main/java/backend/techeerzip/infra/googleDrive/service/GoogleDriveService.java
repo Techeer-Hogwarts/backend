@@ -95,7 +95,8 @@ public class GoogleDriveService {
                         .setApplicationName(APPLICATION_NAME)
                         .build();
 
-        logger.info("구글 드라이브 인증 초기화 완료: {}", APPLICATION_NAME, CONTEXT);
+        logger.info("구글 드라이브 인증 초기화 완료: {} - {}", APPLICATION_NAME, CONTEXT);
+
     }
 
     public String uploadFileBuffer(byte[] fileBuffer, String fileName) throws IOException {

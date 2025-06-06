@@ -6,6 +6,6 @@ import backend.techeerzip.global.exception.ErrorCode;
 public class S3DeleteFailException extends BusinessException {
 
     public S3DeleteFailException() {
-        super(ErrorCode.STUDY_TEAM_NOT_FOUND);
+        super(ErrorCode.S3_DELETE_FAIL);
     }
 }

@@ -60,6 +60,9 @@ public class TeamStackService {
     public List<TeamStackInfo.WithStack> create(List<WithName> updateTeamStacksRequest) {
         log.info(
                 "ProjectTeam createTeamStacks: 생성 요청 시작 - size={}", updateTeamStacksRequest.size());
+        if (updateTeamStacksRequest.isEmpty()) {
+            return List.of();
+        }
 
         final Map<String, Boolean> createInfo = mapToUpdateInfo(updateTeamStacksRequest);
         log.info("ProjectTeam createTeamStacks: isMain 매핑 완료 - keys={}", createInfo.keySet());

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -111,7 +112,6 @@ public class ProjectTeamService {
     private final UserRepository userRepository;
     private final ProjectMainImageRepository mainImgRepository;
     private final ProjectResultImageRepository resultImgRepository;
-    private final CustomLogger logger;
 
     private static void ensureAllRequestedMembersExist(
             List<ProjectMemberInfoRequest> membersInfo, Map<Long, User> users) {
@@ -182,11 +182,11 @@ public class ProjectTeamService {
             @NotEmpty List<String> mainImage,
             List<String> resultImages,
             ProjectTeamCreateRequest request) {
-        this.logger.debug("CreateProjectTeam: 시작");
+        log.info("CreateProjectTeam: 시작");
         final TeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> membersInfo = request.getProjectMember();
-        final List<TeamStackInfo.WithName> teamStacksInfo = request.getTeamStacks();
+        final List<TeamStackInfo.WithName> teamStacksInfo = Optional.ofNullable(request.getTeamStacks()).orElse(List.of());
 
         final boolean isRecruited = checkRecruit(recruitCounts, teamData.getIsRecruited());
         log.info(
@@ -197,7 +197,7 @@ public class ProjectTeamService {
         checkUniqueProjectName(teamData.getName());
         log.info("CreateProjectTeam: 팀 이름 중복 검증 완료 - name={}", teamData.getName());
 
-        List<TeamStackInfo.WithStack> teamStacks = teamStackService.create(teamStacksInfo);
+        final List<TeamStackInfo.WithStack> teamStacks = teamStackService.create(teamStacksInfo);
         log.info("CreateProjectTeam: 팀 스택 생성 완료 - count={}", teamStacks.size());
 
         final Map<Long, User> users = getIdAndUserMap(membersInfo);
@@ -228,10 +228,13 @@ public class ProjectTeamService {
             log.info("CreateProjectTeam: 결과 이미지 저장 완료 - count={}", resultImageEntities.size());
         }
 
-        final List<TeamStack> teamStackEntities =
-                teamStacks.stream().map(s -> ProjectTeamStackMapper.toEntity(s, team)).toList();
-        teamEntity.addTeamStacks(teamStackEntities);
-        log.info("CreateProjectTeam: 팀 스택 엔티티 저장 완료 - count={}", teamStackEntities.size());
+        if (!teamStacks.isEmpty()) {
+            final List<TeamStack> teamStackEntities =
+                    teamStacks.stream().map(s -> ProjectTeamStackMapper.toEntity(s, team)).toList();
+            teamEntity.addTeamStacks(teamStackEntities);
+            log.info("CreateProjectTeam: 팀 스택 엔티티 저장 완료 - count={}", teamStackEntities.size());
+
+        }
 
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
 
