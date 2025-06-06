@@ -2,7 +2,6 @@ package backend.techeerzip.domain.projectTeam.service;
 
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
 
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMainImageException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -51,6 +50,7 @@ import backend.techeerzip.domain.projectTeam.exception.ProjectDuplicateTeamName;
 import backend.techeerzip.domain.projectTeam.exception.ProjectExceededResultImageException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectInvalidProjectMemberException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamDuplicateDeleteUpdateException;
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMainImageException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingLeaderException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateMemberException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
@@ -73,7 +73,6 @@ import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
-import backend.techeerzip.global.logger.CustomLogger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -187,7 +186,8 @@ public class ProjectTeamService {
         final TeamData teamData = request.getTeamData();
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> membersInfo = request.getProjectMember();
-        final List<TeamStackInfo.WithName> teamStacksInfo = Optional.ofNullable(request.getTeamStacks()).orElse(List.of());
+        final List<TeamStackInfo.WithName> teamStacksInfo =
+                Optional.ofNullable(request.getTeamStacks()).orElse(List.of());
 
         final boolean isRecruited = checkRecruit(recruitCounts, teamData.getIsRecruited());
         log.info(
@@ -235,7 +235,6 @@ public class ProjectTeamService {
                     teamStacks.stream().map(s -> ProjectTeamStackMapper.toEntity(s, team)).toList();
             teamEntity.addTeamStacks(teamStackEntities);
             log.info("CreateProjectTeam: 팀 스택 엔티티 저장 완료 - count={}", teamStackEntities.size());
-
         }
 
         final List<LeaderInfo> leaders = projectMemberService.getLeaders(team.getId());
