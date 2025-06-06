@@ -86,14 +86,15 @@ public class SecurityConfig {
                                                 "ADMIN", "MENTOR", "USER", "COMPANY", "BOOTCAMP")
 
                                         // jwt 인증 필요 없는 엔드 포인트 (GUEST 포함)
+                                        .requestMatchers(HttpMethod.GET, "/api/v3/blogs/**")
+                                        .permitAll()
                                         .requestMatchers(
                                                 "/api/v3/auth/email",
                                                 "/api/v3/auth/code",
                                                 "/api/v3/auth/login",
                                                 "/api/v3/users/signup",
                                                 "/api/v3/users/signup/external",
-                                                "/api/v3/users/findPwd",
-                                                "/api/v3/blogs/**")
+                                                "/api/v3/users/findPwd")
                                         .permitAll()
                                         // 블로그 GET 요청만 허용
                                         .requestMatchers(HttpMethod.GET, "/api/v3/blogs/**")
