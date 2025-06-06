@@ -56,21 +56,12 @@ import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.service.UserService;
 import backend.techeerzip.global.entity.StatusCategory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-/**
- * 스터디 팀 서비스입니다.
- *
- * <p>처리 내용:
- *
- * <ol>
- *   <li>스터디 팀 생성, 수정, 삭제 등의 기본 CRUD 작업
- *   <li>팀원 모집 및 관리
- *   <li>팀 상태 관리 및 조회
- * </ol>
- */
 public class StudyTeamService {
 
     private final StudyTeamRepository studyTeamRepository;
@@ -102,19 +93,36 @@ public class StudyTeamService {
      */
     @Transactional
     public StudyTeamCreateResponse create(List<String> resultUrls, StudyTeamCreateRequest request) {
+        log.info("스터디 생성 요청 시작 - 이름: {}", request.getStudyData().getName());
+
         final StudyData studyData = request.getStudyData();
         final List<StudyMemberInfoRequest> membersInfo = request.getStudyMember();
 
         checkUniqueStudyName(studyData.getName());
+        log.info("중복 이름 검증 완료 - {}", studyData.getName());
+
         boolean isRecruited = checkRecruit(studyData.getIsRecruited(), studyData.getRecruitNum());
+        log.info(
+                "모집 여부 확인 완료 - isRecruited: {}, recruitNum: {}",
+                studyData.getIsRecruited(),
+                studyData.getRecruitNum());
+
         validateLeaderExists(membersInfo, StudyMemberInfoRequest::getIsLeader);
+        log.info("리더 존재 여부 확인 완료");
+
         final Map<Long, User> users =
                 userService.getIdAndUserMap(membersInfo, StudyMemberInfoRequest::getUserId);
+        log.info("사용자 정보 조회 완료 - 사용자 수: {}", users.size());
+
         final StudyTeam team =
                 studyTeamRepository.save(StudyTeamMapper.toEntity(studyData, isRecruited));
+        log.info("스터디 팀 저장 완료 - teamId: {}", team.getId());
+
         if (!resultUrls.isEmpty()) {
             studyImageRepository.saveAll(StudyImageMapper.toManyResultEntity(resultUrls, team));
+            log.info("결과 이미지 저장 완료 - 이미지 수: {}", resultUrls.size());
         }
+
         final List<StudyMember> memberEntities =
                 membersInfo.stream()
                         .map(
@@ -123,7 +131,10 @@ public class StudyTeamService {
                                                 info, team, users.get(info.getUserId())))
                         .toList();
         final List<StudyMember> members = studyMemberRepository.saveAll(memberEntities);
+        log.info("스터디 멤버 저장 완료 - 멤버 수: {}", members.size());
+
         final List<LeaderInfo> leaders = extractLeaders(members);
+        log.info("스터디 생성 완료 - teamId: {}", team.getId());
 
         return new StudyTeamCreateResponse(
                 team.getId(),
@@ -132,25 +143,34 @@ public class StudyTeamService {
     }
 
     private static List<LeaderInfo> extractLeaders(List<StudyMember> members) {
-        return members.stream()
-                .filter(StudyMember::isLeader)
-                .map(m -> new LeaderInfo(m.getUser().getName(), m.getUser().getName()))
-                .toList();
+        final List<LeaderInfo> leaders =
+                members.stream()
+                        .filter(StudyMember::isLeader)
+                        .map(m -> new LeaderInfo(m.getUser().getName(), m.getUser().getEmail()))
+                        .toList();
+
+        log.info("extractLeaders: 전체 멤버 수 = {}, 리더 수 = {}", members.size(), leaders.size());
+        return leaders;
     }
 
     private static boolean checkRecruit(Boolean isRecruited, Integer recruitNum) {
+        log.info("checkRecruit: isRecruited = {}, recruitNum = {}", isRecruited, recruitNum);
         if (recruitNum < 0) {
+            log.error("checkRecruit: recruitNum이 0보다 작음 → 예외 발생");
             throw new TeamInvalidRecruitNumException();
         }
         if (recruitNum == 0) {
+            log.info("checkRecruit: recruitNum == 0 → 모집 비활성 상태로 간주");
             return false;
         }
         return isRecruited;
     }
 
     private void checkUniqueStudyName(String name) {
+        log.info("checkUniqueStudyName: 팀 이름 중복 여부 확인 - {}", name);
         final boolean exist = studyTeamRepository.existsByName(name);
         if (exist) {
+            log.error("checkUniqueStudyName: '{}' 이름이 이미 존재함 → 예외 발생", name);
             throw new StudyTeamDuplicateException();
         }
     }
@@ -166,11 +186,21 @@ public class StudyTeamService {
     public GetAllTeamsResponse getSliceTeams(GetStudyTeamsQuery query) {
         final int limit = query.getLimit();
         final SortType sortType = query.getSortType();
+        log.info("getSliceTeams: 요청 - sortType = {}, limit = {}", sortType, limit);
+
         final List<StudyTeam> teams = studyTeamDslRepository.sliceTeams(query);
+        log.info("getSliceTeams: 조회된 팀 수 = {}", teams.size());
+
         final SliceNextCursor next = setNextInfo(teams, limit, sortType);
         final List<StudyTeam> fitTeams = ensureMaxSize(teams, limit);
+
         final List<SliceTeamsResponse> responses =
                 new ArrayList<>(fitTeams.stream().map(StudyTeamMapper::toGetAllResponse).toList());
+
+        log.info(
+                "getSliceTeams: 응답 팀 수 = {}, nextCursor.hasNext = {}",
+                responses.size(),
+                next.getHasNext());
         return new GetAllTeamsResponse(responses, next);
     }
 
@@ -181,16 +211,34 @@ public class StudyTeamService {
      * @return 각 팀의 간략한 응답 DTO 리스트
      */
     public List<StudySliceTeamsResponse> getStudyTeamsById(List<Long> keys) {
+        log.info("getStudyTeamsById: 요청된 ID 수 = {}", keys.size());
         final List<StudyTeam> teams = studyTeamRepository.findAllById(keys);
-        return teams.stream().map(StudyTeamMapper::toGetAllResponse).toList();
+        final List<StudySliceTeamsResponse> result =
+                teams.stream().map(StudyTeamMapper::toGetAllResponse).toList();
+        log.info("getStudyTeamsById: 응답 수 = {}", result.size());
+        return result;
     }
 
     private static SliceNextCursor setNextInfo(
             List<StudyTeam> sortedTeams, Integer limit, SortType sortType) {
+        log.info(
+                "setNextInfo: 팀 수 = {}, limit = {}, sortType = {}",
+                sortedTeams.size(),
+                limit,
+                sortType);
         if (sortedTeams.size() <= limit) {
+            log.info("setNextInfo: hasNext = false (limit 이하)");
             return SliceNextCursor.builder().hasNext(false).build();
         }
+
         final StudyTeam last = sortedTeams.getLast();
+        log.info(
+                "setNextInfo: 다음 커서 생성 - lastId = {}, updatedAt = {}, viewCount = {}, likeCount = {}",
+                last.getId(),
+                last.getUpdatedAt(),
+                last.getViewCount(),
+                last.getLikeCount());
+
         return getNextInfo(
                 sortType,
                 last.getId(),
@@ -236,41 +284,69 @@ public class StudyTeamService {
             Long userId,
             List<String> resultImageUrls,
             StudyTeamUpdateRequest request) {
+        log.info("StudyTeam update 시작 - studyTeamId={}, userId={}", studyTeamId, userId);
+
         final List<StudyMemberInfoRequest> updateMembersInfo = request.getStudyMember();
         final StudyData studyData = request.getStudyData();
         final List<Long> deleteResultImages = request.getDeleteImages();
         final List<Long> deleteMembersId = request.getDeleteMembers();
+
+        log.info(
+                "StudyTeam update: 요청 멤버 수={}, 삭제 멤버 수={}, 추가 이미지 수={}, 삭제 이미지 수={}",
+                updateMembersInfo.size(),
+                deleteMembersId.size(),
+                resultImageUrls.size(),
+                deleteResultImages.size());
         verifyUserIsActiveStudyMember(studyTeamId, userId);
+        log.info("StudyTeam update: 요청자 승인 멤버 검증 완료");
+
         validateLeaderExists(request.getStudyMember(), StudyMemberInfoRequest::getIsLeader);
+        log.info("StudyTeam update: 리더 존재 검증 완료");
+
         validateResultImageCount(studyTeamId, resultImageUrls, deleteMembersId);
+        log.info("StudyTeam update: 결과 이미지 수 검증 완료");
 
         final StudyTeam team =
                 studyTeamRepository
                         .findById(studyTeamId)
                         .orElseThrow(StudyTeamNotFoundException::new);
+
         final boolean wasRecruit = team.getIsRecruited();
         final boolean isRecruited = checkRecruit(team.getIsRecruited(), studyData.getRecruitNum());
+        log.info(
+                "StudyTeam update: 모집 상태 변경 여부 - wasRecruit={}, isRecruited={}",
+                wasRecruit,
+                isRecruited);
 
         if (!team.isSameName(studyData.getName())) {
             checkUniqueStudyName(studyData.getName());
+            log.info("StudyTeam update: 팀명 변경 - 기존={}, 요청={}", team.getName(), studyData.getName());
         }
 
         if (!deleteResultImages.isEmpty()) {
             studyImageRepository.deleteAllById(deleteResultImages);
+            log.info("StudyTeam update: 결과 이미지 삭제 완료 - 삭제 수={}", deleteResultImages.size());
         }
 
         if (!resultImageUrls.isEmpty()) {
             final List<StudyResultImage> images =
                     StudyImageMapper.toManyResultEntity(resultImageUrls, team);
             team.addResultImage(images);
+            log.info("StudyTeam update: 결과 이미지 추가 완료 - 추가 수={}", resultImageUrls.size());
         }
 
         final List<StudyMember> existingMembers =
                 studyMemberRepository.findAllByStudyTeamId(studyTeamId);
+        log.info("StudyTeam update: 기존 멤버 조회 완료 - count={}", existingMembers.size());
+
         final List<StudyMemberInfoRequest> incomingMembersInfo =
                 updateExistMembersAndExtractIncomingMembers(
                         existingMembers, updateMembersInfo, deleteMembersId);
+        log.info("StudyTeam update: 신규 멤버 추출 완료 - count={}", incomingMembersInfo.size());
+
         team.update(studyData, isRecruited);
+        log.info("StudyTeam update: 팀 정보 업데이트 완료");
+
         if (!incomingMembersInfo.isEmpty()) {
             final Map<Long, User> users =
                     userService.getIdAndUserMap(
@@ -278,31 +354,50 @@ public class StudyTeamService {
             final List<StudyMember> incomingMembers =
                     StudyMemberMapper.toEntities(incomingMembersInfo, team, users);
             team.addMembers(incomingMembers);
+            log.info("StudyTeam update: 신규 멤버 추가 완료 - count={}", incomingMembers.size());
         }
-        /* 12.isRecruited 값이 false → true 로 변경되었을 때 Slack 알림 전송 **/
+
         if (!wasRecruit && isRecruited) {
-            // send Slack
+            log.info("StudyTeam update: 모집 상태 false → true 변경 감지 - Slack 알림 응답 반환");
             final List<LeaderInfo> leaders = team.getLeaders();
             return StudyTeamMapper.toUpdatedResponse(studyTeamId, team, leaders);
         }
 
-        /* 13. 인덱스 업데이트 */
+        log.info("StudyTeam update: 인덱스만 업데이트 후 응답 반환 - studyTeamId={}", studyTeamId);
         return StudyTeamMapper.toIndexOnlyUpdateResponse(studyTeamId, team);
     }
 
     private void verifyUserIsActiveStudyMember(Long studyTeamId, Long userId) {
+        log.info(
+                "StudyTeam verifyUserIsActiveStudyMember: 유저 검증 시작 - teamId={}, userId={}",
+                studyTeamId,
+                userId);
         final boolean isMember =
                 studyMemberRepository.existsByUserIdAndStudyTeamIdAndIsDeletedFalseAndStatus(
                         userId, studyTeamId, StatusCategory.APPROVED);
         if (!isMember) {
+            log.info(
+                    "StudyTeam verifyUserIsActiveStudyMember: 유저가 승인 멤버가 아님 - teamId={}, userId={}",
+                    studyTeamId,
+                    userId);
             throw new TeamInvalidActiveRequester();
         }
     }
 
     private void validateResultImageCount(
             Long studyTeamId, List<String> resultImages, List<Long> deleteImages) {
+        log.info(
+                "StudyTeam validateResultImageCount: 이미지 개수 검증 시작 - teamId={}, 업로드={}, 삭제={}",
+                studyTeamId,
+                resultImages.size(),
+                deleteImages.size());
         final int resultImageCount = studyImageRepository.countByStudyTeamId(studyTeamId);
         if (resultImageCount - deleteImages.size() + resultImages.size() > 10) {
+            log.info(
+                    "StudyTeam validateResultImageCount: 이미지 개수 초과 - 기존={}, 업로드={}, 삭제={}",
+                    resultImageCount,
+                    resultImages.size(),
+                    deleteImages.size());
             throw new StudyExceededResultImageException();
         }
     }
@@ -311,7 +406,11 @@ public class StudyTeamService {
             List<StudyMember> existingMembers,
             List<StudyMemberInfoRequest> updateMember,
             List<Long> deleteMemberIds) {
-        // 요청 중 수정하려는 유저 ID → 요청 정보 Map
+        log.info(
+                "StudyTeam updateExistMembersAndExtractIncomingMembers: 멤버 갱신 및 필터 시작 - update={}, delete={}",
+                updateMember.size(),
+                deleteMemberIds.size());
+
         final Map<Long, StudyMemberInfoRequest> updateMap =
                 toUserIdAndMemberInfoRequest(updateMember, StudyMemberInfoRequest::getUserId);
         final Set<Long> deleteIdSet = new HashSet<>(deleteMemberIds);
@@ -326,6 +425,11 @@ public class StudyTeamService {
             List<StudyMember> existingMembers,
             Map<Long, StudyMemberInfoRequest> updateMap,
             Set<Long> deleteIdSet) {
+        log.info(
+                "StudyTeam applyMemberStateChanges: 멤버 상태 변경 시작 - updateMap={}, deleteSet={}",
+                updateMap.keySet(),
+                deleteIdSet);
+
         final Set<Long> toActive = new HashSet<>();
         final Set<Long> toInactive = new HashSet<>();
         final int updateCount = updateMap.size();
@@ -336,9 +440,15 @@ public class StudyTeamService {
 
             if (markedForDelete) {
                 if (member.isDeleted()) {
+                    log.error(
+                            "StudyTeam applyMemberStateChanges: 이미 삭제된 멤버 재삭제 시도 - memberId={}",
+                            member.getId());
                     throw new StudyMemberNotFoundException();
                 }
                 if (updateInfo != null) {
+                    log.error(
+                            "StudyTeam applyMemberStateChanges: 동일 멤버에 삭제·수정 중복 요청 - memberId={}",
+                            member.getId());
                     throw new TeamDuplicateDeleteUpdateException();
                 }
                 member.softDelete();
@@ -358,8 +468,17 @@ public class StudyTeamService {
                 deleteIdSet.size() + toInactive.size() == existingMembers.size();
 
         if (!allDeletesProcessed || !allUpdatesAccountedFor || !memberCountConsistent) {
+            log.error(
+                    "StudyTeam applyMemberStateChanges: 멤버 상태 변경 일치 실패 - updateMap 남은={}, 삭제된={}, 기존={}",
+                    updateMap.size(),
+                    toInactive.size(),
+                    existingMembers.size());
             throw new TeamMissingUpdateMemberException();
         }
+        log.info(
+                "StudyTeam applyMemberStateChanges: 멤버 상태 변경 완료 - 활성화={}, 비활성화={}",
+                toActive,
+                toInactive);
     }
 
     /**
@@ -372,12 +491,21 @@ public class StudyTeamService {
      */
     @Transactional
     public void close(Long teamId, Long userId) {
+        log.info("StudyTeam close: 모집 마감 요청 시작 - teamId={}, userId={}", teamId, userId);
+
         boolean isExisted = studyMemberService.checkActiveMemberByTeamAndUser(teamId, userId);
         if (!isExisted) {
+            log.error("StudyTeam close: 유저가 승인 멤버 아님 - teamId={}, userId={}", teamId, userId);
             throw new TeamInvalidActiveRequester();
         }
         final StudyTeam st =
-                studyTeamRepository.findById(teamId).orElseThrow(StudyTeamNotFoundException::new);
+                studyTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(
+                                () -> {
+                                    log.warn("StudyTeam close: 팀 없음 - teamId={}", teamId);
+                                    return new StudyTeamNotFoundException();
+                                });
         st.close();
     }
 
@@ -399,10 +527,18 @@ public class StudyTeamService {
      */
     @Transactional
     public void softDelete(Long teamId, Long userId) {
+        log.info("StudyTeam softDelete: 삭제 요청 시작 - teamId={}, userId={}", teamId, userId);
         verifyUserIsActiveStudyMember(teamId, userId);
         final StudyTeam st =
-                studyTeamRepository.findById(teamId).orElseThrow(StudyTeamNotFoundException::new);
+                studyTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(
+                                () -> {
+                                    log.error("StudyTeam softDelete: 팀 없음 - teamId={}", teamId);
+                                    return new StudyTeamNotFoundException();
+                                });
         st.softDelete();
+        log.info("StudyTeam softDelete: 삭제 완료 - teamId={}", teamId);
     }
 
     /**
@@ -417,18 +553,25 @@ public class StudyTeamService {
     @Transactional
     public List<StudySlackRequest.DM> apply(StudyTeamApplyRequest request, Long applicantId) {
         final Long teamId = request.studyTeamId();
-        final String summary = request.summary();
-
+        log.info("StudyTeam apply: 지원 요청 시작 - teamId={}, applicantId={}", teamId, applicantId);
         final StudyTeam st =
-                studyTeamRepository.findById(teamId).orElseThrow(StudyTeamNotFoundException::new);
+                studyTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(
+                                () -> {
+                                    log.warn("StudyTeam apply: 팀 없음 - teamId={}", teamId);
+                                    return new StudyTeamNotFoundException();
+                                });
         if (!st.isRecruited()) {
+            log.warn("StudyTeam apply: 모집 종료된 팀 - teamId={}", teamId);
             throw new StudyTeamRecruitmentClosedException();
         }
 
-        final StudyMember sm = studyMemberService.applyApplicant(st, applicantId, summary);
-        final List<LeaderInfo> leaders = st.getLeaders();
+        final StudyMember sm =
+                studyMemberService.applyApplicant(st, applicantId, request.summary());
         final String applicantEmail = sm.getUser().getEmail();
-
+        final List<LeaderInfo> leaders = st.getLeaders();
+        log.info("StudyTeam apply: 지원 완료 - applicantEmail={}", applicantEmail);
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.PENDING);
     }
 
@@ -443,15 +586,35 @@ public class StudyTeamService {
      */
     @Transactional
     public List<StudySlackRequest.DM> cancelApplication(Long teamId, Long applicantId) {
+        log.info(
+                "StudyTeam cancelApplication: 지원 취소 시작 - teamId={}, applicantId={}",
+                teamId,
+                applicantId);
         final StudyMember sm =
                 studyMemberRepository
                         .findByStudyTeamIdAndUserId(teamId, applicantId)
-                        .orElseThrow(StudyMemberNotFoundException::new);
+                        .orElseThrow(
+                                () -> {
+                                    log.error(
+                                            "StudyTeam cancelApplication: 지원자 없음 - teamId={}, userId={}",
+                                            teamId,
+                                            applicantId);
+                                    return new StudyMemberNotFoundException();
+                                });
         final String applicantEmail = sm.getUser().getEmail();
         final StudyTeam st =
-                studyTeamRepository.findById(teamId).orElseThrow(StudyTeamNotFoundException::new);
+                studyTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(
+                                () -> {
+                                    log.error(
+                                            "StudyTeam cancelApplication: 팀 없음 - teamId={}",
+                                            teamId);
+                                    return new StudyTeamNotFoundException();
+                                });
         st.remove(sm);
         final List<LeaderInfo> leaders = st.getLeaders();
+        log.info("StudyTeam cancelApplication: 취소 완료 - applicantEmail={}", applicantEmail);
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.CANCELLED);
     }
 
@@ -467,11 +630,24 @@ public class StudyTeamService {
      * @throws TeamInvalidActiveRequester 요청자가 승인된 멤버가 아닌 경우
      */
     public List<StudySlackRequest.DM> acceptApplicant(Long teamId, Long userId, Long applicantId) {
+        log.info(
+                "StudyTeam acceptApplicant: 승인 요청 - teamId={}, userId={}, applicantId={}",
+                teamId,
+                userId,
+                applicantId);
         verifyUserIsActiveStudyMember(teamId, userId);
         final String applicantEmail = studyMemberService.acceptApplicant(teamId, applicantId);
         final StudyTeam st =
-                studyTeamRepository.findById(teamId).orElseThrow(StudyTeamNotFoundException::new);
+                studyTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(
+                                () -> {
+                                    log.error(
+                                            "StudyTeam acceptApplicant: 팀 없음 - teamId={}", teamId);
+                                    return new StudyTeamNotFoundException();
+                                });
         final List<LeaderInfo> leaders = st.getLeaders();
+        log.info("StudyTeam acceptApplicant: 승인 완료 - applicantEmail={}", applicantEmail);
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.APPROVED);
     }
 
@@ -487,11 +663,24 @@ public class StudyTeamService {
      * @throws TeamInvalidActiveRequester 요청자가 승인된 멤버가 아닌 경우
      */
     public List<StudySlackRequest.DM> rejectApplicant(Long teamId, Long userId, Long applicantId) {
+        log.info(
+                "StudyTeam rejectApplicant: 거절 요청 - teamId={}, userId={}, applicantId={}",
+                teamId,
+                userId,
+                applicantId);
         verifyUserIsActiveStudyMember(teamId, userId);
         final String applicantEmail = studyMemberService.rejectApplicant(teamId, applicantId);
         final StudyTeam st =
-                studyTeamRepository.findById(teamId).orElseThrow(StudyTeamNotFoundException::new);
+                studyTeamRepository
+                        .findById(teamId)
+                        .orElseThrow(
+                                () -> {
+                                    log.error(
+                                            "StudyTeam rejectApplicant: 팀 없음 - teamId={}", teamId);
+                                    return new StudyTeamNotFoundException();
+                                });
         final List<LeaderInfo> leaders = st.getLeaders();
+        log.info("StudyTeam rejectApplicant: 거절 완료 - applicantEmail={}", applicantEmail);
         return StudySlackMapper.toDmRequest(st, leaders, applicantEmail, StatusCategory.REJECT);
     }
 
@@ -503,12 +692,19 @@ public class StudyTeamService {
      * @return 지원자 응답 리스트, 승인된 멤버가 아니면 빈 리스트 반환
      */
     public List<StudyApplicantResponse> getApplicants(Long studyTeamId, Long userId) {
+        log.info(
+                "StudyTeam getApplicants: 지원자 목록 조회 요청 - teamId={}, userId={}",
+                studyTeamId,
+                userId);
         final boolean isActive =
                 studyMemberService.checkActiveMemberByTeamAndUser(studyTeamId, userId);
         if (!isActive) {
+            log.info("StudyTeam getApplicants: 승인된 멤버 아님 - userId={}", userId);
             return List.of();
         }
-        return studyMemberService.getApplicants(studyTeamId);
+        final List<StudyApplicantResponse> result = studyMemberService.getApplicants(studyTeamId);
+        log.info("StudyTeam getApplicants: 조회 완료 - 수={}", result.size());
+        return result;
     }
 
     /**
@@ -520,12 +716,18 @@ public class StudyTeamService {
      */
     @Transactional
     public StudyTeamDetailResponse updateViewCountAndGetDetail(Long studyTeamId) {
+        log.info("StudyTeam getDetail: 상세 조회 시작 - teamId={}", studyTeamId);
         final StudyTeam study =
                 studyTeamRepository
                         .findById(studyTeamId)
-                        .orElseThrow(StudyTeamNotFoundException::new);
+                        .orElseThrow(
+                                () -> {
+                                    log.error("StudyTeam getDetail: 팀 없음 - teamId={}", studyTeamId);
+                                    return new StudyTeamNotFoundException();
+                                });
         study.increaseViewCount();
         final List<StudyMember> sm = study.getStudyMembers();
+        log.info("StudyTeam getDetail: 조회 완료 - 멤버 수={}", sm.size());
         return StudyTeamMapper.toDetailResponse(study, sm);
     }
 }

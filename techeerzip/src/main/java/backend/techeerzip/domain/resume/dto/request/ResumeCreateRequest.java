@@ -3,9 +3,6 @@ package backend.techeerzip.domain.resume.dto.request;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.URL;
-
-import java.util.Objects;
 
 @Getter
 @Setter

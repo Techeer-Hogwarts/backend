@@ -1,7 +1,7 @@
 package backend.techeerzip.domain.resume.repository;
 
 import java.util.List;
-import java.time.LocalDateTime;
+
 import backend.techeerzip.domain.resume.entity.Resume;
 
 public interface ResumeRepositoryCustom {
@@ -20,11 +20,11 @@ public interface ResumeRepositoryCustom {
             List<Integer> year,
             String category,
             Long cursorId,
-            Integer limit
-    );
+            Integer limit);
 
     /**
      * 특정 사용자의 이력서 목록을 커서 기반 페이지네이션으로 조회
+     *
      * @param userId 유저 ID
      * @param cursorId 커서 ID(이전 페이지의 마지막 이력서 ID)
      * @param limit 가져올 개수
@@ -34,6 +34,7 @@ public interface ResumeRepositoryCustom {
 
     /**
      * 인기 이력서 목록을 커서 기반 페이지네이션으로 조회
+     *
      * @param cursorId 커서 ID(이전 페이지의 마지막 이력서 ID)
      * @param limit 가져올 개수
      * @return 이력서 목록

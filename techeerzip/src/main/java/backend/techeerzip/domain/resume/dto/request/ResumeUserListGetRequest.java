@@ -1,7 +1,8 @@
 package backend.techeerzip.domain.resume.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,4 +18,4 @@ public class ResumeUserListGetRequest {
     @Schema(description = "가져올 개수", example = "10")
     @Min(value = 1, message = "limit은 1 이상의 정수여야 합니다.")
     private Integer limit;
-} 
+}

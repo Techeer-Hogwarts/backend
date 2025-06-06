@@ -38,22 +38,22 @@ public class SwaggerConfig {
         SecurityRequirement securityRequirement = new SecurityRequirement().addList("cookieAuth");
 
         // 서버 URL 설정
-        Server httpsServer = new Server();
-        httpsServer.setUrl(httpsServerUrl);
-        httpsServer.setDescription("techeerzip https 서버");
+        Server localServer = new Server();
+        localServer.setUrl("http://localhost:8000");
+        localServer.setDescription("techeerzip 로컬 서버");
 
         Server stagingServer = new Server();
         stagingServer.setUrl(stagingServerUrl);
         stagingServer.setDescription("techeerzip 스테이징 서버");
 
-        Server localServer = new Server();
-        localServer.setUrl("http://localhost:8000");
-        localServer.setDescription("techeerzip 로컬 서버");
+        Server httpsServer = new Server();
+        httpsServer.setUrl(httpsServerUrl);
+        httpsServer.setDescription("techeerzip https 서버");
 
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes("cookieAuth", securityScheme))
                 .addSecurityItem(securityRequirement)
                 .info(info)
-                .servers(List.of(httpsServer, stagingServer, localServer));
+                .servers(List.of(localServer, stagingServer, httpsServer));
     }
 }

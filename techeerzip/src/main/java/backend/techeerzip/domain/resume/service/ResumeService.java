@@ -1,5 +1,14 @@
 package backend.techeerzip.domain.resume.service;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeListResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
@@ -7,24 +16,12 @@ import backend.techeerzip.domain.resume.entity.Resume;
 import backend.techeerzip.domain.resume.exception.ResumeInvalidTypeException;
 import backend.techeerzip.domain.resume.exception.ResumeNotFoundException;
 import backend.techeerzip.domain.resume.exception.ResumeUnAuthorizedException;
+import backend.techeerzip.domain.resume.repository.ResumeRepository;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.googleDrive.service.GoogleDriveService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-
-import backend.techeerzip.domain.resume.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,11 +34,7 @@ public class ResumeService {
 
     private static final String CONTEXT = "ResumeService";
 
-
-    /**
-     * 이력서 파일 이름 변환
-     * "baseName-userName(yyyy-MM-dd)" 형식으로 변환됩니다.
-     */
+    /** 이력서 파일 이름 변환 "baseName-userName(yyyy-MM-dd)" 형식으로 변환됩니다. */
     private String getResumeFileName(String userName, String baseName) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -54,7 +47,11 @@ public class ResumeService {
             fileName = String.format("%s-%s(%s)", baseName, userName, date);
         }
 
-        logger.debug("이력서 파일 이름 변환 - 사용자 이름: {}, 기본 이름: {}, 변환된 파일 이름: {}", userName, baseName, fileName);
+        logger.debug(
+                "이력서 파일 이름 변환 - 사용자 이름: {}, 기본 이름: {}, 변환된 파일 이름: {}",
+                userName,
+                baseName,
+                fileName);
         return fileName;
     }
 
@@ -66,8 +63,19 @@ public class ResumeService {
     }
 
     @Transactional
-    public ResumeCreateResponse createResume(Long userId, MultipartFile file, String title, String position, String category, Boolean isMain) {
-        this.logger.info("이력서 생성 요청 처리 중 - Title: {}, Position: {}, Category: {}, IsMain: {}", title, position, category, isMain);
+    public ResumeCreateResponse createResume(
+            Long userId,
+            MultipartFile file,
+            String title,
+            String position,
+            String category,
+            Boolean isMain) {
+        this.logger.info(
+                "이력서 생성 요청 처리 중 - Title: {}, Position: {}, Category: {}, IsMain: {}",
+                title,
+                position,
+                category,
+                isMain);
 
         // 파일 타입 검사
         String mimeType = file.getContentType();
@@ -77,8 +85,10 @@ public class ResumeService {
         }
 
         // 유저 정보 조회
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         String fileName = getResumeFileName(user.getName(), null);
 
@@ -92,25 +102,31 @@ public class ResumeService {
         }
 
         // 메인 이력서 중복 방지 처리
-        if(isMain) {
+        if (isMain) {
             this.unsetMainResumeByUserId(userId);
         }
 
-        final Resume resume = Resume.builder()
-                .user(user)
-                .title(fileName)
-                .position(position)
-                .url(driveUrl)
-                .category(category)
-                .isMain(isMain)
-                .build();
+        final Resume resume =
+                Resume.builder()
+                        .user(user)
+                        .title(fileName)
+                        .position(position)
+                        .url(driveUrl)
+                        .category(category)
+                        .isMain(isMain)
+                        .build();
 
         Resume createdResume = resumeRepository.save(resume);
 
         // TODO: 인덱스 업데이트
 
-        this.logger.info("이력서 생성 완료 - ID: {}, Title: {}, Position: {}, Category: {}, IsMain: {}",
-                createdResume.getId(), createdResume.getTitle(), createdResume.getPosition(), createdResume.getCategory(), createdResume.isMain());
+        this.logger.info(
+                "이력서 생성 완료 - ID: {}, Title: {}, Position: {}, Category: {}, IsMain: {}",
+                createdResume.getId(),
+                createdResume.getTitle(),
+                createdResume.getPosition(),
+                createdResume.getCategory(),
+                createdResume.isMain());
 
         return new ResumeCreateResponse(createdResume);
     }
@@ -120,11 +136,14 @@ public class ResumeService {
     public ResumeResponse getResumeById(Long resumeId) {
         logger.info("이력서 조회 요청 처리 중 - ID: {}", resumeId);
 
-        Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
-                .orElseThrow(() -> {
-                    logger.warn("이력서 조회 실패 - ID: {}", resumeId, CONTEXT);
-                    return new ResumeNotFoundException();
-                });
+        Resume resume =
+                resumeRepository
+                        .findByIdAndIsDeletedFalse(resumeId)
+                        .orElseThrow(
+                                () -> {
+                                    logger.warn("이력서 조회 실패 - ID: {}", resumeId, CONTEXT);
+                                    return new ResumeNotFoundException();
+                                });
 
         logger.info("이력서 조회 완료 - ID: {}", resume.getId());
 
@@ -135,13 +154,16 @@ public class ResumeService {
     public void deleteResumeById(Long resumeId, Long userId) {
         logger.info("이력서 삭제 요청 처리 중 - UserID: {}, ResumeID: {}", userId, resumeId);
 
-        Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
-                .orElseThrow(() -> {
-                    logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
-                    return new ResumeNotFoundException();
-                });
+        Resume resume =
+                resumeRepository
+                        .findByIdAndIsDeletedFalse(resumeId)
+                        .orElseThrow(
+                                () -> {
+                                    logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
+                                    return new ResumeNotFoundException();
+                                });
 
-        if(!resume.getUser().getId().equals(userId)) {
+        if (!resume.getUser().getId().equals(userId)) {
             logger.warn("이력서 삭제 권한 없음 - UserID: {}, ResumeID: {}", userId, resumeId);
             throw new ResumeUnAuthorizedException();
         }
@@ -156,13 +178,16 @@ public class ResumeService {
     @Transactional
     public void updateMainResume(Long resumeId, Long userId) {
         logger.info("메인 이력서 업데이트 요청 처리 중 - ResumeID: {}, UserID: {}", resumeId, userId);
-        Resume resume = resumeRepository.findByIdAndIsDeletedFalse(resumeId)
-                .orElseThrow(() -> {
-                    logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
-                    return new ResumeNotFoundException();
-                });
+        Resume resume =
+                resumeRepository
+                        .findByIdAndIsDeletedFalse(resumeId)
+                        .orElseThrow(
+                                () -> {
+                                    logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
+                                    return new ResumeNotFoundException();
+                                });
 
-        if(!resume.getUser().getId().equals(userId)) {
+        if (!resume.getUser().getId().equals(userId)) {
             logger.warn("메인 이력서 업데이트 권한 없음 - UserID: {}, ResumeID: {}", userId, resumeId);
             throw new ResumeUnAuthorizedException();
         }
@@ -180,20 +205,20 @@ public class ResumeService {
             List<Integer> year,
             String category,
             Long cursorId,
-            Integer limit
-    ) {
-        logger.info("이력서 목록 조회 요청 처리 중 - Position: {}, Year: {}, Category: {}, CursorId: {}, Limit: {}",
-                position, year, category, cursorId, limit,
-                CONTEXT
-        );
+            Integer limit) {
+        logger.info(
+                "이력서 목록 조회 요청 처리 중 - Position: {}, Year: {}, Category: {}, CursorId: {}, Limit: {}",
+                position,
+                year,
+                category,
+                cursorId,
+                limit,
+                CONTEXT);
 
-        List<Resume> resumes = resumeRepository.findResumesWithCursor(
-                position, year, category, cursorId, limit
-        );
+        List<Resume> resumes =
+                resumeRepository.findResumesWithCursor(position, year, category, cursorId, limit);
 
-        List<ResumeResponse> responseList = resumes.stream()
-                .map(ResumeResponse::new)
-                .toList();
+        List<ResumeResponse> responseList = resumes.stream().map(ResumeResponse::new).toList();
 
         logger.info("이력서 목록 조회 완료 - 개수: {}", responseList.size(), CONTEXT);
         return new ResumeListResponse(responseList, limit);
@@ -212,9 +237,15 @@ public class ResumeService {
 
     @Transactional(readOnly = true)
     public ResumeListResponse getUserResumes(Long userId, Long cursorId, Integer limit) {
-        logger.info("유저 이력서 목록 조회 요청 처리 중 - UserID: {}, CursorId: {}, Limit: {}", userId, cursorId, limit, CONTEXT);
+        logger.info(
+                "유저 이력서 목록 조회 요청 처리 중 - UserID: {}, CursorId: {}, Limit: {}",
+                userId,
+                cursorId,
+                limit,
+                CONTEXT);
 
-        List<Resume> userResumes = resumeRepository.findUserResumesWithCursor(userId, cursorId, limit);
+        List<Resume> userResumes =
+                resumeRepository.findUserResumesWithCursor(userId, cursorId, limit);
         List<ResumeResponse> responseList = userResumes.stream().map(ResumeResponse::new).toList();
 
         logger.info("{}개의 유저 이력서 목록 조회 성공", responseList.size());

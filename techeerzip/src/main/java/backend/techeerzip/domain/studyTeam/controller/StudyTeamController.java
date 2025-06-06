@@ -43,7 +43,10 @@ public class StudyTeamController implements StudyTeamSwagger {
 
     @GetMapping("/{studyTeamId}")
     public ResponseEntity<StudyTeamDetailResponse> getDetail(@PathVariable Long studyTeamId) {
-        return ResponseEntity.ok(studyTeamFacadeService.getDetail(studyTeamId));
+        log.info("StudyTeam getDetail: 상세 조회 시작 - teamId={}", studyTeamId);
+        final StudyTeamDetailResponse response = studyTeamFacadeService.getDetail(studyTeamId);
+        log.info("StudyTeam getDetail: 조회 완료 - teamId={}", studyTeamId);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -51,9 +54,10 @@ public class StudyTeamController implements StudyTeamSwagger {
     public ResponseEntity<Long> createStudyTeam(
             @RequestPart(value = "resultImages", required = false) List<MultipartFile> resultImages,
             @RequestPart("createStudyTeamRequest") StudyTeamCreateRequest request) {
+        log.info("StudyTeam createStudyTeam: 생성 요청 시작");
         final StudyTeamCreateResponse response =
                 studyTeamFacadeService.create(resultImages, request);
-        log.debug("StudyTeam Create: 완료");
+        log.info("StudyTeam createStudyTeam: 생성 완료 - teamId={}", response.id());
         return ResponseEntity.ok(response.id());
     }
 
@@ -63,75 +67,98 @@ public class StudyTeamController implements StudyTeamSwagger {
             @RequestPart(value = "resultImages", required = false) List<MultipartFile> resultImages,
             @RequestPart("updateStudyTeamRequest") StudyTeamUpdateRequest request,
             @UserId Long userId) {
+        log.info("StudyTeam updateStudyTeam: 수정 요청 시작 - teamId={}, userId={}", studyTeamId, userId);
         final StudyTeamUpdateResponse response =
                 studyTeamFacadeService.update(studyTeamId, userId, resultImages, request);
+        log.info("StudyTeam updateStudyTeam: 수정 완료 - teamId={}", response.id());
         return ResponseEntity.ok(response.id());
     }
 
     @PatchMapping("/close/{studyTeamId}")
     public ResponseEntity<Void> closeRecruit(@PathVariable Long studyTeamId, @UserId Long userId) {
+        log.info("StudyTeam closeRecruit: 모집 마감 요청 - teamId={}, userId={}", studyTeamId, userId);
         studyTeamFacadeService.closeRecruit(studyTeamId, userId);
+        log.info("StudyTeam closeRecruit: 모집 마감 완료 - teamId={}", studyTeamId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/delete/{studyTeamId}")
     public ResponseEntity<Void> deleteStudyTeam(
             @PathVariable Long studyTeamId, @UserId Long userId) {
+        log.info("StudyTeam deleteStudyTeam: 삭제 요청 - teamId={}, userId={}", studyTeamId, userId);
         studyTeamFacadeService.softDeleteTeam(studyTeamId, userId);
+        log.info("StudyTeam deleteStudyTeam: 삭제 완료 - teamId={}", studyTeamId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/{studyTeamId}/applicants")
     public ResponseEntity<List<StudyApplicantResponse>> getApplicants(
             @PathVariable Long studyTeamId, @UserId Long userId) {
-        return ResponseEntity.ok(studyTeamFacadeService.getApplicants(studyTeamId, userId));
+        log.info("StudyTeam getApplicants: 지원자 조회 요청 - teamId={}, userId={}", studyTeamId, userId);
+        final List<StudyApplicantResponse> applicants =
+                studyTeamFacadeService.getApplicants(studyTeamId, userId);
+        log.info("StudyTeam getApplicants: 조회 완료 - 지원자 수={}", applicants.size());
+        return ResponseEntity.ok(applicants);
     }
 
     @PostMapping("/apply")
     public ResponseEntity<Void> applyToStudyTeam(
             @RequestBody StudyTeamApplyRequest request, @UserId Long userId) {
+        log.info("StudyTeam applyToStudyTeam: 지원 요청 시작 - userId={}", userId);
         List<StudySlackRequest.DM> slackRequest =
                 studyTeamFacadeService.applyToStudy(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-
+        log.info("StudyTeam applyToStudyTeam: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/{studyTeamId}/cancel")
     public ResponseEntity<Void> cancelApplication(
             @PathVariable Long studyTeamId, @UserId Long userId) {
+        log.info(
+                "StudyTeam cancelApplication: 지원 취소 요청 - teamId={}, userId={}",
+                studyTeamId,
+                userId);
         List<StudySlackRequest.DM> slackRequest =
                 studyTeamFacadeService.cancelApplication(studyTeamId, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-
+        log.info("StudyTeam cancelApplication: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/applicants/accept")
     public ResponseEntity<Void> acceptApplicant(
             @RequestBody StudyApplicantRequest request, @UserId Long userId) {
+        log.info("StudyTeam acceptApplicant: 지원자 수락 요청 - userId={}", userId);
         List<StudySlackRequest.DM> slackRequest =
                 studyTeamFacadeService.acceptApplicant(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-
+        log.info("StudyTeam acceptApplicant: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/applicants/reject")
     public ResponseEntity<Void> rejectApplicant(
             @RequestBody StudyApplicantRequest request, @UserId Long userId) {
+        log.info("StudyTeam rejectApplicant: 지원자 거절 요청 - userId={}", userId);
         List<StudySlackRequest.DM> slackRequest =
                 studyTeamFacadeService.rejectApplicant(request, userId);
         eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-
+        log.info("StudyTeam rejectApplicant: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/members")
     public ResponseEntity<Void> addStudyMembers(
             @RequestBody StudyAddMembersRequest request, @UserId Long userId) {
+        log.info(
+                "StudyTeam addStudyMembers: 멤버 추가 요청 - teamId={}, newMemberId={}, leader={}",
+                request.studyTeamId(),
+                request.studyMemberId(),
+                request.isLeader());
         studyTeamFacadeService.addMemberToStudyTeam(
                 request.studyTeamId(), userId, request.studyMemberId(), request.isLeader());
+        log.info("StudyTeam addStudyMembers: 멤버 추가 완료 - teamId={}", request.studyTeamId());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

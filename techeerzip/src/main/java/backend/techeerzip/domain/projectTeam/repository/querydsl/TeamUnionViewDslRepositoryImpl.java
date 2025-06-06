@@ -23,7 +23,9 @@ import backend.techeerzip.domain.projectTeam.dto.response.UnionSliceTeam;
 import backend.techeerzip.domain.projectTeam.entity.QTeamUnionView;
 import backend.techeerzip.domain.projectTeam.entity.TeamUnionView;
 import backend.techeerzip.domain.projectTeam.type.SortType;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Repository
 public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
         implements TeamUnionViewDslRepository {
@@ -41,6 +43,13 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
      * @return 페이징된 팀 정보와 다음 커서 정보를 포함한 결과 객체
      */
     public TeamUnionSliceResult fetchSliceTeams(GetTeamsQuery request) {
+        log.info(
+                "TeamUnionView fetchSliceTeams: 커서 기반 팀 조회 시작 - sortType={}, limit={}, isRecruited={}, isFinished={}",
+                request.getSortType(),
+                request.getLimit(),
+                request.getIsRecruited(),
+                request.getIsFinished());
+
         final BooleanExpression condition =
                 DslBooleanBuilder.builder()
                         .andIfNotNull(request.getIsRecruited(), TU.isRecruited::eq)
@@ -48,11 +57,21 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
                         .and(TU.isDeleted.isFalse())
                         .andIfNotNull(buildCursorCondition(request))
                         .build();
+        log.info(
+                "TeamUnionView fetchSliceTeams: 조건식 정보 - condition={}",
+                condition != null ? condition.toString() : "null");
 
         final List<UnionSliceTeam> teams =
                 selectTeamUnionInfos(condition, request.getSortType(), request.getLimit());
+        log.info("TeamUnionView fetchSliceTeams: 팀 데이터 조회 완료 - fetchedSize={}", teams.size());
+
         final SliceNextCursor lastInfo =
                 setNextInfo(teams, request.getLimit(), request.getSortType());
+        log.info(
+                "TeamUnionView fetchSliceTeams: 커서 정보 생성 완료 - hasNext={}, nextCursorId={}",
+                lastInfo.getHasNext(),
+                lastInfo.getId());
+
         final List<UnionSliceTeam> slicedInfos = ensureMaxSize(teams, request.getLimit());
 
         return new TeamUnionSliceResult(slicedInfos, lastInfo);
@@ -68,6 +87,11 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
      */
     private List<UnionSliceTeam> selectTeamUnionInfos(
             BooleanExpression condition, SortType sortType, Integer limit) {
+        log.info(
+                "TeamUnionView selectTeamUnionInfos: 팀 뷰 조회 실행 - sortType={}, limit={}",
+                sortType,
+                limit);
+
         return select(
                         Projections.fields(
                                 UnionSliceTeam.class,
@@ -102,6 +126,13 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
         final SortType sortType = request.getSortType();
         final LocalDateTime createAt =
                 Optional.ofNullable(request.getCreateAt()).orElse(LocalDateTime.MAX);
+        log.info(
+                "TeamUnionView buildCursorCondition: 커서 조건 생성 시작 - sortType={}, id={}, dateCursor={}, countCursor={}",
+                sortType,
+                id,
+                date,
+                count);
+
         return switch (sortType) {
             case UPDATE_AT_DESC -> buildCursorForDate(date, TU.updatedAt, id);
             case VIEW_COUNT_DESC -> buildCursorForInt(count, TU.viewCount, createAt, id);
@@ -157,9 +188,18 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
     private static SliceNextCursor setNextInfo(
             List<UnionSliceTeam> sortedTeams, Integer limit, SortType sortType) {
         if (sortedTeams.size() <= limit) {
+            log.info(
+                    "TeamUnionView setNextInfo: 다음 페이지 없음 - size={}, limit={}",
+                    sortedTeams.size(),
+                    limit);
             return SliceNextCursor.builder().hasNext(false).build();
         }
         final UnionSliceTeam last = sortedTeams.getLast();
+        log.info(
+                "TeamUnionView setNextInfo: 다음 페이지 있음 - lastId={}, sortType={}",
+                last.getId(),
+                sortType);
+
         return switch (sortType) {
             case UPDATE_AT_DESC ->
                     SliceNextCursor.builder()
@@ -193,9 +233,12 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
      * @return 최대 limit 크기의 리스트
      */
     public static <T> List<T> ensureMaxSize(List<T> unionTeams, Integer limit) {
-        if (unionTeams.size() > limit) {
+        final boolean hasNext = unionTeams.size() > limit;
+        if (hasNext) {
+            log.info("TeamUnionView ensureMaxSize: hasNext true, limit={} → size={}", limit, unionTeams.size());
             return unionTeams.subList(0, limit);
         }
+        log.info("TeamUnionView ensureMaxSize: hasNext false - size={}", unionTeams.size());
         return unionTeams;
     }
 }
