@@ -2,7 +2,6 @@ package backend.techeerzip.domain.blog.mapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import backend.techeerzip.domain.blog.dto.request.BlogIndexRequest;
 import backend.techeerzip.domain.blog.dto.request.BlogSaveRequest;
@@ -77,7 +76,7 @@ public class BlogMapper {
     }
 
     public static BlogListResponse toListResponse(List<Blog> blogs, int limit) {
-        List<BlogResponse> blogResponses = blogs.stream().map(BlogMapper::toResponse).collect(Collectors.toList());
+        List<BlogResponse> blogResponses = blogs.stream().map(BlogMapper::toResponse).toList();
 
         boolean hasNext = blogResponses.size() > limit;
         Long nextCursor = hasNext ? blogResponses.get(limit - 1).getId() : null;

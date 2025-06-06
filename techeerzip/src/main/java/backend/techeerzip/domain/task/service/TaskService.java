@@ -184,7 +184,7 @@ public class TaskService {
                                         post.getTitle(), dateStr);
                             }
                         })
-                .collect(Collectors.toList());
+                .toList();
 
         logger.info("Filtered {} posts from last 24 hours | context: {}", filtered.size(), CONTEXT);
         return filtered;

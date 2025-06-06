@@ -22,8 +22,9 @@ public class TechBloggingTerm extends BaseEntity {
     @Column(nullable = false)
     private int year;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean firstHalf;
+    private TermPeriod period;
 
     @Builder.Default
     @OneToMany(mappedBy = "term", cascade = CascadeType.ALL)
@@ -46,7 +47,7 @@ public class TechBloggingTerm extends BaseEntity {
     }
 
     public String getTermName() {
-        return String.format("%d년 %s 챌린지", year, firstHalf ? "상반기" : "하반기");
+        return period.getTermName(year);
     }
 
     public boolean isActive() {
@@ -63,7 +64,20 @@ public class TechBloggingTerm extends BaseEntity {
         }
     }
 
+    public boolean isFirstHalf() {
+        return period == TermPeriod.FIRST_HALF;
+    }
+
+    public static TechBloggingTerm create(int year, TermPeriod period) {
+        return TechBloggingTerm.builder()
+                .year(year)
+                .period(period)
+                .isDeleted(false)
+                .build();
+    }
+
+    @Deprecated
     public static TechBloggingTerm create(int year, boolean firstHalf) {
-        return TechBloggingTerm.builder().year(year).firstHalf(firstHalf).isDeleted(false).build();
+        return create(year, TermPeriod.from(firstHalf));
     }
 }

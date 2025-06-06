@@ -5,16 +5,26 @@ import java.time.temporal.ChronoUnit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Embeddable
-public record DateRange(
-        @Column(nullable = false) LocalDate startDate,
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class DateRange {
+    @Column(nullable = false)
+    private LocalDate startDate;
 
-        @Column(nullable = false) LocalDate endDate) {
-    public DateRange {
+    @Column(nullable = false)
+    private LocalDate endDate;
+
+    public DateRange(LocalDate startDate, LocalDate endDate) {
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("시작 날짜는 종료 날짜보다 이후일 수 없습니다.");
         }
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
     public boolean isWithin(LocalDate date) {

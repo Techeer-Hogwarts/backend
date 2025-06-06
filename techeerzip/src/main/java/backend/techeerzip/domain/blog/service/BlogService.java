@@ -166,7 +166,7 @@ public class BlogService {
                                                         }
                                                         return BlogMapper.toUrlsResponse(user, urls);
                                                 })
-                                .collect(Collectors.toList());
+                                .toList();
                 logger.info("모든 유저의 블로그 url 조회 성공", CONTEXT);
                 return result;
         }
