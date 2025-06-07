@@ -3,8 +3,10 @@ package backend.techeerzip.domain.techBloggingChallenge.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import backend.techeerzip.domain.techBloggingChallenge.exception.TechBloggingTermParticipantAlreadyExistsException;
 import jakarta.persistence.*;
 
+import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.global.entity.BaseEntity;
 import lombok.*;
 
@@ -22,8 +24,9 @@ public class TechBloggingTerm extends BaseEntity {
     @Column(nullable = false)
     private int year;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean firstHalf;
+    private TermPeriod period;
 
     @Builder.Default
     @OneToMany(mappedBy = "term", cascade = CascadeType.ALL)
@@ -46,7 +49,7 @@ public class TechBloggingTerm extends BaseEntity {
     }
 
     public String getTermName() {
-        return String.format("%d년 %s 챌린지", year, firstHalf ? "상반기" : "하반기");
+        return period.getTermName(year);
     }
 
     public boolean isActive() {
@@ -63,7 +66,42 @@ public class TechBloggingTerm extends BaseEntity {
         }
     }
 
+    public boolean isFirstHalf() {
+        return period == TermPeriod.FIRST_HALF;
+    }
+
+    /**
+     * 사용자가 이미 해당 챌린지 기간에 참여했는지 확인합니다.
+     * 
+     * @param user 확인할 사용자
+     * @return 이미 참여한 경우 true, 그렇지 않으면 false
+     */
+    public boolean isUserAlreadyParticipated(User user) {
+        return this.participants.stream()
+                .anyMatch(participant -> !participant.isDeleted() &&
+                        participant.getUser().getId().equals(user.getId()));
+    }
+
+    /**
+     * 사용자를 챌린지 기간에 참여시킵니다.
+     * 
+     * @param user 참여시킬 사용자
+     * @throws TechBloggingTermParticipantAlreadyExistsException 이미 참여한 사용자인 경우
+     */
+    public void addParticipant(User user) {
+        if (isUserAlreadyParticipated(user)) {
+            throw new TechBloggingTermParticipantAlreadyExistsException();
+        }
+        TechBloggingTermParticipant participant = TechBloggingTermParticipant.create(this, user);
+        this.participants.add(participant);
+    }
+
+    public static TechBloggingTerm create(int year, TermPeriod period) {
+        return TechBloggingTerm.builder().year(year).period(period).isDeleted(false).build();
+    }
+
+    @Deprecated
     public static TechBloggingTerm create(int year, boolean firstHalf) {
-        return TechBloggingTerm.builder().year(year).firstHalf(firstHalf).isDeleted(false).build();
+        return create(year, TermPeriod.from(firstHalf));
     }
 }

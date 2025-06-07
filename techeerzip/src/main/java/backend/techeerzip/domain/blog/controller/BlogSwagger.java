@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.blog.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -56,7 +57,7 @@ public interface BlogSwagger {
             description = "조회 성공",
             content = @Content(schema = @Schema(implementation = BlogListResponse.class)))
     default ResponseEntity<BlogListResponse> getBestBlogs(
-            @Parameter(description = "검색 조건") BlogBestQueryRequest query) {
+            @ModelAttribute BlogBestQueryRequest query) {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
     }
 
@@ -69,7 +70,7 @@ public interface BlogSwagger {
             description = "조회 성공",
             content = @Content(schema = @Schema(implementation = BlogListResponse.class)))
     default ResponseEntity<BlogListResponse> getBlogList(
-            @Parameter(description = "검색 조건") BlogListQueryRequest query) {
+            @ModelAttribute BlogListQueryRequest query) {
         throw new UnsupportedOperationException("Swagger 문서 전용 인터페이스입니다.");
     }
 

@@ -9,11 +9,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import backend.techeerzip.domain.blog.exception.BlogCrawlingException;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BlogSaveRequest {
     private String title;
     private String url;

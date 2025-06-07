@@ -6,10 +6,12 @@ import jakarta.validation.constraints.NotNull;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(name = "UpdateRoundRequest", description = "특정 분기의 회차 시작 날짜와 종료 날짜를 수정하는 Request")

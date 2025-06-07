@@ -44,7 +44,8 @@ public class BlogController implements BlogSwagger {
 
     @GetMapping("/best")
     @Override
-    public ResponseEntity<BlogListResponse> getBestBlogs(BlogBestQueryRequest query) {
+    public ResponseEntity<BlogListResponse> getBestBlogs(
+            @ModelAttribute BlogBestQueryRequest query) {
         logger.info("인기글 목록 조회 처리 중 - cursorId: {}, limit: {} ", query);
         BlogListResponse result = blogService.getBestBlogs(query);
         logger.info("인기글 목록 조회 처리 완료 - cursorId: {}, limit: {} ", query, CONTEXT);
@@ -53,7 +54,8 @@ public class BlogController implements BlogSwagger {
 
     @GetMapping
     @Override
-    public ResponseEntity<BlogListResponse> getBlogList(BlogListQueryRequest query) {
+    public ResponseEntity<BlogListResponse> getBlogList(
+            @ModelAttribute BlogListQueryRequest query) {
         logger.info("블로그 목록 조회 및 검색 처리 중 - query: {} ", query, CONTEXT);
         BlogListResponse result = blogService.getBlogList(query);
         logger.info("블로그 목록 조회 및 검색 처리 완료 - query: {} ", query, CONTEXT);

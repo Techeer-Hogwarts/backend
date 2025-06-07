@@ -1,13 +1,11 @@
 package backend.techeerzip.domain.techBloggingChallenge.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
 @Schema(name = "ApplyChallengeRequest", description = "특정 분기 챌린지 지원 요청 DTO")
 public class ApplyChallengeRequest {
 

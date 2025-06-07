@@ -98,7 +98,7 @@ public class TechBloggingChallengeController implements TechBloggingChallengeSwa
     }
 
     // 모든 회차 조회 (필터 종류 조회에도 쓰임)
-    @GetMapping("/rounds")
+    @GetMapping("/terms")
     public ResponseEntity<List<TermSummaryResponse>> getTermList() {
         List<TermSummaryResponse> response = challengeService.getTermList();
         return ResponseEntity.ok(response);
@@ -123,13 +123,7 @@ public class TechBloggingChallengeController implements TechBloggingChallengeSwa
     // 회차별 블로그 커서 기반 조회
     @GetMapping("/rounds/blogs")
     public ResponseEntity<BlogChallengeListResponse> getBlogsByRoundCursor(
-            @RequestParam(required = false) Long termId,
-            @RequestParam(required = false) Long roundId,
-            @RequestParam(required = false) Long cursorId,
-            @RequestParam(required = false, defaultValue = "10") int limit,
-            @RequestParam(required = false, defaultValue = "latest") String sortBy) {
-        BlogChallengeCursorRequest request =
-                new BlogChallengeCursorRequest(termId, roundId, cursorId, limit, sortBy);
+            @ModelAttribute BlogChallengeCursorRequest request) {
         BlogChallengeListResponse response = challengeService.getBlogsByRoundCursor(request);
         return ResponseEntity.ok(response);
     }

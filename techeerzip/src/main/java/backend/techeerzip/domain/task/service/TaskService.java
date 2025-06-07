@@ -6,7 +6,6 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 
@@ -23,6 +22,7 @@ import backend.techeerzip.domain.blog.entity.BlogCategory;
 import backend.techeerzip.domain.blog.exception.BlogEmptyDateException;
 import backend.techeerzip.domain.blog.exception.BlogEmptyPostsException;
 import backend.techeerzip.domain.blog.exception.BlogInvalidDateFormatException;
+import backend.techeerzip.domain.blog.mapper.BlogMapper;
 import backend.techeerzip.domain.blog.service.BlogService;
 import backend.techeerzip.domain.task.entity.TaskType;
 import backend.techeerzip.global.logger.CustomLogger;
@@ -122,11 +122,17 @@ public class TaskService {
         logger.info("Performing daily update for task {}: {}", taskId, taskData, CONTEXT);
         try {
             // taskData(JSON) → DTO, 카테고리는 고정 예시로 TECHEER 지정
-            CrawlingBlogResponse blogs = new CrawlingBlogResponse(taskData, BlogCategory.TECHEER);
+            CrawlingBlogResponse blogs = BlogMapper.fromTaskData(taskData, BlogCategory.TECHEER);
 
             // 필터링 후 DTO에 반영
             List<BlogSaveRequest> filtered = filterPosts(blogs.getPosts());
-            blogs.updatePosts(filtered);
+            blogs =
+                    CrawlingBlogResponse.builder()
+                            .userId(blogs.getUserId())
+                            .blogUrl(blogs.getBlogUrl())
+                            .posts(filtered)
+                            .category(blogs.getCategory())
+                            .build();
 
             logger.info("필터링한 블로그 생성 요청 중 - posts: {}", blogs.getPosts(), CONTEXT);
             blogService.createBlog(blogs);
@@ -180,7 +186,7 @@ public class TaskService {
                                                 post.getTitle(), dateStr);
                                     }
                                 })
-                        .collect(Collectors.toList());
+                        .toList();
 
         logger.info("Filtered {} posts from last 24 hours | context: {}", filtered.size(), CONTEXT);
         return filtered;
@@ -201,7 +207,7 @@ public class TaskService {
     public void processSignUpBlogFetch(String taskId, String taskData) {
         logger.info(String.format("Fetching all blogs for task %s: %s", taskId, taskData), CONTEXT);
         try {
-            CrawlingBlogResponse blogs = new CrawlingBlogResponse(taskData, BlogCategory.TECHEER);
+            CrawlingBlogResponse blogs = BlogMapper.fromTaskData(taskData, BlogCategory.TECHEER);
             logger.info(String.format("신규 유저의 블로그 생성 요청 중 - posts: %s", blogs.getPosts()), CONTEXT);
             blogService.createBlog(blogs);
         } catch (Exception e) {
@@ -235,7 +241,7 @@ public class TaskService {
         logger.info(
                 String.format("Fetching post details for task %s: %s", taskId, taskData), CONTEXT);
         try {
-            CrawlingBlogResponse post = new CrawlingBlogResponse(taskData, BlogCategory.SHARED);
+            CrawlingBlogResponse post = BlogMapper.fromTaskData(taskData, BlogCategory.SHARED);
             logger.info(String.format("외부 블로그 생성 요청 중 - posts: %s", post), CONTEXT);
             blogService.createBlog(post);
         } catch (Exception e) {
@@ -249,6 +255,19 @@ public class TaskService {
     /** 태스크 ID 생성 */
     private String generateTaskId(String type, Long userId) {
         return String.format("task-%s-%d-%d", type, System.currentTimeMillis(), userId);
+    }
+
+    /** 신규 유저의 모든 블로그 URL에 대해 크롤링 요청 */
+    @Transactional
+    public void requestSignUpBlogFetchForUser(Long userId, List<String> blogUrls) {
+        logger.info("사용자 블로그 크롤링 시작 - userId: {}, 블로그 수: {}", userId, blogUrls.size(), CONTEXT);
+
+        for (String blogUrl : blogUrls) {
+            requestSignUpBlogFetch(userId, blogUrl);
+            logger.info("블로그 크롤링 요청 - userId: {}, url: {}", userId, blogUrl, CONTEXT);
+        }
+
+        logger.info("사용자 블로그 크롤링 요청 완료 - userId: {}", userId, CONTEXT);
     }
 
     @Transactional
