@@ -64,37 +64,33 @@ public class TechBloggingChallengeService {
     // 챌린지 기간 조회
     @Transactional(readOnly = true)
     public TermDetailResponse getTerm(Long termId) {
-        TechBloggingTerm term =
-                termRepository
-                        .findById(termId)
-                        .orElseThrow(() -> new TechBloggingTermNotFoundException());
+        TechBloggingTerm term = termRepository
+                .findById(termId)
+                .orElseThrow(() -> new TechBloggingTermNotFoundException());
         return TechBloggingChallengeMapper.toTermDetailResponse(term);
     }
 
     // 챌린지 기간 삭제
     @Transactional
     public void deleteTerm(Long termId) {
-        TechBloggingTerm term =
-                termRepository
-                        .findById(termId)
-                        .orElseThrow(() -> new TechBloggingTermNotFoundException());
+        TechBloggingTerm term = termRepository
+                .findById(termId)
+                .orElseThrow(() -> new TechBloggingTermNotFoundException());
         term.softDelete();
     }
 
     // 단일 회차 생성
     @Transactional
     public RoundDetailResponse createRound(CreateSingleRoundRequest request) {
-        TechBloggingTerm term =
-                termRepository
-                        .findById(request.getTermId())
-                        .orElseThrow(() -> new TechBloggingTermNotFoundException());
+        TechBloggingTerm term = termRepository
+                .findById(request.getTermId())
+                .orElseThrow(() -> new TechBloggingTermNotFoundException());
 
         validateNotPastDate(request.getStartDate());
         validateNoDuplicateRound(term, request.getStartDate(), request.getEndDate());
 
-        TechBloggingRound round =
-                TechBloggingRound.create(
-                        request.getStartDate(), request.getEndDate(), request.getSequence(), term);
+        TechBloggingRound round = TechBloggingRound.create(
+                request.getStartDate(), request.getEndDate(), request.getSequence(), term);
         round = roundRepository.save(round);
         term.addRound(round);
 
@@ -104,13 +100,11 @@ public class TechBloggingChallengeService {
     // 회차 수정
     @Transactional
     public RoundDetailResponse updateRound(UpdateRoundRequest request) {
-        TechBloggingRound round =
-                roundRepository
-                        .findById(request.getRoundId())
-                        .orElseThrow(() -> new TechBloggingRoundNotFoundException());
+        TechBloggingRound round = roundRepository
+                .findById(request.getRoundId())
+                .orElseThrow(() -> new TechBloggingRoundNotFoundException());
 
-        long days =
-                ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate().plusDays(1));
+        long days = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate().plusDays(1));
         if (days < MINIMUM_ROUND_DURATION_DAYS) {
             throw new TechBloggingRoundPeriodTooShortException();
         }
@@ -122,10 +116,9 @@ public class TechBloggingChallengeService {
     // 회차 삭제
     @Transactional
     public void deleteRound(Long roundId) {
-        TechBloggingRound round =
-                roundRepository
-                        .findById(roundId)
-                        .orElseThrow(() -> new TechBloggingRoundNotFoundException());
+        TechBloggingRound round = roundRepository
+                .findById(roundId)
+                .orElseThrow(() -> new TechBloggingRoundNotFoundException());
         round.softDelete();
     }
 
@@ -159,7 +152,8 @@ public class TechBloggingChallengeService {
             round = roundRepository.save(round);
             term.addRound(round);
 
-            if (isLastRound) break;
+            if (isLastRound)
+                break;
             start = roundEnd.plusDays(1);
         }
     }
@@ -197,25 +191,21 @@ public class TechBloggingChallengeService {
     public void applyChallenge(Long userId, ApplyChallengeRequest request) {
         // 1. 해당 Term 조회
         TermPeriod period = TermPeriod.from(request.isFirstHalf());
-        TechBloggingTerm term =
-                termRepository
-                        .findByYearAndPeriodAndIsDeletedFalse(request.getYear(), period)
-                        .orElseThrow(() -> new TechBloggingTermNotFoundException());
+        TechBloggingTerm term = termRepository
+                .findByYearAndPeriodAndIsDeletedFalse(request.getYear(), period)
+                .orElseThrow(() -> new TechBloggingTermNotFoundException());
 
         // 2. 유저 조회
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
         logger.info("user: {}", user);
-        // 3. 이미 참여했는지 확인
-        boolean alreadyJoined =
-                term.getParticipants().stream()
-                        .anyMatch(p -> !p.isDeleted() && p.getUser().getId().equals(userId));
-        if (alreadyJoined) {
+
+        // 3. 이미 참여했는지 확인 및 참여자 추가 (도메인 로직을 엔티티에서 처리)
+        if (term.isUserAlreadyParticipated(user)) {
             throw new TechBloggingTermAlreadyJoinedException();
         }
-        logger.info("alreadyJoined: {}", alreadyJoined);
+
         // 4. 참여자 저장
-        TechBloggingTermParticipant participant = TechBloggingTermParticipant.create(term, user);
-        term.getParticipants().add(participant);
+        term.addParticipant(user);
         // CascadeType.ALL이므로 term 저장 시 participant도 저장됨
         termRepository.save(term);
         logger.info("term: {}", term);
@@ -234,10 +224,9 @@ public class TechBloggingChallengeService {
                             List<Integer> sequence = new ArrayList<>();
                             int totalCount = 0;
                             for (TechBloggingRound round : rounds) {
-                                int attendanceCount =
-                                        attendanceRepository
-                                                .countByUserAndTechBloggingRoundAndIsDeletedFalse(
-                                                        user, round);
+                                int attendanceCount = attendanceRepository
+                                        .countByUserAndTechBloggingRoundAndIsDeletedFalse(
+                                                user, round);
                                 sequence.add(attendanceCount);
                                 totalCount += attendanceCount;
                             }
@@ -256,24 +245,20 @@ public class TechBloggingChallengeService {
         List<TechBloggingRound> rounds = roundRepository.findActiveRoundsOnDate(today);
 
         for (TechBloggingRound round : rounds) {
-            List<User> participants =
-                    round.getTerm().getParticipants().stream()
-                            .filter(p -> !p.isDeleted())
-                            .map(p -> p.getUser())
-                            .toList();
+            List<User> participants = round.getTerm().getParticipants().stream()
+                    .filter(p -> !p.isDeleted())
+                    .map(p -> p.getUser())
+                    .toList();
             for (User user : participants) {
-                java.util.List<Blog> blogs =
-                        blogRepository.findByUserAndDateBetweenAndIsDeletedFalse(
-                                user,
-                                round.getStartDate().atStartOfDay(),
-                                round.getEndDate().atTime(23, 59, 59));
+                java.util.List<Blog> blogs = blogRepository.findByUserAndDateBetweenAndIsDeletedFalse(
+                        user,
+                        round.getStartDate().atStartOfDay(),
+                        round.getEndDate().atTime(23, 59, 59));
                 for (Blog blog : blogs) {
-                    boolean alreadyExists =
-                            attendanceRepository.existsByUserAndTechBloggingRoundAndBlog(
-                                    user, round, blog);
+                    boolean alreadyExists = attendanceRepository.existsByUserAndTechBloggingRoundAndBlog(
+                            user, round, blog);
                     if (!alreadyExists) {
-                        TechBloggingAttendance attendance =
-                                new TechBloggingAttendance(user, round, blog);
+                        TechBloggingAttendance attendance = new TechBloggingAttendance(user, round, blog);
                         attendanceRepository.save(attendance);
                         System.out.printf(
                                 "출석 저장: userId=%d, roundId=%d, blogId=%d\n",
@@ -286,10 +271,9 @@ public class TechBloggingChallengeService {
 
     @Transactional(readOnly = true)
     public TermRoundsSummaryResponse getTermRoundsSummary(Long termId) {
-        TechBloggingTerm term =
-                termRepository
-                        .findById(termId)
-                        .orElseThrow(() -> new TechBloggingTermNotFoundException());
+        TechBloggingTerm term = termRepository
+                .findById(termId)
+                .orElseThrow(() -> new TechBloggingTermNotFoundException());
         if (term.getRounds().isEmpty()) {
             throw new TechBloggingTermNoRoundsException();
         }
@@ -312,16 +296,14 @@ public class TechBloggingChallengeService {
     }
 
     private DateRange calculateTermDateRange(TechBloggingTerm term) {
-        LocalDate startDate =
-                term.getRounds().stream()
-                        .map(r -> r.getStartDate())
-                        .min(LocalDate::compareTo)
-                        .orElse(null);
-        LocalDate endDate =
-                term.getRounds().stream()
-                        .map(r -> r.getEndDate())
-                        .max(LocalDate::compareTo)
-                        .orElse(null);
+        LocalDate startDate = term.getRounds().stream()
+                .map(r -> r.getStartDate())
+                .min(LocalDate::compareTo)
+                .orElse(null);
+        LocalDate endDate = term.getRounds().stream()
+                .map(r -> r.getEndDate())
+                .max(LocalDate::compareTo)
+                .orElse(null);
         return DateRange.of(startDate, endDate);
     }
 
@@ -346,9 +328,8 @@ public class TechBloggingChallengeService {
         List<Long> validBlogIds = attendanceRepository.getValidBlogIds(termId, roundId);
         Blog cursorBlog = validateAndGetCursorBlog(request.cursorId(), validBlogIds);
 
-        List<Blog> blogs =
-                blogRepository.findBlogsForChallenge(
-                        validBlogIds, cursorBlog, request.limit() + 1, request.sortBy());
+        List<Blog> blogs = blogRepository.findBlogsForChallenge(
+                validBlogIds, cursorBlog, request.limit() + 1, request.sortBy());
 
         return TechBloggingChallengeMapper.toBlogChallengeListResponse(blogs, request.limit());
     }
@@ -358,16 +339,14 @@ public class TechBloggingChallengeService {
         LocalDate today = LocalDate.now();
         return termRepository.findByIsDeletedFalse().stream()
                 .filter(
-                        term ->
-                                !term.isDeleted()
-                                        && term.getRounds().stream()
-                                                .anyMatch(
-                                                        round ->
-                                                                !round.isDeleted()
-                                                                        && !round.getStartDate()
-                                                                                .isAfter(today)
-                                                                        && !round.getEndDate()
-                                                                                .isBefore(today)))
+                        term -> !term.isDeleted()
+                                && term.getRounds().stream()
+                                        .anyMatch(
+                                                round -> !round.isDeleted()
+                                                        && !round.getStartDate()
+                                                                .isAfter(today)
+                                                        && !round.getEndDate()
+                                                                .isBefore(today)))
                 .findFirst()
                 .map(term -> term.getId())
                 .orElse(null);
@@ -378,17 +357,15 @@ public class TechBloggingChallengeService {
             LocalDate today = LocalDate.now();
             return termRepository.findByIsDeletedFalse().stream()
                     .filter(
-                            term ->
-                                    !term.isDeleted()
-                                            && term.getRounds().stream()
-                                                    .anyMatch(
-                                                            round ->
-                                                                    !round.isDeleted()
-                                                                            && !round.getStartDate()
-                                                                                    .isAfter(today)
-                                                                            && !round.getEndDate()
-                                                                                    .isBefore(
-                                                                                            today)))
+                            term -> !term.isDeleted()
+                                    && term.getRounds().stream()
+                                            .anyMatch(
+                                                    round -> !round.isDeleted()
+                                                            && !round.getStartDate()
+                                                                    .isAfter(today)
+                                                            && !round.getEndDate()
+                                                                    .isBefore(
+                                                                            today)))
                     .findFirst()
                     .orElseThrow(() -> new TechBloggingTermNotFoundException());
         } else {
@@ -413,10 +390,9 @@ public class TechBloggingChallengeService {
     }
 
     private void validateRoundBelongsToTerm(Long roundId, Long termId) {
-        TechBloggingRound round =
-                roundRepository
-                        .findById(roundId)
-                        .orElseThrow(() -> new TechBloggingRoundNotFoundException());
+        TechBloggingRound round = roundRepository
+                .findById(roundId)
+                .orElseThrow(() -> new TechBloggingRoundNotFoundException());
         if (!round.getTerm().getId().equals(termId)) {
             throw new TechBloggingRoundNotFoundException();
         }
