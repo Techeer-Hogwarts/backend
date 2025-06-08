@@ -1,9 +1,11 @@
 package backend.techeerzip.domain.blog.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 @Builder
 public class BlogIndexRequest {
     private final String id;

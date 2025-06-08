@@ -2,13 +2,12 @@ package backend.techeerzip.domain.blog.dto.response;
 
 import java.time.LocalDateTime;
 
-import backend.techeerzip.domain.blog.entity.Blog;
-import backend.techeerzip.domain.blog.exception.BlogInvalidRequestException;
-import backend.techeerzip.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 @Schema(name = "BlogResponse", description = "블로그 단건 조회 응답 DTO")
 public class BlogResponse {
 
@@ -44,37 +43,6 @@ public class BlogResponse {
 
     @Schema(description = "로그인 사용자 정보(선택)")
     private final BlogAuthorResponse user;
-
-    public BlogResponse(Blog blog) {
-        if (blog == null) {
-            throw new BlogInvalidRequestException("Blog cannot be null");
-        }
-
-        this.id = blog.getId();
-        this.title = blog.getTitle();
-        this.url = blog.getUrl();
-        this.date = blog.getDate();
-        this.category = blog.getCategory();
-        this.createdAt = blog.getCreatedAt();
-        this.likeCount = blog.getLikeCount();
-        this.viewCount = blog.getViewCount();
-        this.thumbnail = blog.getThumbnail();
-
-        // Author 정보 검증
-        String authorName = blog.getAuthor();
-        String authorImage = blog.getAuthorImage();
-        if (authorName == null) {
-            throw new BlogInvalidRequestException("Author name cannot be null");
-        }
-        if (authorImage == null) {
-            throw new BlogInvalidRequestException("Author image cannot be null");
-        }
-        this.author = new Author(authorName, authorImage);
-
-        // User 정보 검증
-        User blogUser = blog.getUser();
-        this.user = (blogUser != null) ? new BlogAuthorResponse(blogUser) : null;
-    }
 
     @Schema(name = "Author", description = "블로그 작성자 정보")
     public record Author(

@@ -7,12 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import backend.techeerzip.domain.techBloggingChallenge.entity.TechBloggingTerm;
+import backend.techeerzip.domain.techBloggingChallenge.entity.TermPeriod;
 
 @Repository
 public interface TechBloggingTermRepository extends JpaRepository<TechBloggingTerm, Long> {
-    boolean existsByYearAndFirstHalfAndIsDeletedFalse(int year, boolean firstHalf);
+    boolean existsByYearAndPeriodAndIsDeletedFalse(int year, TermPeriod period);
 
-    Optional<TechBloggingTerm> findByYearAndFirstHalfAndIsDeletedFalse(int year, boolean firstHalf);
+    Optional<TechBloggingTerm> findByYearAndPeriodAndIsDeletedFalse(int year, TermPeriod period);
 
     List<TechBloggingTerm> findByIsDeletedFalse();
 }

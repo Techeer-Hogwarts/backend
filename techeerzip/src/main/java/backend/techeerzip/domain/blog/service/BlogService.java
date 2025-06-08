@@ -5,7 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -55,35 +54,25 @@ public class BlogService {
     public BlogListResponse getBlogList(BlogListQueryRequest query) {
         logger.info(
                 "블로그 목록 조회 - cursorId: {}, category: {}, sortBy: {}, limit: {}",
-                query.getCursorId(),
-                query.getCategory(),
-                query.getSortBy(),
-                query.getLimit(),
+                query.cursorId(),
+                query.category(),
+                query.sortBy(),
+                query.limit(),
                 CONTEXT);
         List<Blog> blogs =
                 blogRepository.findBlogsWithCursor(
-                        query.getCursorId(),
-                        query.getCategory(),
-                        query.getSortBy(),
-                        query.getLimit());
-        List<BlogResponse> blogResponses =
-                blogs.stream().map(BlogResponse::new).collect(Collectors.toList());
-        logger.info("블로그 목록 조회 성공 - size: {}", blogResponses.size(), CONTEXT);
-        return new BlogListResponse(blogResponses, query.getLimit());
+                        query.cursorId(), query.category(), query.sortBy(), query.limit());
+        logger.info("블로그 목록 조회 성공 - size: {}", blogs.size(), CONTEXT);
+        return BlogMapper.toListResponse(blogs, query.limit());
     }
 
     public BlogListResponse getBestBlogs(BlogBestQueryRequest query) {
         logger.info(
-                "인기 블로그 목록 조회 - cursorId: {}, limit: {}",
-                query.getCursorId(),
-                query.getLimit(),
-                CONTEXT);
+                "인기 블로그 목록 조회 - cursorId: {}, limit: {}", query.cursorId(), query.limit(), CONTEXT);
         List<Blog> blogs =
-                blogRepository.findPopularBlogsWithCursor(query.getCursorId(), query.getLimit());
-        List<BlogResponse> blogResponses =
-                blogs.stream().map(BlogResponse::new).collect(Collectors.toList());
-        logger.info("인기 블로그 목록 조회 성공 - size: {}", blogResponses.size(), CONTEXT);
-        return new BlogListResponse(blogResponses, query.getLimit());
+                blogRepository.findPopularBlogsWithCursor(query.cursorId(), query.limit());
+        logger.info("인기 블로그 목록 조회 성공 - size: {}", blogs.size(), CONTEXT);
+        return BlogMapper.toListResponse(blogs, query.limit());
     }
 
     public BlogResponse getBlog(Long blogId) {
@@ -99,7 +88,7 @@ public class BlogService {
                                     return new BlogNotFoundException();
                                 });
         logger.info("단일 블로그 엔티티 목록 조회 성공", CONTEXT);
-        return new BlogResponse(blog);
+        return BlogMapper.toResponse(blog);
     }
 
     @Transactional
@@ -149,7 +138,7 @@ public class BlogService {
         logger.info("블로그 삭제 성공", CONTEXT);
         eventPublisher.publishEvent(new IndexEvent.Delete("blog", blogId));
         logger.info("인덱스 삭제 요청 성공", CONTEXT);
-        return new BlogResponse(blog);
+        return BlogMapper.toResponse(blog);
     }
 
     public List<BlogUrlsResponse> getAllUserBlogUrl() {
@@ -171,9 +160,9 @@ public class BlogService {
                                             && !user.getVelogUrl().trim().isEmpty()) {
                                         urls.add(user.getVelogUrl());
                                     }
-                                    return new BlogUrlsResponse(user.getId(), urls);
+                                    return BlogMapper.toUrlsResponse(user, urls);
                                 })
-                        .collect(Collectors.toList());
+                        .toList();
         logger.info("모든 유저의 블로그 url 조회 성공", CONTEXT);
         return result;
     }
@@ -294,16 +283,6 @@ public class BlogService {
 
     private Blog createBlogEntity(
             BlogSaveRequest post, User author, BlogCategory category, LocalDateTime postDate) {
-        return Blog.builder()
-                .user(author)
-                .title(post.getTitle())
-                .url(post.getUrl())
-                .date(postDate)
-                .author(post.getAuthor())
-                .authorImage(post.getAuthorImage())
-                .category(category != null ? category.name() : null)
-                .thumbnail(post.getThumbnail())
-                .tags(post.getTags())
-                .build();
+        return BlogMapper.toEntity(post, author, category, postDate);
     }
 }
