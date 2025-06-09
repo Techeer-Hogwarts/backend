@@ -12,6 +12,7 @@ import lombok.Getter;
     "id",
     "profileImage",
     "name",
+    "roleId",
     "nickname",
     "email",
     "school",
@@ -36,6 +37,7 @@ public class GetUserResponse {
     private final Long id;
     private final String profileImage;
     private final String name;
+    private final Long roleId;
     private final String nickname;
     private final String email;
     private final String school;
