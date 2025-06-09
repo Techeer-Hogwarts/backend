@@ -13,6 +13,7 @@ public class UserMapper {
                 .id(user.getId())
                 .profileImage(user.getProfileImage())
                 .name(user.getName())
+                .roleId(user.getRole().getId())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
                 .school(user.getSchool())
@@ -29,6 +30,7 @@ public class UserMapper {
                 .projectTeams(
                         user.getProjectMembers().stream()
                                 .filter(pm -> pm.getProjectTeam() != null)
+                                .filter(pm -> !pm.getProjectTeam().isDeleted())
                                 .map(
                                         pm ->
                                                 GetUserResponse.ProjectTeamDTO.builder()
@@ -58,6 +60,7 @@ public class UserMapper {
                 .studyTeams(
                         user.getStudyMembers().stream()
                                 .filter(sm -> sm.getStudyTeam() != null)
+                                .filter(sm -> !sm.getStudyTeam().isDeleted())
                                 .map(
                                         sm ->
                                                 GetUserResponse.StudyTeamDTO.builder()
@@ -86,6 +89,7 @@ public class UserMapper {
                                 .toList())
                 .experiences(
                         user.getExperiences().stream()
+                                .filter(exp -> !exp.isDeleted())
                                 .map(
                                         exp ->
                                                 GetUserResponse.ExperienceDTO.builder()
