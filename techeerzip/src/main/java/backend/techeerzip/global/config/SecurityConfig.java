@@ -55,8 +55,6 @@ public class SecurityConfig {
                                         .hasRole("ADMIN")
 
                                         // Admin, Mentor, Techeer
-                                        .requestMatchers(HttpMethod.GET, "/api/v3/users")
-                                        .hasAnyRole("ADMIN", "MENTOR", "TECHEER")
                                         .requestMatchers(
                                                 HttpMethod.POST, "/api/v3/blogs", "/api/v3/events")
                                         .hasAnyRole("ADMIN", "MENTOR", "TECHEER")
@@ -71,17 +69,19 @@ public class SecurityConfig {
                                         .requestMatchers(
                                                 HttpMethod.GET,
                                                 "/api/v3/studyTeams/*",
-                                                "/api/v3/projectTeams/*",
-                                                "/api/v3/users/*")
+                                                "/api/v3/projectTeams/*")
                                         .hasAnyRole("ADMIN", "MENTOR", "TECHEER", "COMPANY")
-                                        .requestMatchers("/api/v3/resumes/**")
+                                        .requestMatchers(
+                                                "/api/v3/resumes/**", "/api/v3/users/profiles")
                                         .hasAnyRole("ADMIN", "MENTOR", "TECHEER", "COMPANY")
 
                                         // Admin, Mentor, Techeer, Company, Bootcamp
                                         .requestMatchers(
                                                 "/api/v3/events/**",
                                                 "/api/v3/bookmarks",
-                                                "/api/v3/likes")
+                                                "/api/v3/likes",
+                                                "/api/v3/users",
+                                                "/api/v3/users/findPwd")
                                         .hasAnyRole(
                                                 "ADMIN", "MENTOR", "TECHEER", "COMPANY", "BOOTCAMP")
 
@@ -92,9 +92,9 @@ public class SecurityConfig {
                                                 "/api/v3/auth/email",
                                                 "/api/v3/auth/code",
                                                 "/api/v3/auth/login",
+                                                "/api/v3/auth/logout",
                                                 "/api/v3/users/signup",
-                                                "/api/v3/users/signup/external",
-                                                "/api/v3/users/findPwd")
+                                                "/api/v3/users/signup/external")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())
