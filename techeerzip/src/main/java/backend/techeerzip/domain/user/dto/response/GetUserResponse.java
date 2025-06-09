@@ -1,9 +1,7 @@
 package backend.techeerzip.domain.user.dto.response;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,7 +35,7 @@ public class GetUserResponse {
     private final Long id;
     private final String profileImage;
     private final String name;
-    private final Number roleId;
+    private final Integer roleId;
     private final String nickname;
     private final String email;
     private final String school;
