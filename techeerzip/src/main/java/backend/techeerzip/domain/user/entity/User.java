@@ -1,8 +1,17 @@
 package backend.techeerzip.domain.user.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import backend.techeerzip.domain.blog.entity.Blog;
+import backend.techeerzip.domain.bookmark.entity.Bookmark;
+import backend.techeerzip.domain.event.entity.Event;
+import backend.techeerzip.domain.like.entity.Like;
+import backend.techeerzip.domain.projectMember.entity.ProjectMember;
+import backend.techeerzip.domain.resume.entity.Resume;
+import backend.techeerzip.domain.role.entity.Role;
+import backend.techeerzip.domain.session.entity.Session;
+import backend.techeerzip.domain.studyMember.entity.StudyMember;
+import backend.techeerzip.domain.techBloggingChallenge.entity.TechBloggingAttendance;
+import backend.techeerzip.domain.userExperience.entity.UserExperience;
+import backend.techeerzip.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,27 +25,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
-import backend.techeerzip.domain.blog.entity.Blog;
-import backend.techeerzip.domain.bookmark.entity.Bookmark;
-import backend.techeerzip.domain.event.entity.Event;
-import backend.techeerzip.domain.like.entity.Like;
-import backend.techeerzip.domain.projectMember.entity.ProjectMember;
-import backend.techeerzip.domain.resume.entity.Resume;
-import backend.techeerzip.domain.role.entity.Role;
-import backend.techeerzip.domain.session.entity.Session;
-import backend.techeerzip.domain.studyMember.entity.StudyMember;
-import backend.techeerzip.domain.techBloggingChallenge.entity.TechBloggingAttendance;
-import backend.techeerzip.domain.userExperience.entity.UserExperience;
-import backend.techeerzip.global.entity.BaseEntity;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -129,7 +126,7 @@ public class User extends BaseEntity {
     @JoinColumn(name = "roleId", nullable = false)
     private Role role;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String grade;
 
     @Column(length = 300)
