@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.auth.exception.AuthNotTecheerException;
 import backend.techeerzip.domain.auth.exception.AuthNotVerifiedEmailException;
 import backend.techeerzip.domain.auth.service.AuthService;
 import backend.techeerzip.domain.blog.repository.BlogRepository;
@@ -38,6 +39,7 @@ import backend.techeerzip.domain.role.repository.RoleRepository;
 import backend.techeerzip.domain.session.repository.SessionRepository;
 import backend.techeerzip.domain.studyMember.repository.StudyMemberRepository;
 import backend.techeerzip.domain.task.service.TaskService;
+import backend.techeerzip.domain.user.dto.request.CreateExternalUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
 import backend.techeerzip.domain.user.dto.request.GetUserProfileListRequest;
@@ -113,6 +115,10 @@ public class UserService {
         List<CreateUserExperienceRequest> experiences =
                 createUserWithResumeRequest.getCreateUserExperienceRequest().getExperiences();
 
+        if (!authService.checkTecheer(createUserRequest.getEmail())) {
+            throw new AuthNotTecheerException();
+        }
+
         if (!authService.checkEmailVerified(createUserRequest.getEmail())) {
             logger.warn("이메일 인증 필요 - email: {}", createUserRequest.getEmail(), CONTEXT);
             throw new AuthNotVerifiedEmailException();
@@ -152,8 +158,10 @@ public class UserService {
             existingUser.setVelogUrl(createUserRequest.getVelogUrl());
             existingUser.setMediumUrl(createUserRequest.getMediumUrl());
             existingUser.setSchool(createUserRequest.getSchool());
-            existingUser.setYear(createUserRequest.getYear());
-            existingUser.setLft(createUserRequest.getIsLft());
+            existingUser.setLft(
+                    createUserRequest.getIsLft() != null ? createUserRequest.getIsLft() : false);
+            existingUser.setYear(
+                    createUserRequest.getYear() != null ? createUserRequest.getYear() : -1);
             existingUser.setProfileImage(profileImage);
             existingUser.setAuth(true);
             existingUser.setRole(defaultRole);
@@ -220,6 +228,44 @@ public class UserService {
 
         userExperienceRepository.saveAll(experiencesData);
         logger.info("경력 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
+    }
+
+    public void signUpExternal(CreateExternalUserRequest createExternalUserRequest) {
+
+        String email = createExternalUserRequest.getEmail();
+
+        if (!authService.checkEmailVerified(email)) {
+            logger.warn("이메일 인증 필요 - email: {}", createExternalUserRequest.getEmail(), CONTEXT);
+            throw new AuthNotVerifiedEmailException();
+        }
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new UserAlreadyExistsException();
+        }
+
+        Long roleId =
+                switch (createExternalUserRequest.getJoinReason()) {
+                    case COMPANY -> 4L;
+                    case BOOTCAMP -> 5L;
+                };
+
+        Role role = roleRepository.findById(roleId).orElseThrow(RoleNotFoundException::new);
+
+        String name = createExternalUserRequest.getName();
+        String password = createExternalUserRequest.getPassword();
+        String hashedPassword = passwordEncoder.encode(password);
+
+        User user =
+                User.builder()
+                        .email(email)
+                        .password(hashedPassword)
+                        .name(name)
+                        .role(role)
+                        .isAuth(true)
+                        .build();
+
+        userRepository.save(user);
+        logger.info("외부 회원가입 완료 - email: {}, role: {}", email, role.getName(), CONTEXT);
     }
 
     @Transactional
@@ -490,14 +536,23 @@ public class UserService {
                         : "year";
 
         List<User> users =
-                userRepository.findUsersWithCursor(
-                        getUserProfileListRequest.getCursorId(),
-                        getUserProfileListRequest.getPosition(),
-                        getUserProfileListRequest.getYear(),
-                        getUserProfileListRequest.getUniversity(),
-                        getUserProfileListRequest.getGrade(),
-                        limit,
-                        sortBy);
+                userRepository
+                        .findUsersWithCursor(
+                                getUserProfileListRequest.getCursorId(),
+                                getUserProfileListRequest.getPosition(),
+                                getUserProfileListRequest.getYear(),
+                                getUserProfileListRequest.getUniversity(),
+                                getUserProfileListRequest.getGrade(),
+                                limit + 1,
+                                sortBy)
+                        .stream()
+                        .filter(
+                                user -> {
+                                    Long roleId =
+                                            user.getRole() != null ? user.getRole().getId() : null;
+                                    return roleId != null && roleId >= 0 && roleId <= 3;
+                                })
+                        .collect(Collectors.toList());
 
         boolean hasNext = users.size() > limit;
         if (hasNext) {

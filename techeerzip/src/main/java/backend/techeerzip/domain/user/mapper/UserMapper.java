@@ -23,8 +23,8 @@ public class UserMapper {
                 .mediumUrl(user.getMediumUrl())
                 .velogUrl(user.getVelogUrl())
                 .tistoryUrl(user.getTistoryUrl())
-                .isLft(user.isLft())
-                .year(user.getYear())
+                .isLft(Boolean.TRUE.equals(user.isLft()))
+                .year(user.getYear() != null ? user.getYear() : -1)
                 .stack(user.getStack())
                 .projectTeams(
                         user.getProjectMembers().stream()

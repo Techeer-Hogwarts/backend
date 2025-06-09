@@ -235,7 +235,10 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
     public static <T> List<T> ensureMaxSize(List<T> unionTeams, Integer limit) {
         final boolean hasNext = unionTeams.size() > limit;
         if (hasNext) {
-            log.info("TeamUnionView ensureMaxSize: hasNext true, limit={} → size={}", limit, unionTeams.size());
+            log.info(
+                    "TeamUnionView ensureMaxSize: hasNext true, limit={} → size={}",
+                    limit,
+                    unionTeams.size());
             return unionTeams.subList(0, limit);
         }
         log.info("TeamUnionView ensureMaxSize: hasNext false - size={}", unionTeams.size());
