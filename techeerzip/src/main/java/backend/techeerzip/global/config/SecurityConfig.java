@@ -81,7 +81,7 @@ public class SecurityConfig {
                                                 "/api/v3/bookmarks",
                                                 "/api/v3/likes",
                                                 "/api/v3/users",
-                                                "/api/v3/users/findPwd")
+                                                "/api/v3/users/password/reset")
                                         .hasAnyRole(
                                                 "ADMIN", "MENTOR", "TECHEER", "COMPANY", "BOOTCAMP")
 

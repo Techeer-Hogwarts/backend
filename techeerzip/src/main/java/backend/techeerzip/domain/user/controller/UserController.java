@@ -84,7 +84,7 @@ public class UserController implements UserSwagger {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/findPwd")
+    @PatchMapping("/password/reset")
     @Override
     public ResponseEntity<Void> resetPassword(
             @Valid @RequestBody ResetUserPasswordRequest userResetPasswordRequest) {
