@@ -39,17 +39,35 @@ public class ResumeResponse {
         this.updatedAt = resume.getUpdatedAt();
         this.user =
                 new UserInfo(
+                        resumeUser.getId(),
                         resumeUser.getName(),
                         resumeUser.getNickname(),
-                        resumeUser.getProfileImage());
+                        resumeUser.getProfileImage(),
+                        resumeUser.getEmail(),
+                        resumeUser.getGithubUrl(),
+                        resumeUser.getMediumUrl(),
+                        resumeUser.getTistoryUrl(),
+                        resumeUser.getVelogUrl(),
+                        resumeUser.getMainPosition(),
+                        resumeUser.getSchool()
+                );
     }
 
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserInfo {
+        private Long id;
         private String name;
         private String nickname;
         private String profileImage;
+        private String email;
+        private String githubUrl;
+        private String mediumUrl;
+        private String tistoryUrl;
+        private String velogUrl;
+        private String mainPosition;
+        private String school;
+
     }
 }
