@@ -65,7 +65,11 @@ public class AuthService {
     private String emailUser;
 
     // 이메일 인증 코드 전송
-    public void sendVerificationEmail(String email) {
+    public void sendVerificationEmail(String email, Boolean techeer) {
+
+        if (techeer) {
+            checkTecheer(email);
+        }
 
         String code = String.format("%06d", secureRandom.nextInt(1000000));
         logger.info("이메일 인증 코드 생성 완료 - email: {}", email, CONTEXT);
