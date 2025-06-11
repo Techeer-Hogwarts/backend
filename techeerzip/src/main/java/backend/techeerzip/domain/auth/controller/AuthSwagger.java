@@ -47,10 +47,20 @@ public interface AuthSwagger {
     }
 
     @Operation(summary = "로그인", description = "로그인을 진행합니다.")
-    @ApiResponse(
-            responseCode = "200",
-            description = "로그인 성공",
-            content = @Content(schema = @Schema(implementation = TokenPair.class)))
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "로그인 성공",
+                content = @Content(schema = @Schema(implementation = TokenPair.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "이메일 또는 비밀번호가 올바르지 않습니다",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "가입되지 않은 사용자입니다",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     default ResponseEntity<TokenPair> login(
             @Valid @Parameter(description = "로그인 요청 정보") LoginRequest loginRequest,
             HttpServletResponse response) {

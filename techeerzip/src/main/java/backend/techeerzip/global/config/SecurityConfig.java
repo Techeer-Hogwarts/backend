@@ -80,8 +80,7 @@ public class SecurityConfig {
                                                 "/api/v3/events/**",
                                                 "/api/v3/bookmarks",
                                                 "/api/v3/likes",
-                                                "/api/v3/users",
-                                                "/api/v3/users/password/reset")
+                                                "/api/v3/users")
                                         .hasAnyRole(
                                                 "ADMIN", "MENTOR", "TECHEER", "COMPANY", "BOOTCAMP")
 
@@ -94,7 +93,8 @@ public class SecurityConfig {
                                                 "/api/v3/auth/login",
                                                 "/api/v3/auth/logout",
                                                 "/api/v3/users/signup",
-                                                "/api/v3/users/signup/external")
+                                                "/api/v3/users/signup/external",
+                                                "/api/v3/users/password/reset")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

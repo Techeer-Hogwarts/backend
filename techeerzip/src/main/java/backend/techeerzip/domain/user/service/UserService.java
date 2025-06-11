@@ -84,8 +84,6 @@ public class UserService {
 
     private final RestTemplate restTemplate;
     private final AuthService authService;
-    // private final ResumeService resumeService;
-    // private final IndexService indexService;
     private final PasswordEncoder passwordEncoder;
 
     private final UserRepository userRepository;
@@ -209,6 +207,14 @@ public class UserService {
         }
 
         // 이력서 저장
+        resumeService.createResume(
+                savedUser.getId(),
+                file,
+                resumeRequest.getTitle(),
+                resumeRequest.getPosition(),
+                resumeRequest.getCategory(),
+                true);
+        logger.info("이력서 저장 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
 
         List<UserExperience> experiencesData =
                 experiences.stream()
@@ -218,8 +224,11 @@ public class UserService {
                                                 .userId(savedUser.getId())
                                                 .position(exp.getPosition())
                                                 .companyName(exp.getCompanyName())
-                                                .startDate(exp.getStartDate())
-                                                .endDate(exp.getEndDate())
+                                                .startDate(exp.getStartDate().atStartOfDay())
+                                                .endDate(
+                                                        exp.getEndDate() != null
+                                                                ? exp.getEndDate().atStartOfDay()
+                                                                : null)
                                                 .category(exp.getCategory())
                                                 .isFinished(exp.getEndDate() != null)
                                                 .description(exp.getDescription())
@@ -472,8 +481,11 @@ public class UserService {
 
                                     existingExp.setPosition(e.getPosition());
                                     existingExp.setCompanyName(e.getCompanyName());
-                                    existingExp.setStartDate(e.getStartDate());
-                                    existingExp.setEndDate(e.getEndDate());
+                                    existingExp.setStartDate(e.getStartDate().atStartOfDay());
+                                    existingExp.setEndDate(
+                                            e.getEndDate() != null
+                                                    ? e.getEndDate().atStartOfDay()
+                                                    : null);
                                     existingExp.setCategory(e.getCategory());
                                     existingExp.setIsFinished(
                                             Boolean.TRUE.equals(e.getIsFinished()));
@@ -486,8 +498,11 @@ public class UserService {
                                                     .userId(user.getId())
                                                     .position(e.getPosition())
                                                     .companyName(e.getCompanyName())
-                                                    .startDate(e.getStartDate())
-                                                    .endDate(e.getEndDate())
+                                                    .startDate(e.getStartDate().atStartOfDay())
+                                                    .endDate(
+                                                            e.getEndDate() != null
+                                                                    ? e.getEndDate().atStartOfDay()
+                                                                    : null)
                                                     .category(e.getCategory())
                                                     .isFinished(
                                                             Boolean.TRUE.equals(e.getIsFinished()))

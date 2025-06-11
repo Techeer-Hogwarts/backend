@@ -1,6 +1,6 @@
 package backend.techeerzip.domain.userExperience.dto.request;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,10 +27,10 @@ public class UpdateUserExperienceRequest {
 
     @NotNull
     @Schema(description = "경력 시작일", example = "2021-01-01")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
     @Schema(description = "경력 종료일", example = "2021-06-01")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     @NotBlank
     @Schema(description = "경력 카테고리", example = "인턴")

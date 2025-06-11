@@ -18,4 +18,7 @@ public class SendEmailRequest {
     @NotBlank
     @Schema(description = "이메일", example = "user@example.com")
     private String email;
+
+    @Schema(description = "테커 여부", example = "true")
+    private boolean techeer;
 }
