@@ -465,14 +465,15 @@ public class StudyTeamService {
         final boolean allDeletesProcessed = deleteIdSet.size() == toInactive.size();
         final boolean allUpdatesAccountedFor = toActive.size() + updateMap.size() == updateCount;
         final boolean memberCountConsistent =
-                deleteIdSet.size() + toInactive.size() == existingMembers.size();
+                toActive.size() + toInactive.size() == existingMembers.size();
 
         if (!allDeletesProcessed || !allUpdatesAccountedFor || !memberCountConsistent) {
             log.error(
-                    "StudyTeam applyMemberStateChanges: 멤버 상태 변경 일치 실패 - updateMap 남은={}, 삭제된={}, 기존={}",
+                    "StudyTeam applyMemberStateChanges: 멤버 상태 변경 일치 실패 - updateMap 남은={}, 삭제된={}, 기존={}, toActive={}",
                     updateMap.size(),
                     toInactive.size(),
-                    existingMembers.size());
+                    existingMembers.size(),
+                    toActive);
             throw new TeamMissingUpdateMemberException();
         }
         log.info(
@@ -726,7 +727,7 @@ public class StudyTeamService {
                                     return new StudyTeamNotFoundException();
                                 });
         study.increaseViewCount();
-        final List<StudyMember> sm = study.getStudyMembers();
+        final List<StudyMember> sm = study.getActiveMember();
         log.info("StudyTeam getDetail: 조회 완료 - 멤버 수={}", sm.size());
         return StudyTeamMapper.toDetailResponse(study, sm);
     }

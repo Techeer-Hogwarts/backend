@@ -194,6 +194,10 @@ public class ProjectTeam extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public List<ProjectMember> getActiveMember() {
+        return this.projectMembers.stream().filter(ProjectMember::isActive).toList();
+    }
+
     public void increaseLikeCount() {
         this.likeCount++;
         this.updatedAt = LocalDateTime.now();
