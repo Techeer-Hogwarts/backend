@@ -137,6 +137,7 @@ public class StudyMember extends BaseEntity {
     public boolean isPending() {
         return this.status.equals(StatusCategory.PENDING);
     }
+
     public boolean isActive() {
         return !this.isDeleted && this.status.equals(StatusCategory.APPROVED);
     }
