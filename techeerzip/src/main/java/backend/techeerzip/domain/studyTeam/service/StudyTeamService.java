@@ -464,10 +464,8 @@ public class StudyTeamService {
         }
         final boolean allDeletesProcessed = deleteIdSet.size() == toInactive.size();
         final boolean allUpdatesAccountedFor = toActive.size() + updateMap.size() == updateCount;
-        final boolean memberCountConsistent =
-                toActive.size() + toInactive.size() == existingMembers.size();
 
-        if (!allDeletesProcessed || !allUpdatesAccountedFor || !memberCountConsistent) {
+        if (!allDeletesProcessed || !allUpdatesAccountedFor) {
             log.error(
                     "StudyTeam applyMemberStateChanges: 멤버 상태 변경 일치 실패 - updateMap 남은={}, 삭제된={}, 기존={}, toActive={}",
                     updateMap.size(),
