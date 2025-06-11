@@ -83,7 +83,7 @@ public interface ProjectTeamSwagger {
                                             schema = @Schema(type = "string", format = "binary")))
                     @RequestPart(value = "resultImages", required = false)
                     List<MultipartFile> resultImages,
-            @RequestBody(
+            @Parameter(
                             description = "생성 요청 DTO",
                             required = true,
                             content =

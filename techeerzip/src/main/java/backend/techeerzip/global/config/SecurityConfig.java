@@ -94,7 +94,8 @@ public class SecurityConfig {
                                                 "/api/v3/auth/logout",
                                                 "/api/v3/users/signup",
                                                 "/api/v3/users/signup/external",
-                                                "/api/v3/users/password/reset")
+                                                "/api/v3/users/password/reset",
+                                                "/api/v3/stacks/**")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import backend.techeerzip.domain.projectMember.dto.ProjectMemberInfoRequest;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +40,8 @@ public class ProjectTeamCreateRequest {
     private List<ProjectMemberInfoRequest> projectMember;
 
     @Nullable
-    @Schema(description = "팀 기술 스택 리스트 (선택)", implementation = TeamStackInfo.WithName.class)
+    @ArraySchema(
+            schema = @Schema(implementation = TeamStackInfo.WithName.class),
+            arraySchema = @Schema(description = "팀 기술 스택 리스트 (선택)"))
     private List<TeamStackInfo.WithName> teamStacks;
 }

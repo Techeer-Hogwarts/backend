@@ -2,7 +2,6 @@ package backend.techeerzip.domain.resume.service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -36,15 +35,14 @@ public class ResumeService {
 
     /** 이력서 파일 이름 변환 "baseName-userName(yyyy-MM-dd)" 형식으로 변환됩니다. */
     private String getResumeFileName(String userName, String baseName) {
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String date = now.format(formatter);
+        String dateTimeString = LocalDateTime.now().toString();
 
         String fileName;
         if (baseName == null || baseName.isEmpty()) {
-            fileName = String.format("%s(%s)", userName, date);
+            fileName = String.format("%s-%s", userName, dateTimeString);
         } else {
-            fileName = String.format("%s-%s(%s)", baseName, userName, date);
+            // 사용자 이름 - ISO 8601 시간 문자열 - 기본 이름
+            fileName = String.format("%s-%s-%s", userName, dateTimeString, baseName);
         }
 
         logger.debug(
@@ -90,7 +88,7 @@ public class ResumeService {
                         .findById(userId)
                         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        String fileName = getResumeFileName(user.getName(), null);
+        String fileName = getResumeFileName(user.getName(), title);
 
         // Google Drive에 파일 업로드
         String driveUrl;

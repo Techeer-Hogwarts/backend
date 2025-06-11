@@ -60,7 +60,7 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     public ResponseEntity<Long> createProjectTeam(
             @RequestPart(value = "mainImage") MultipartFile mainImage,
             @RequestPart(value = "resultImages", required = false) List<MultipartFile> resultImages,
-            @RequestPart("createProjectTeamRequest") ProjectTeamCreateRequest request) {
+            @Valid @RequestPart("createProjectTeamRequest") ProjectTeamCreateRequest request) {
         log.info("ProjectTeam createProjectTeam: 생성 요청 시작");
         ProjectTeamCreateResponse response =
                 projectTeamFacadeService.create(mainImage, resultImages, request);
