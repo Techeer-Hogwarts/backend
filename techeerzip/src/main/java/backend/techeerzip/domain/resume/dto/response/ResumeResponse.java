@@ -72,8 +72,7 @@ public class ResumeResponse {
                     user.getMainPosition(),
                     user.getSchool(),
                     user.getGrade(),
-                    user.getYear()
-            );
+                    user.getYear());
         }
     }
 }
