@@ -55,6 +55,8 @@ public class ResumeResponse {
         private String velogUrl;
         private String mainPosition;
         private String school;
+        private String grade;
+        private Integer year;
 
         public static UserInfo from(User user) {
             return new UserInfo(
@@ -68,7 +70,9 @@ public class ResumeResponse {
                     user.getTistoryUrl(),
                     user.getVelogUrl(),
                     user.getMainPosition(),
-                    user.getSchool()
+                    user.getSchool(),
+                    user.getGrade(),
+                    user.getYear()
             );
         }
     }
