@@ -195,4 +195,8 @@ public class StudyTeam extends BaseEntity {
     public void remove(StudyMember sm) {
         this.studyMembers.remove(sm);
     }
+
+    public boolean isDeleted() {
+        return Boolean.TRUE.equals(this.isDeleted);
+    }
 }

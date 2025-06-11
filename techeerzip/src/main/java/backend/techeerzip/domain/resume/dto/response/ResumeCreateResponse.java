@@ -57,7 +57,7 @@ public class ResumeCreateResponse {
             this.name = user.getName();
             this.nickname = user.getNickname();
             this.profileImage = user.getProfileImage();
-            this.year = user.getYear();
+            this.year = user.getYear() != null ? user.getYear() : -1;
             this.mainPosition = user.getMainPosition();
             this.subPosition = user.getSubPosition();
             this.school = user.getSchool();

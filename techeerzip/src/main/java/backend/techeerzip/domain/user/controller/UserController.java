@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.user.dto.request.CreateExternalUserRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserPermissionRequest;
 import backend.techeerzip.domain.user.dto.request.CreateUserWithResumeRequest;
 import backend.techeerzip.domain.user.dto.request.GetUserProfileListRequest;
@@ -63,6 +64,16 @@ public class UserController implements UserSwagger {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping(value = "/signup/external")
+    @Override
+    public ResponseEntity<Void> signupExternal(
+            @RequestBody CreateExternalUserRequest createExternalUserRequest) {
+        logger.info("외부인 회원가입 요청 처리 중 - email: {}", createExternalUserRequest.getEmail());
+        userService.signUpExternal(createExternalUserRequest);
+        logger.info("외부인 회원가입 요청 처리 완료 - email: {}", createExternalUserRequest.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping(value = "")
     @Override
     public ResponseEntity<Void> deleteUser(
@@ -73,7 +84,7 @@ public class UserController implements UserSwagger {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/findPwd")
+    @PatchMapping("/password/reset")
     @Override
     public ResponseEntity<Void> resetPassword(
             @Valid @RequestBody ResetUserPasswordRequest userResetPasswordRequest) {

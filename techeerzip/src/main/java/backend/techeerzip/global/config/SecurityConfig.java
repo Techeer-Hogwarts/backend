@@ -50,17 +50,52 @@ public class SecurityConfig {
         http.authorizeHttpRequests(
                         auth ->
                                 auth
-                                        // jwt 인증 필요 없는 엔드 포인트
+                                        // Admin
+                                        .requestMatchers("/api/v3/users/permission/**")
+                                        .hasRole("ADMIN")
+
+                                        // Admin, Mentor, Techeer
+                                        .requestMatchers(
+                                                HttpMethod.POST, "/api/v3/blogs", "/api/v3/events")
+                                        .hasAnyRole("ADMIN", "MENTOR", "TECHEER")
+                                        .requestMatchers(
+                                                "/api/v3/sessions/**",
+                                                "/api/v3/tech-blogging/**",
+                                                "/api/v3/projectTeams/**",
+                                                "/api/v3/studyTeams/**")
+                                        .hasAnyRole("ADMIN", "MENTOR", "TECHEER")
+
+                                        // Admin, Mentor, Techeer, Company
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/api/v3/studyTeams/*",
+                                                "/api/v3/projectTeams/*")
+                                        .hasAnyRole("ADMIN", "MENTOR", "TECHEER", "COMPANY")
+                                        .requestMatchers(
+                                                "/api/v3/resumes/**", "/api/v3/users/profiles")
+                                        .hasAnyRole("ADMIN", "MENTOR", "TECHEER", "COMPANY")
+
+                                        // Admin, Mentor, Techeer, Company, Bootcamp
+                                        .requestMatchers(
+                                                "/api/v3/events/**",
+                                                "/api/v3/bookmarks",
+                                                "/api/v3/likes",
+                                                "/api/v3/users")
+                                        .hasAnyRole(
+                                                "ADMIN", "MENTOR", "TECHEER", "COMPANY", "BOOTCAMP")
+
+                                        // jwt 인증 필요 없는 엔드 포인트 (GUEST 포함)
+                                        .requestMatchers(HttpMethod.GET, "/api/v3/blogs/**")
+                                        .permitAll()
                                         .requestMatchers(
                                                 "/api/v3/auth/email",
                                                 "/api/v3/auth/code",
                                                 "/api/v3/auth/login",
+                                                "/api/v3/auth/logout",
                                                 "/api/v3/users/signup",
-                                                "/api/v3/users/findPwd",
+                                                "/api/v3/users/signup/external",
+                                                "/api/v3/users/password/reset",
                                                 "/api/v3/stacks/**")
-                                        .permitAll()
-                                        // 블로그 GET 요청만 허용
-                                        .requestMatchers(HttpMethod.GET, "/api/v3/blogs/**")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

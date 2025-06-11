@@ -37,19 +37,43 @@ public class ResumeResponse {
         this.viewCount = resume.getViewCount();
         this.createdAt = resume.getCreatedAt();
         this.updatedAt = resume.getUpdatedAt();
-        this.user =
-                new UserInfo(
-                        resumeUser.getName(),
-                        resumeUser.getNickname(),
-                        resumeUser.getProfileImage());
+        this.user = UserInfo.from(resumeUser);
     }
 
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserInfo {
+        private Long id;
         private String name;
         private String nickname;
         private String profileImage;
+        private String email;
+        private String githubUrl;
+        private String mediumUrl;
+        private String tistoryUrl;
+        private String velogUrl;
+        private String mainPosition;
+        private String school;
+        private String grade;
+        private Integer year;
+
+        public static UserInfo from(User user) {
+            return new UserInfo(
+                    user.getId(),
+                    user.getName(),
+                    user.getNickname(),
+                    user.getProfileImage(),
+                    user.getEmail(),
+                    user.getGithubUrl(),
+                    user.getMediumUrl(),
+                    user.getTistoryUrl(),
+                    user.getVelogUrl(),
+                    user.getMainPosition(),
+                    user.getSchool(),
+                    user.getGrade(),
+                    user.getYear()
+            );
+        }
     }
 }

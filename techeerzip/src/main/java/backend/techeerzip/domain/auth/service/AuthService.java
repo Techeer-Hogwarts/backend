@@ -19,6 +19,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -52,6 +53,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final CustomUserDetailsService customUserDetailsService;
     private static final SecureRandom secureRandom = new SecureRandom();
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${PROFILE_IMG_URL}")
     private String profileImgUrl;
@@ -63,9 +65,10 @@ public class AuthService {
     private String emailUser;
 
     // 이메일 인증 코드 전송
-    public void sendVerificationEmail(String email) {
-        if (!checkTecheer(email)) {
-            throw new AuthNotTecheerException();
+    public void sendVerificationEmail(String email, Boolean techeer) {
+
+        if (techeer) {
+            checkTecheer(email);
         }
 
         String code = String.format("%06d", secureRandom.nextInt(1000000));
@@ -98,7 +101,7 @@ public class AuthService {
     }
 
     // 테커 여부 확인
-    private boolean checkTecheer(String email) {
+    public boolean checkTecheer(String email) {
         String url = profileImgUrl;
         String secret = slackSecretKey;
 
@@ -147,6 +150,8 @@ public class AuthService {
                     userRepository
                             .findByEmail(email)
                             .orElseThrow(AuthInvalidCredentialsException::new);
+
+            logger.info("권한 확인 - roleName: {}", user.getRole().getName(), CONTEXT);
 
             if (user.isDeleted()) {
                 throw new AuthInvalidCredentialsException();

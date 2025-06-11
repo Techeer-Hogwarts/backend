@@ -33,9 +33,10 @@ public class AuthController implements AuthSwagger {
     public ResponseEntity<Void> sendVerificationEmail(
             @Valid @RequestBody SendEmailRequest sendEmailRequest) {
         String email = sendEmailRequest.getEmail();
+        Boolean techeer = sendEmailRequest.isTecheer();
 
         logger.info("이메일 인증 코드 전송 중 - email: {}", email, CONTEXT);
-        authService.sendVerificationEmail(email);
+        authService.sendVerificationEmail(email, techeer);
         logger.info("이메일 인증 코드 전송 완료 - email: {}", email, CONTEXT);
         return ResponseEntity.ok().build();
     }

@@ -97,28 +97,26 @@ public class User extends BaseEntity {
     @Column(length = 200)
     private String nickname;
 
-    @Column(nullable = false)
-    private Integer year;
+    @Column private Integer year;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private boolean isLft;
+    @Column private boolean isLft;
 
-    @Column(nullable = false, length = 500)
+    @Column(length = 500)
     private String githubUrl;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String mainPosition;
 
     @Column(length = 100)
     private String subPosition;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String school;
 
-    @Column(nullable = false, length = 1000)
+    @Column(length = 1000)
     private String profileImage;
 
     @JdbcTypeCode(SqlTypes.ARRAY)
@@ -131,7 +129,7 @@ public class User extends BaseEntity {
     @JoinColumn(name = "roleId", nullable = false)
     private Role role;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String grade;
 
     @Column(length = 300)
