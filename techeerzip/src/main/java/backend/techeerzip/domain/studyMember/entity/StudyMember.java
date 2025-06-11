@@ -98,20 +98,16 @@ public class StudyMember extends BaseEntity {
     }
 
     public void toActive(Boolean isLeader) {
-        if (isLeader != null && !isLeader.equals(this.isLeader)) {
-            this.isLeader = isLeader;
-        }
-        if (!isApproved()) {
-            this.status = StatusCategory.APPROVED;
-        }
-        if (this.isDeleted) {
-            this.isDeleted = false;
-        }
+        this.isLeader = isLeader;
+        this.status = StatusCategory.APPROVED;
+        this.isDeleted = false;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void toActive() {
         this.status = StatusCategory.APPROVED;
         this.isDeleted = false;
+        this.updatedAt = LocalDateTime.now();
     }
 
     private boolean isApproved() {
@@ -119,18 +115,16 @@ public class StudyMember extends BaseEntity {
     }
 
     public void toApplicant() {
-        if (!isPending()) {
-            this.status = StatusCategory.PENDING;
-        }
+        this.status = StatusCategory.PENDING;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void toReject() {
-        if (!isReject()) {
-            this.status = StatusCategory.REJECT;
-        }
+        this.status = StatusCategory.REJECT;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    private boolean isReject() {
+    public boolean isRejected() {
         return this.status.equals(StatusCategory.REJECT);
     }
 

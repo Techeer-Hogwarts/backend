@@ -19,6 +19,8 @@ import backend.techeerzip.domain.projectTeam.dto.response.GetAllTeamsResponse;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.dto.response.SliceNextCursor;
 import backend.techeerzip.domain.projectTeam.dto.response.SliceTeamsResponse;
+import backend.techeerzip.domain.projectTeam.exception.TeamApplicantApplyException;
+import backend.techeerzip.domain.projectTeam.exception.TeamApplicantCancelException;
 import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
 import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
 import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
@@ -628,6 +630,7 @@ public class StudyTeamService {
      * @throws StudyMemberNotFoundException 지원자가 존재하지 않거나 상태가 올바르지 않은 경우
      * @throws TeamInvalidActiveRequester 요청자가 승인된 멤버가 아닌 경우
      */
+    @Transactional
     public List<StudySlackRequest.DM> acceptApplicant(Long teamId, Long userId, Long applicantId) {
         log.info(
                 "StudyTeam acceptApplicant: 승인 요청 - teamId={}, userId={}, applicantId={}",
@@ -661,6 +664,7 @@ public class StudyTeamService {
      * @throws StudyMemberNotFoundException 지원자가 존재하지 않거나 상태가 올바르지 않은 경우
      * @throws TeamInvalidActiveRequester 요청자가 승인된 멤버가 아닌 경우
      */
+    @Transactional
     public List<StudySlackRequest.DM> rejectApplicant(Long teamId, Long userId, Long applicantId) {
         log.info(
                 "StudyTeam rejectApplicant: 거절 요청 - teamId={}, userId={}, applicantId={}",
@@ -695,12 +699,20 @@ public class StudyTeamService {
                 "StudyTeam getApplicants: 지원자 목록 조회 요청 - teamId={}, userId={}",
                 studyTeamId,
                 userId);
-        final boolean isActive =
-                studyMemberService.checkActiveMemberByTeamAndUser(studyTeamId, userId);
-        if (!isActive) {
-            log.info("StudyTeam getApplicants: 승인된 멤버 아님 - userId={}", userId);
-            return List.of();
+        final StudyMember member =
+                studyMemberService
+                        .getMember(studyTeamId, userId)
+                        .orElseThrow(TeamApplicantApplyException::new);
+        if (!member.isActive()) {
+            if (!member.isPending()) {
+                throw new TeamApplicantApplyException();
+            }
+            // not active and pending => 409
+            throw new TeamApplicantCancelException();
         }
+
+        // active and have no applicants => []
+        // active and have applicants => [...]
         final List<StudyApplicantResponse> result = studyMemberService.getApplicants(studyTeamId);
         log.info("StudyTeam getApplicants: 조회 완료 - 수={}", result.size());
         return result;
