@@ -15,7 +15,6 @@ import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepositor
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
-import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import lombok.RequiredArgsConstructor;
