@@ -37,20 +37,7 @@ public class ResumeResponse {
         this.viewCount = resume.getViewCount();
         this.createdAt = resume.getCreatedAt();
         this.updatedAt = resume.getUpdatedAt();
-        this.user =
-                new UserInfo(
-                        resumeUser.getId(),
-                        resumeUser.getName(),
-                        resumeUser.getNickname(),
-                        resumeUser.getProfileImage(),
-                        resumeUser.getEmail(),
-                        resumeUser.getGithubUrl(),
-                        resumeUser.getMediumUrl(),
-                        resumeUser.getTistoryUrl(),
-                        resumeUser.getVelogUrl(),
-                        resumeUser.getMainPosition(),
-                        resumeUser.getSchool()
-                );
+        this.user = UserInfo.from(resumeUser);
     }
 
     @Getter
@@ -69,5 +56,20 @@ public class ResumeResponse {
         private String mainPosition;
         private String school;
 
+        public static UserInfo from(User user) {
+            return new UserInfo(
+                    user.getId(),
+                    user.getName(),
+                    user.getNickname(),
+                    user.getProfileImage(),
+                    user.getEmail(),
+                    user.getGithubUrl(),
+                    user.getMediumUrl(),
+                    user.getTistoryUrl(),
+                    user.getVelogUrl(),
+                    user.getMainPosition(),
+                    user.getSchool()
+            );
+        }
     }
 }
