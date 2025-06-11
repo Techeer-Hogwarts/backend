@@ -605,15 +605,24 @@ public class ProjectTeamService {
             }
         }
 
-        if (deleteIdSet.size() != toInactive.size()
-                || toActive.size() + toInactive.size() != updateCount) {
+        final boolean allDeletesProcessed = deleteIdSet.size() == toInactive.size();
+        final boolean allUpdatesAccountedFor = toActive.size() + updateMap.size() == updateCount;
+        final boolean memberCountConsistent =
+                toActive.size() + toInactive.size() == existingMembers.size();
+
+        if (!allDeletesProcessed || !allUpdatesAccountedFor || !memberCountConsistent) {
             log.error(
-                    "ProjectTeam applyMemberStateChanges: 수정/삭제 처리 수 불일치 - expected={}, processed={}, deleted={}",
-                    updateCount,
-                    toActive.size() + toInactive.size(),
-                    toInactive.size());
-            throw new ProjectTeamMissingUpdateMemberException();
+                    "ProjectTeam applyMemberStateChanges: 멤버 상태 변경 일치 실패 - updateMap 남은={}, 삭제된={}, 기존={}, toActive={}",
+                    updateMap.size(),
+                    toInactive.size(),
+                    existingMembers.size(),
+                    toActive);
+            throw new TeamMissingUpdateMemberException();
         }
+        log.info(
+                "ProjectTeam applyMemberStateChanges: 멤버 상태 변경 완료 - 활성화={}, 비활성화={}",
+                toActive,
+                toInactive);
     }
 
     /**
@@ -681,7 +690,7 @@ public class ProjectTeamService {
                 "ProjectTeam updateViewCountAndGetDetail: 조회 수 증가 완료 - teamId={}, newViewCount={}",
                 projectTeamId,
                 project.getViewCount());
-        final List<ProjectMember> pm = project.getProjectMembers();
+        final List<ProjectMember> pm = project.getActiveMember();
         return ProjectTeamMapper.toDetailResponse(project, pm);
     }
 

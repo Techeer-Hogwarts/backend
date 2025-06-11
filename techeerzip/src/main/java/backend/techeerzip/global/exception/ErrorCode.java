@@ -56,6 +56,8 @@ public enum ErrorCode {
     TEAM_INVALID_ACTIVE_REQUESTER(HttpStatus.BAD_REQUEST, "PM003", "팀 멤버만 접근할 수 있습니다."),
     TEAM_INVALID_SORT_TYPE(HttpStatus.BAD_REQUEST, "PM003", "유효하지 않은 팀 정렬 방식 입니다.."),
     TEAM_INVALID_SLICE_QUERY(HttpStatus.BAD_REQUEST, "PM003", "유효하지 않은 팀 정렬 쿼리 입니다.."),
+    TEAM_MISSING_UPDATE_MEMBER(
+            HttpStatus.BAD_REQUEST, "PT009", "팀 멤버 업데이트에 누락된 인원이 존재합니다."),
 
     // ==== ProjectMember ====
     PROJECT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "PM001", "존재하지 않는 프로젝트 멤버입니다."),

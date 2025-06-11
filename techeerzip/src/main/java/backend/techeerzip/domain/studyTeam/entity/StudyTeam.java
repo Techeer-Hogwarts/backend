@@ -199,4 +199,8 @@ public class StudyTeam extends BaseEntity {
     public boolean isDeleted() {
         return Boolean.TRUE.equals(this.isDeleted);
     }
+
+    public List<StudyMember> getActiveMember() {
+        return this.studyMembers.stream().filter(StudyMember::isActive).toList();
+    }
 }
