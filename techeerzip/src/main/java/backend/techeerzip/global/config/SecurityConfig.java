@@ -56,7 +56,8 @@ public class SecurityConfig {
                                                 "/api/v3/auth/code",
                                                 "/api/v3/auth/login",
                                                 "/api/v3/users/signup",
-                                                "/api/v3/users/findPwd")
+                                                "/api/v3/users/findPwd",
+                                                "/api/v3/stacks/**")
                                         .permitAll()
                                         // 블로그 GET 요청만 허용
                                         .requestMatchers(HttpMethod.GET, "/api/v3/blogs/**")

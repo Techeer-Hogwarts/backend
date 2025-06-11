@@ -1,7 +1,7 @@
 package backend.techeerzip.domain.techBloggingChallenge.exception;
 
-import backend.techeerzip.global.exception.ErrorCode;
 import backend.techeerzip.global.exception.BusinessException;
+import backend.techeerzip.global.exception.ErrorCode;
 
 public class TechBloggingTermParticipantAlreadyExistsException extends BusinessException {
     public TechBloggingTermParticipantAlreadyExistsException() {
