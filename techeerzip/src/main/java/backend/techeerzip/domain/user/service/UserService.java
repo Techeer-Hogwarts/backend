@@ -483,8 +483,7 @@ public class UserService {
                                     existingExp.setCompanyName(e.getCompanyName());
                                     existingExp.setStartDate(e.getStartDate().atStartOfDay());
                                     existingExp.setEndDate(
-                                            Boolean.TRUE.equals(e.getIsFinished())
-                                                            && e.getEndDate() != null
+                                            e.getEndDate() != null
                                                     ? e.getEndDate().atStartOfDay()
                                                     : null);
                                     existingExp.setCategory(e.getCategory());
@@ -501,9 +500,7 @@ public class UserService {
                                                     .companyName(e.getCompanyName())
                                                     .startDate(e.getStartDate().atStartOfDay())
                                                     .endDate(
-                                                            Boolean.TRUE.equals(e.getIsFinished())
-                                                                            && e.getEndDate()
-                                                                                    != null
+                                                            e.getEndDate() != null
                                                                     ? e.getEndDate().atStartOfDay()
                                                                     : null)
                                                     .category(e.getCategory())
