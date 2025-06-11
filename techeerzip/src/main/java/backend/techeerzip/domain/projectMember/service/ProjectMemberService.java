@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.projectMember.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import backend.techeerzip.domain.projectMember.repository.ProjectMemberRepositor
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.entity.ProjectTeam;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
+import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.entity.StatusCategory;
 import lombok.RequiredArgsConstructor;
@@ -133,9 +135,8 @@ public class ProjectMemberService {
         if (!projectMember.isActive()) {
             projectMember.toActive();
             log.info(
-                    "ProjectMember acceptApplicant: 지원자 상태 → 승인됨 - teamId={}, userId={}",
-                    teamId,
-                    applicantId);
+                    "ProjectMember acceptApplicant: 상태를 APPROVED로 변경, userEmail={}",
+                    projectMember.getUser().getEmail());
         }
         return projectMember.getUser().getEmail();
     }
@@ -163,9 +164,8 @@ public class ProjectMemberService {
         if (!projectMember.isRejected()) {
             projectMember.toReject();
             log.info(
-                    "ProjectMember rejectApplicant: 지원자 상태 → 거절됨 - teamId={}, userId={}",
-                    teamId,
-                    applicantId);
+                    "ProjectMember rejectApplicant: 지원자 상태 → 거절됨 - userEmail={}",
+                    projectMember.getUser().getEmail());
         }
         return projectMember.getUser().getEmail();
     }
@@ -175,5 +175,9 @@ public class ProjectMemberService {
         final List<LeaderInfo> leaders = projectMemberDslRepository.findManyLeaders(teamId);
         log.info("ProjectMember getLeaders: 리더 수 - teamId={}, count={}", teamId, leaders.size());
         return leaders;
+    }
+
+    public Optional<ProjectMember> getMember(Long teamId, Long userId) {
+        return projectMemberRepository.findByProjectTeamIdAndUserId(teamId, userId);
     }
 }

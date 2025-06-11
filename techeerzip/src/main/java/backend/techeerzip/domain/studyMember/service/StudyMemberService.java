@@ -1,6 +1,7 @@
 package backend.techeerzip.domain.studyMember.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -126,10 +127,13 @@ public class StudyMemberService {
                                     return new StudyMemberNotFoundException();
                                 });
 
-        sm.toActive();
-        log.info(
-                "StudyMemberService acceptApplicant: 상태를 APPROVED로 변경, userEmail={}",
-                sm.getUser().getEmail());
+        if (!sm.isActive()) {
+            sm.toActive();
+            log.info(
+                    "StudyMemberService acceptApplicant: 상태를 APPROVED로 변경, userEmail={}",
+                    sm.getUser().getEmail());
+        }
+
         return sm.getUser().getEmail();
     }
 
@@ -158,10 +162,12 @@ public class StudyMemberService {
                                     return new StudyMemberNotFoundException();
                                 });
 
-        sm.toReject();
-        log.info(
-                "StudyMemberService rejectApplicant: 상태를 거절로 변경, userEmail={}",
-                sm.getUser().getEmail());
+        if (!sm.isRejected()) {
+            sm.toReject();
+            log.info(
+                    "StudyMemberService rejectApplicant: 상태를 거절로 변경, userEmail={}",
+                    sm.getUser().getEmail());
+        }
         return sm.getUser().getEmail();
     }
 
@@ -177,5 +183,9 @@ public class StudyMemberService {
                 studyMemberDslRepository.findManyApplicants(studyTeamId);
         log.info("StudyMemberService getApplicants: 응답 개수={}", result.size());
         return result;
+    }
+
+    public Optional<StudyMember> getMember(Long studyTeamId, Long userId) {
+        return studyMemberRepository.findByStudyTeamIdAndUserId(studyTeamId, userId);
     }
 }

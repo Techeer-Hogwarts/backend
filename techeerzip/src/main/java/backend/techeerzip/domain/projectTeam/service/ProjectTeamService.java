@@ -56,6 +56,8 @@ import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateM
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
+import backend.techeerzip.domain.projectTeam.exception.TeamApplicantApplyException;
+import backend.techeerzip.domain.projectTeam.exception.TeamApplicantCancelException;
 import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
 import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
 import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
@@ -995,11 +997,21 @@ public class ProjectTeamService {
     public List<ProjectMemberApplicantResponse> getApplicants(Long teamId, Long userId) {
         log.info("ProjectTeam getApplicants: 지원자 조회 요청 - teamId={}, userId={}", teamId, userId);
 
-        if (!projectMemberService.isActive(teamId, userId)) {
-            log.info("ProjectTeam getApplicants: 비활성 유저 요청, 빈 리스트 반환 - userId={}", userId);
-            return List.of();
+        // not active and not pending => 404
+        final ProjectMember member =
+                projectMemberService
+                        .getMember(teamId, userId)
+                        .orElseThrow(TeamApplicantApplyException::new);
+        if (!member.isActive()) {
+            if (!member.isPending()) {
+                throw new TeamApplicantApplyException();
+            }
+            // not active and pending => 409
+            throw new TeamApplicantCancelException();
         }
 
+        // active and have no applicants => []
+        // active and have applicants => [...]
         List<ProjectMemberApplicantResponse> applicants =
                 projectMemberService.getApplicants(teamId);
         log.info("ProjectTeam getApplicants: 지원자 수 조회 완료 - count={}", applicants.size());
@@ -1017,6 +1029,7 @@ public class ProjectTeamService {
      * @param applicantId 승인할 지원자 ID
      * @throws TeamInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
+    @Transactional
     public List<ProjectSlackRequest.DM> acceptApplicant(
             Long teamId, Long userId, Long applicantId) {
         log.info(
@@ -1048,6 +1061,7 @@ public class ProjectTeamService {
      * @param applicantId 거절할 지원자 ID
      * @throws TeamInvalidActiveRequester 요청자가 프로젝트 팀의 활성 멤버가 아닌 경우
      */
+    @Transactional
     public List<ProjectSlackRequest.DM> rejectApplicant(
             Long teamId, Long userId, Long applicantId) {
         log.info(
