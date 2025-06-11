@@ -1,8 +1,15 @@
 package backend.techeerzip.domain.stack.service;
 
+import java.util.Comparator;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import backend.techeerzip.domain.stack.dto.StackDto;
+import backend.techeerzip.domain.stack.dto.StackDto.Create;
+import backend.techeerzip.domain.stack.entity.Stack;
+import backend.techeerzip.domain.stack.entity.StackCategory;
 import backend.techeerzip.domain.stack.repository.StackRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -12,5 +19,27 @@ import lombok.RequiredArgsConstructor;
 public class StackService {
     private final StackRepository stackRepository;
 
-    // TODO: 필요한 서비스 메서드 구현
+    public List<StackDto.Response> getAll() {
+        final List<Stack> stacks = stackRepository.findAllByIsDeletedFalse();
+        return stacks.stream()
+                .sorted(Comparator.comparing(Stack::getName))
+                .map(
+                        s ->
+                                StackDto.Response.builder()
+                                        .id(s.getId())
+                                        .name(s.getName())
+                                        .category(s.getCategory())
+                                        .build())
+                .toList();
+    }
+
+    @Transactional
+    public void create(Create request) {
+        final Stack stack =
+                Stack.builder()
+                        .name(request.getName())
+                        .category(StackCategory.valueOf(request.getCategory()))
+                        .build();
+        stackRepository.save(stack);
+    }
 }

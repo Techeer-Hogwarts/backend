@@ -1,6 +1,8 @@
 package backend.techeerzip.domain.stack.dto;
 
+import backend.techeerzip.domain.stack.entity.StackCategory;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,16 +13,15 @@ public class StackDto {
     public static class Create {
         private String name;
         private String category;
-        private String iconUrl;
     }
 
     @Getter
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Response {
         private Long id;
         private String name;
-        private String category;
-        private String iconUrl;
+        private StackCategory category;
     }
 }
