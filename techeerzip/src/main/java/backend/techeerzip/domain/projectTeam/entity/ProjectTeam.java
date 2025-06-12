@@ -166,7 +166,7 @@ public class ProjectTeam extends BaseEntity {
     }
 
     public boolean isMainImageId(Long deleteImageId) {
-        return deleteImageId.equals(this.mainImages.getFirst().getId());
+        return!mainImages.isEmpty() && deleteImageId.equals(mainImages.getFirst().getId());
     }
 
     public void updateMainImage(ProjectMainImage updateImage) {

@@ -347,7 +347,7 @@ public class ProjectTeamService {
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> updateMembersInfo = request.getProjectMember();
         final List<TeamStackInfo.WithName> teamStacksInfo = request.getTeamStacks();
-        final Long deleteMainImageId = request.getDeleteMainImages().getFirst();
+        final List<Long> deleteMainImageId = request.getDeleteMainImages();
         final Set<Long> deleteResultImageIds = new HashSet<>(request.getDeleteResultImages());
         final List<Long> deleteMembersId = request.getDeleteMembers();
 
@@ -392,7 +392,7 @@ public class ProjectTeamService {
         }
 
         if (!mainImage.isEmpty()) {
-            if (!team.isMainImageId(deleteMainImageId)) {
+            if (!team.isMainImageId(deleteMainImageId.getFirst())) {
                 throw new ProjectTeamMainImageException();
             }
             final ProjectMainImage image =
