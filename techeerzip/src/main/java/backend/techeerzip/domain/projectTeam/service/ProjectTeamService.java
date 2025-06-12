@@ -2,7 +2,6 @@ package backend.techeerzip.domain.projectTeam.service;
 
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
 
-import backend.techeerzip.domain.projectTeam.exception.ProjectTeamResultImageException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -57,6 +56,7 @@ import backend.techeerzip.domain.projectTeam.exception.ProjectTeamMissingUpdateM
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamNotFoundException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamPositionClosedException;
 import backend.techeerzip.domain.projectTeam.exception.ProjectTeamRecruitmentClosedException;
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamResultImageException;
 import backend.techeerzip.domain.projectTeam.exception.TeamApplicantApplyException;
 import backend.techeerzip.domain.projectTeam.exception.TeamApplicantCancelException;
 import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
@@ -402,7 +402,8 @@ public class ProjectTeamService {
         }
 
         if (!resultImages.isEmpty()) {
-            if (!team.getResultImages().stream().allMatch(i -> deleteResultImageIds.contains(i.getId()))) {
+            if (!team.getResultImages().stream()
+                    .allMatch(i -> deleteResultImageIds.contains(i.getId()))) {
                 throw new ProjectTeamResultImageException();
             }
             final List<ProjectResultImage> images =

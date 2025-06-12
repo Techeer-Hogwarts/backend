@@ -1,9 +1,9 @@
 package backend.techeerzip.domain.studyTeam.entity;
 
-import backend.techeerzip.domain.projectTeam.entity.ProjectResultImage;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,7 +18,6 @@ import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyData;
 import backend.techeerzip.global.entity.BaseEntity;
-import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
