@@ -2,6 +2,7 @@ package backend.techeerzip.domain.projectTeam.service;
 
 import static backend.techeerzip.domain.projectTeam.repository.querydsl.TeamUnionViewDslRepositoryImpl.ensureMaxSize;
 
+import backend.techeerzip.domain.projectTeam.exception.ProjectTeamResultImageException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -346,6 +347,8 @@ public class ProjectTeamService {
         final RecruitCounts recruitCounts = request.getRecruitCounts();
         final List<ProjectMemberInfoRequest> updateMembersInfo = request.getProjectMember();
         final List<TeamStackInfo.WithName> teamStacksInfo = request.getTeamStacks();
+        final Long deleteMainImageId = request.getDeleteMainImages().getFirst();
+        final Set<Long> deleteResultImageIds = new HashSet<>(request.getDeleteResultImages());
         final List<Long> deleteMembersId = request.getDeleteMembers();
 
         verifyUserIsActiveProjectMember(userId, projectTeamId);
@@ -389,16 +392,23 @@ public class ProjectTeamService {
         }
 
         if (!mainImage.isEmpty()) {
+            if (!team.isMainImageId(deleteMainImageId)) {
+                throw new ProjectTeamMainImageException();
+            }
             final ProjectMainImage image =
                     ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
-            mainImgRepository.save(image);
+            team.updateMainImage(image);
             log.info("ProjectTeam update: 메인 이미지 저장 완료, imageId={}", image.getId());
         }
 
         if (!resultImages.isEmpty()) {
+            if (!team.getResultImages().stream().allMatch(i -> deleteResultImageIds.contains(i.getId()))) {
+                throw new ProjectTeamResultImageException();
+            }
             final List<ProjectResultImage> images =
                     ProjectImageMapper.toResultEntities(resultImages, team);
-            resultImgRepository.saveAll(images);
+            team.deleteResultImages(deleteResultImageIds);
+            team.updateResultImage(images);
             log.info("ProjectTeam update: 결과 이미지 저장 완료, count={}", images.size());
         }
 

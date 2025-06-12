@@ -13,7 +13,7 @@ import lombok.Getter;
 @Getter
 public enum DateSortOption {
     UPDATE_AT_DESC_PROJECT(projectTeam.updatedAt.desc(), SortType.UPDATE_AT_DESC, TeamType.PROJECT),
-    UPDATE_AT_DESC_STUDY(studyTeam.updatedAt.desc(), SortType.UPDATE_AT_DESC, TeamType.PROJECT);
+    UPDATE_AT_DESC_STUDY(studyTeam.updatedAt.desc(), SortType.UPDATE_AT_DESC, TeamType.STUDY);
 
     private final OrderSpecifier<LocalDateTime> order;
     private final SortType sortType;

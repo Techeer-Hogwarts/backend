@@ -290,7 +290,7 @@ public class StudyTeamService {
 
         final List<StudyMemberInfoRequest> updateMembersInfo = request.getStudyMember();
         final StudyData studyData = request.getStudyData();
-        final List<Long> deleteResultImages = request.getDeleteImages();
+        final Set<Long> deleteResultImages = new HashSet<>(request.getDeleteImages());
         final List<Long> deleteMembersId = request.getDeleteMembers();
 
         log.info(
@@ -326,7 +326,7 @@ public class StudyTeamService {
         }
 
         if (!deleteResultImages.isEmpty()) {
-            studyImageRepository.deleteAllById(deleteResultImages);
+            team.deleteResultImages(deleteResultImages);
             log.info("StudyTeam update: 결과 이미지 삭제 완료 - 삭제 수={}", deleteResultImages.size());
         }
 

@@ -18,6 +18,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.BaseEntity;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -164,6 +165,15 @@ public class ProjectTeam extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public boolean isMainImageId(Long deleteImageId) {
+        return deleteImageId.equals(this.mainImages.getFirst().getId());
+    }
+
+    public void updateMainImage(ProjectMainImage updateImage) {
+        this.mainImages.clear();
+        this.mainImages.add(updateImage);
+    }
+
     public void clearTeamStacks() {
         this.teamStacks.clear();
     }
@@ -233,5 +243,14 @@ public class ProjectTeam extends BaseEntity {
 
     public void remove(ProjectMember pm) {
         this.projectMembers.remove(pm);
+    }
+
+    public void deleteResultImages(Set<Long> deleteResultImageIds) {
+        if (deleteResultImageIds.isEmpty()) return;
+        resultImages.removeIf(image -> deleteResultImageIds.contains(image.getId()));
+    }
+
+    public void updateResultImage(List<ProjectResultImage> images) {
+        resultImages.addAll(images);
     }
 }

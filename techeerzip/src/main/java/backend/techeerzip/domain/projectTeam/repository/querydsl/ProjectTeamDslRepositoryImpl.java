@@ -272,8 +272,8 @@ public class ProjectTeamDslRepositoryImpl extends AbstractQuerydslRepository
                         query.getPositionNumTypes(),
                         query.getSortType());
 
-        final OrderSpecifier<LocalDateTime> setOrder =
-                DateSortOption.setOrder(query.getSortType(), TeamType.PROJECT);
+        final OrderSpecifier<Integer> setOrder =
+                CountSortOption.setOrder(query.getSortType(), TeamType.PROJECT);
         log.info(
                 "ProjectTeam sliceTeamsByCount: 조건식 정보 - condition={}",
                 condition != null ? condition.toString() : "null");
