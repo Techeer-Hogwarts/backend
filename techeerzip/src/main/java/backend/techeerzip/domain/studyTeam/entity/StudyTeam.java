@@ -3,6 +3,7 @@ package backend.techeerzip.domain.studyTeam.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -146,10 +147,6 @@ public class StudyTeam extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void addResultImage(List<StudyResultImage> manyResultEntity) {
-        this.studyResultImages.addAll(manyResultEntity);
-    }
-
     public void addMembers(List<StudyMember> incomingMembers) {
         this.studyMembers.addAll(incomingMembers);
     }
@@ -176,6 +173,15 @@ public class StudyTeam extends BaseEntity {
             }
         }
         return leaders;
+    }
+
+    public void addResultImage(List<StudyResultImage> images) {
+        studyResultImages.addAll(images);
+    }
+
+    public void deleteResultImages(Set<Long> deleteResultImageIds) {
+        if (deleteResultImageIds.isEmpty()) return;
+        studyResultImages.removeIf(image -> deleteResultImageIds.contains(image.getId()));
     }
 
     public void softDelete() {

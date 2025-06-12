@@ -3,6 +3,7 @@ package backend.techeerzip.domain.projectTeam.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -164,6 +165,15 @@ public class ProjectTeam extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public boolean isMainImageId(Long deleteImageId) {
+        return!mainImages.isEmpty() && deleteImageId.equals(mainImages.getFirst().getId());
+    }
+
+    public void updateMainImage(ProjectMainImage updateImage) {
+        this.mainImages.clear();
+        this.mainImages.add(updateImage);
+    }
+
     public void clearTeamStacks() {
         this.teamStacks.clear();
     }
@@ -233,5 +243,14 @@ public class ProjectTeam extends BaseEntity {
 
     public void remove(ProjectMember pm) {
         this.projectMembers.remove(pm);
+    }
+
+    public void deleteResultImages(Set<Long> deleteResultImageIds) {
+        if (deleteResultImageIds.isEmpty()) return;
+        resultImages.removeIf(image -> deleteResultImageIds.contains(image.getId()));
+    }
+
+    public void updateResultImage(List<ProjectResultImage> images) {
+        resultImages.addAll(images);
     }
 }

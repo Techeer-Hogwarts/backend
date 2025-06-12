@@ -44,10 +44,9 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final Long id = query.getIdCursor();
         final SortType sortType = query.getSortType();
         final LocalDateTime dateCursor = query.getDateCursor();
-        final int limit = query.getLimit();
-        final boolean isRecruited = query.getIsRecruited();
-        final boolean isFinished = query.getIsFinished();
-
+        final Integer limit = query.getLimit();
+        final Boolean isRecruited = query.getIsRecruited();
+        final Boolean isFinished = query.getIsFinished();
         final BooleanExpression expression =
                 setBuilderWithAndDate(id, dateCursor, isRecruited, isFinished);
 
@@ -87,9 +86,9 @@ public class StudyTeamDslRepositoryImpl extends AbstractQuerydslRepository
         final Long id = query.getIdCursor();
         final SortType sortType = query.getSortType();
         final Integer countCursor = query.getCountCursor();
-        final int limit = query.getLimit();
-        final boolean isRecruited = query.getIsRecruited();
-        final boolean isFinished = query.getIsFinished();
+        final Integer limit = query.getLimit();
+        final Boolean isRecruited = query.getIsRecruited();
+        final Boolean isFinished = query.getIsFinished();
         final BooleanExpression expression =
                 setBuilderWithAndCount(id, countCursor, isRecruited, isFinished, sortType);
 

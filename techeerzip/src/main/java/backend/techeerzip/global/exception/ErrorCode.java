@@ -59,6 +59,7 @@ public enum ErrorCode {
     TEAM_MISSING_UPDATE_MEMBER(HttpStatus.BAD_REQUEST, "PT009", "팀 멤버 업데이트에 누락된 인원이 존재합니다."),
     TEAM_APPLICANT_APPLY(HttpStatus.NOT_FOUND, "PT011", "팀 지원하기"),
     TEAM_APPLICANT_CANCEL(HttpStatus.CONFLICT, "PT012", "팀 지원 취소하기"),
+    TEAM_RESULT_IMAGE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "T002", "결과 이미지를 확인해주세요."),
 
     // ==== ProjectMember ====
     PROJECT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "PM001", "존재하지 않는 프로젝트 멤버입니다."),
