@@ -55,6 +55,7 @@ import backend.techeerzip.domain.user.entity.JoinReason;
 import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.exception.UserAlreadyExistsException;
+import backend.techeerzip.domain.user.exception.UserNotBootcampPeriodException;
 import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.exception.UserNotResumeException;
 import backend.techeerzip.domain.user.exception.UserProfileImgFailException;
@@ -270,6 +271,11 @@ public class UserService {
         Integer bootcampYear = null;
         if (createExternalUserRequest.getJoinReason() == JoinReason.BOOTCAMP) {
             bootcampYear = BootcampPeriod.calculateGeneration(LocalDate.now());
+
+            if (bootcampYear == null) {
+                logger.warn("부트캠프 회원가입 실패 - email: {}", email, CONTEXT);
+                throw new UserNotBootcampPeriodException();
+            }
         }
 
         User user =
