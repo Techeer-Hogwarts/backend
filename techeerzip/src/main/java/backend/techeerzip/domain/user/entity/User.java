@@ -42,9 +42,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-        name = "User",
-        uniqueConstraints = @UniqueConstraint(name = "User_email_key", columnNames = "email"))
+@Table(name = "User", uniqueConstraints = @UniqueConstraint(name = "User_email_key", columnNames = "email"))
 public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -97,12 +95,14 @@ public class User extends BaseEntity {
     @Column(length = 200)
     private String nickname;
 
-    @Column private Integer year;
+    @Column
+    private Integer year;
 
     @Column(nullable = false)
     private String password;
 
-    @Column private boolean isLft;
+    @Column
+    private boolean isLft;
 
     @Column(length = 500)
     private String githubUrl;
@@ -141,6 +141,9 @@ public class User extends BaseEntity {
     @Column(length = 300)
     private String velogUrl;
 
+    @Column(name = "bootcampYear")
+    private Integer bootcampYear;
+
     @Builder
     public User(
             String name,
@@ -160,7 +163,8 @@ public class User extends BaseEntity {
             String grade,
             String mediumUrl,
             String tistoryUrl,
-            String velogUrl) {
+            String velogUrl,
+            Integer bootcampYear) {
         this.name = name;
         this.email = email;
         this.nickname = nickname;
@@ -179,6 +183,7 @@ public class User extends BaseEntity {
         this.mediumUrl = mediumUrl;
         this.tistoryUrl = tistoryUrl;
         this.velogUrl = velogUrl;
+        this.bootcampYear = bootcampYear;
         this.isDeleted = false;
     }
 
