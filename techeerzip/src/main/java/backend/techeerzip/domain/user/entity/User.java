@@ -141,6 +141,9 @@ public class User extends BaseEntity {
     @Column(length = 300)
     private String velogUrl;
 
+    @Column(name = "bootcampYear")
+    private Integer bootcampYear;
+
     @Builder
     public User(
             String name,
@@ -160,7 +163,8 @@ public class User extends BaseEntity {
             String grade,
             String mediumUrl,
             String tistoryUrl,
-            String velogUrl) {
+            String velogUrl,
+            Integer bootcampYear) {
         this.name = name;
         this.email = email;
         this.nickname = nickname;
@@ -179,6 +183,7 @@ public class User extends BaseEntity {
         this.mediumUrl = mediumUrl;
         this.tistoryUrl = tistoryUrl;
         this.velogUrl = velogUrl;
+        this.bootcampYear = bootcampYear;
         this.isDeleted = false;
     }
 

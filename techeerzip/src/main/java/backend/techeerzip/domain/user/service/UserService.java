@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.user.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,9 +50,12 @@ import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserProfileListResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
+import backend.techeerzip.domain.user.entity.BootcampPeriod;
+import backend.techeerzip.domain.user.entity.JoinReason;
 import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.exception.UserAlreadyExistsException;
+import backend.techeerzip.domain.user.exception.UserNotBootcampPeriodException;
 import backend.techeerzip.domain.user.exception.UserNotFoundException;
 import backend.techeerzip.domain.user.exception.UserNotResumeException;
 import backend.techeerzip.domain.user.exception.UserProfileImgFailException;
@@ -264,6 +268,16 @@ public class UserService {
         String password = createExternalUserRequest.getPassword();
         String hashedPassword = passwordEncoder.encode(password);
 
+        Integer bootcampYear = null;
+        if (createExternalUserRequest.getJoinReason() == JoinReason.BOOTCAMP) {
+            bootcampYear = BootcampPeriod.calculateGeneration(LocalDate.now());
+
+            if (bootcampYear == null) {
+                logger.warn("부트캠프 회원가입 실패 - email: {}", email, CONTEXT);
+                throw new UserNotBootcampPeriodException();
+            }
+        }
+
         User user =
                 User.builder()
                         .email(email)
@@ -271,6 +285,7 @@ public class UserService {
                         .name(name)
                         .role(role)
                         .isAuth(true)
+                        .bootcampYear(bootcampYear)
                         .build();
 
         userRepository.save(user);
