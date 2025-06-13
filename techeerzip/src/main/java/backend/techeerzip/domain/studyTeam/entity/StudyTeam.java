@@ -168,7 +168,7 @@ public class StudyTeam extends BaseEntity {
     public List<LeaderInfo> getLeaders() {
         List<LeaderInfo> leaders = new ArrayList<>();
         for (StudyMember m : this.studyMembers) {
-            if (m.isLeader()) {
+            if (m.isLeader() && !m.isDeleted()) {
                 leaders.add(new LeaderInfo(m.getUser().getName(), m.getUser().getEmail()));
             }
         }

@@ -27,7 +27,7 @@ public class ProjectSlackMapper {
 
         return new ProjectSlackRequest.Channel(
                 team.getId(),
-                TeamType.PROJECT,
+                TeamType.PROJECT.getLow(),
                 team.getName(),
                 team.getProjectExplain(),
                 team.getFrontendNum(),
@@ -57,11 +57,11 @@ public class ProjectSlackMapper {
             alerts.add(
                     new ProjectSlackRequest.DM(
                             team.getId(),
-                            TeamType.PROJECT,
+                            TeamType.PROJECT.getLow(),
                             team.getName(),
                             leaderEmail,
                             first,
-                            status));
+                            status.name()));
         }
 
         return alerts;

@@ -1,5 +1,7 @@
 package backend.techeerzip.domain.projectTeam.controller;
 
+import backend.techeerzip.domain.projectTeam.dto.request.ProjectSlackRequest.DM;
+import backend.techeerzip.domain.projectTeam.type.TeamType;
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -66,12 +68,12 @@ public class ProjectTeamController implements ProjectTeamSwagger {
                 projectTeamFacadeService.create(mainImage, resultImages, request);
         log.info("ProjectTeam createProjectTeam: 생성 완료 - teamId={}", response.id());
 
-        eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
+        eventPublisher.publishEvent(new SlackEvent.Channel<>(response.slackRequest()));
         log.info("ProjectTeam createProjectTeam: Slack 이벤트 전송 완료");
 
         eventPublisher.publishEvent(
                 new IndexEvent.Create<>(
-                        response.indexRequest().getName(), response.indexRequest()));
+                        TeamType.PROJECT.getLow(), response.indexRequest()));
         log.info("ProjectTeam createProjectTeam: Index 이벤트 전송 완료");
 
         return ResponseEntity.ok(response.id());
@@ -91,13 +93,13 @@ public class ProjectTeamController implements ProjectTeamSwagger {
         log.info("ProjectTeam updateProjectTeam: 수정 완료 - teamId={}", projectTeamId);
 
         if (response.slackRequest() != null) {
-            eventPublisher.publishEvent(new SlackEvent.DM<>(response.slackRequest()));
+            eventPublisher.publishEvent(new SlackEvent.Channel<>(response.slackRequest()));
             log.info("ProjectTeam updateProjectTeam: Slack 이벤트 전송 완료");
         }
 
         eventPublisher.publishEvent(
                 new IndexEvent.Create<>(
-                        response.indexRequest().getName(), response.indexRequest()));
+                        TeamType.PROJECT.getLow(), response.indexRequest()));
         log.info("ProjectTeam updateProjectTeam: Index 이벤트 전송 완료");
 
         return ResponseEntity.ok(response.id());
@@ -131,6 +133,9 @@ public class ProjectTeamController implements ProjectTeamSwagger {
                 projectTeamId,
                 userId);
         projectTeamFacadeService.softDeleteTeam(projectTeamId, userId);
+        eventPublisher.publishEvent(
+                new IndexEvent.Delete(
+                        TeamType.PROJECT.getLow(), projectTeamId));
         log.info("ProjectTeam deleteProjectTeam: 삭제 완료 - teamId={}", projectTeamId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -152,9 +157,11 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     public ResponseEntity<Void> applyToProject(
             @RequestBody ProjectTeamApplyRequest request, @UserId Long userId) {
         log.info("ProjectTeam applyToProject: 지원 요청 시작 - userId={}", userId);
-        final List<ProjectSlackRequest.DM> slackRequest =
+        final List<ProjectSlackRequest.DM> slackRequests =
                 projectTeamFacadeService.applyToProject(request, userId);
-        eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
+        for (DM slackRequest : slackRequests) {
+            eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
+        }
         log.info("ProjectTeam applyToProject: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -166,10 +173,11 @@ public class ProjectTeamController implements ProjectTeamSwagger {
                 "ProjectTeam cancelApplication: 지원 취소 요청 - teamId={}, userId={}",
                 projectTeamId,
                 userId);
-        final List<ProjectSlackRequest.DM> slackRequest =
+        final List<ProjectSlackRequest.DM> slackRequests =
                 projectTeamFacadeService.cancelApplication(projectTeamId, userId);
-        eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-        log.info("ProjectTeam cancelApplication: Slack 이벤트 전송 완료");
+        for (DM slackRequest : slackRequests) {
+            eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
+        }        log.info("ProjectTeam cancelApplication: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -177,10 +185,11 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     public ResponseEntity<Void> acceptApplicant(
             @RequestBody ProjectApplicantRequest request, @UserId Long userId) {
         log.info("ProjectTeam acceptApplicant: 지원자 수락 요청 - userId={}", userId);
-        final List<ProjectSlackRequest.DM> slackRequest =
+        final List<ProjectSlackRequest.DM> slackRequests =
                 projectTeamFacadeService.acceptApplicant(request, userId);
-        eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-        log.info("ProjectTeam acceptApplicant: Slack 이벤트 전송 완료");
+        for (DM slackRequest : slackRequests) {
+            eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
+        }        log.info("ProjectTeam acceptApplicant: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -188,10 +197,11 @@ public class ProjectTeamController implements ProjectTeamSwagger {
     public ResponseEntity<Void> rejectApplicant(
             @RequestBody ProjectApplicantRequest request, @UserId Long userId) {
         log.info("ProjectTeam rejectApplicant: 지원자 거절 요청 - userId={}", userId);
-        final List<ProjectSlackRequest.DM> slackRequest =
+        final List<ProjectSlackRequest.DM> slackRequests =
                 projectTeamFacadeService.rejectApplicant(request, userId);
-        eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-        log.info("ProjectTeam rejectApplicant: Slack 이벤트 전송 완료");
+        for (DM slackRequest : slackRequests) {
+            eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
+        }        log.info("ProjectTeam rejectApplicant: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

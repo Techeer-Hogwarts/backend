@@ -32,7 +32,7 @@ public class StudySlackMapper {
                 .recruitExplain(team.getRecruitExplain())
                 .studyExplain(team.getStudyExplain())
                 .name(team.getName())
-                .type(TeamType.STUDY)
+                .type(TeamType.STUDY.getLow())
                 .build();
     }
 
@@ -50,11 +50,11 @@ public class StudySlackMapper {
             alerts.add(
                     new StudySlackRequest.DM(
                             team.getId(),
-                            TeamType.STUDY,
+                            TeamType.STUDY.getLow(),
                             team.getName(),
                             leaderEmail,
                             first,
-                            status));
+                            status.name()));
         }
 
         return alerts;

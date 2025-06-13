@@ -24,7 +24,7 @@ import backend.techeerzip.domain.projectTeam.exception.TeamApplicantCancelExcept
 import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
 import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
 import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
-import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
+import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
 import backend.techeerzip.domain.projectTeam.type.SortType;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.studyMember.exception.StudyMemberNotFoundException;
@@ -141,7 +141,7 @@ public class StudyTeamService {
         return new StudyTeamCreateResponse(
                 team.getId(),
                 StudySlackMapper.toChannelRequest(team, leaders),
-                TeamIndexMapper.toStudyRequest(team));
+                IndexMapper.toStudyRequest(team));
     }
 
     private static List<LeaderInfo> extractLeaders(List<StudyMember> members) {

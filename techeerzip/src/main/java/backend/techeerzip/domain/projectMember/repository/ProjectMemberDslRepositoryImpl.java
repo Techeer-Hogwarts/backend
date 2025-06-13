@@ -65,6 +65,7 @@ public class ProjectMemberDslRepositoryImpl extends AbstractQuerydslRepository
                                         LeaderInfo.class, PM.user.name, PM.user.email))
                         .from(PM)
                         .where(
+                                PM.projectTeam.id.eq(teamId),
                                 PM.isLeader.eq(true),
                                 PM.isDeleted.eq(false),
                                 PM.status.eq(StatusCategory.APPROVED))
