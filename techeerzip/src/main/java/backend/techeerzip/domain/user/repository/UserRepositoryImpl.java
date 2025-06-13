@@ -105,11 +105,11 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
 
     private OrderSpecifier<?>[] getSortOrder(String sortBy) {
         if ("name".equals(sortBy)) {
-            return new OrderSpecifier[] { user.name.asc() };
+            return new OrderSpecifier[] {user.name.asc()};
         } else if ("year".equals(sortBy)) {
-            return new OrderSpecifier[] { user.year.asc(), user.name.asc() };
+            return new OrderSpecifier[] {user.year.asc(), user.name.asc()};
         }
-        return new OrderSpecifier[] { user.year.asc(), user.name.asc() };
+        return new OrderSpecifier[] {user.year.asc(), user.name.asc()};
     }
 
     @Override
