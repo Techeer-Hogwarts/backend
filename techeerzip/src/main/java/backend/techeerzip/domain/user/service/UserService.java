@@ -167,6 +167,7 @@ public class UserService {
             existingUser.setProfileImage(profileImage);
             existingUser.setAuth(true);
             existingUser.setRole(defaultRole);
+            existingUser.setBootcampYear(null);
 
             savedUser = userRepository.save(existingUser);
             logger.info("재가입 회원 정보 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
@@ -189,6 +190,7 @@ public class UserService {
                             .isLft(createUserRequest.getIsLft())
                             .profileImage(profileImage)
                             .isAuth(true)
+                            .bootcampYear(null)
                             .role(defaultRole)
                             .build();
 

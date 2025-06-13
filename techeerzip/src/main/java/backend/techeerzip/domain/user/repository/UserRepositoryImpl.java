@@ -3,6 +3,10 @@ package backend.techeerzip.domain.user.repository;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
+
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 
@@ -10,8 +14,6 @@ import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.userExperience.entity.UserExperience;
 import backend.techeerzip.global.exception.CursorException;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 
 @Repository
 public class UserRepositoryImpl extends QuerydslRepositorySupport implements UserRepositoryCustom {
@@ -104,56 +106,63 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
 
     @Override
     public Optional<User> findByIdWithNonDeletedRelations(Long userId) {
-        // 기본 유저 정보 조회
-        String userJpql = """
-                SELECT u FROM User u
-                LEFT JOIN FETCH u.projectMembers pm
-                LEFT JOIN FETCH pm.projectTeam pt
-                WHERE u.id = :userId
-                AND u.isDeleted = false
-                AND (pm IS NULL OR pm.isDeleted = false)
-                AND (pt IS NULL OR pt.isDeleted = false)
-                """;
+        try {
+            // 기본 유저 정보 조회
+            String userJpql =
+                    """
+                    SELECT DISTINCT u FROM User u
+                    LEFT JOIN FETCH u.projectMembers pm
+                    LEFT JOIN FETCH pm.projectTeam pt
+                    WHERE u.id = :userId
+                    AND u.isDeleted = false
+                    AND (pm IS NULL OR pm.isDeleted = false)
+                    AND (pt IS NULL OR pt.isDeleted = false)
+                    """;
 
-        TypedQuery<User> userQuery = entityManager.createQuery(userJpql, User.class);
-        userQuery.setParameter("userId", userId);
+            User user =
+                    entityManager
+                            .createQuery(userJpql, User.class)
+                            .setParameter("userId", userId)
+                            .getSingleResult();
 
-        User user = userQuery.getSingleResult();
-        if (user == null) {
+            // 스터디 멤버 정보 조회
+            String studyJpql =
+                    """
+                    SELECT sm FROM StudyMember sm
+                    LEFT JOIN FETCH sm.studyTeam st
+                    WHERE sm.user.id = :userId
+                    AND sm.isDeleted = false
+                    AND (st IS NULL OR st.isDeleted = false)
+                    """;
+
+            TypedQuery<StudyMember> studyQuery =
+                    entityManager.createQuery(studyJpql, StudyMember.class);
+            studyQuery.setParameter("userId", userId);
+            List<StudyMember> studyMembers = studyQuery.getResultList();
+
+            // 경력 정보 조회
+            String experienceJpql =
+                    """
+                    SELECT e FROM UserExperience e
+                    WHERE e.userId = :userId
+                    AND e.isDeleted = false
+                    """;
+
+            TypedQuery<UserExperience> experienceQuery =
+                    entityManager.createQuery(experienceJpql, UserExperience.class);
+            experienceQuery.setParameter("userId", userId);
+            List<UserExperience> experiences = experienceQuery.getResultList();
+
+            // 결과 설정
+            user.getStudyMembers().clear();
+            user.getStudyMembers().addAll(studyMembers);
+
+            user.getExperiences().clear();
+            user.getExperiences().addAll(experiences);
+
+            return Optional.of(user);
+        } catch (NoResultException e) {
             return Optional.empty();
         }
-
-        // 스터디 멤버 정보 조회
-        String studyJpql = """
-                SELECT sm FROM StudyMember sm
-                LEFT JOIN FETCH sm.studyTeam st
-                WHERE sm.user.id = :userId
-                AND sm.isDeleted = false
-                AND (st IS NULL OR st.isDeleted = false)
-                """;
-
-        TypedQuery<StudyMember> studyQuery = entityManager.createQuery(studyJpql, StudyMember.class);
-        studyQuery.setParameter("userId", userId);
-        List<StudyMember> studyMembers = studyQuery.getResultList();
-
-        // 경력 정보 조회
-        String experienceJpql = """
-                SELECT e FROM UserExperience e
-                WHERE e.userId = :userId
-                AND e.isDeleted = false
-                """;
-
-        TypedQuery<UserExperience> experienceQuery = entityManager.createQuery(experienceJpql, UserExperience.class);
-        experienceQuery.setParameter("userId", userId);
-        List<UserExperience> experiences = experienceQuery.getResultList();
-
-        // 결과 설정
-        user.getStudyMembers().clear();
-        user.getStudyMembers().addAll(studyMembers);
-
-        user.getExperiences().clear();
-        user.getExperiences().addAll(experiences);
-
-        return Optional.of(user);
     }
 }
