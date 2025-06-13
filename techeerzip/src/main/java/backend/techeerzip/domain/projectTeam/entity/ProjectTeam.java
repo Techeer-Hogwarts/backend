@@ -20,7 +20,6 @@ import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.BaseEntity;
-import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -257,9 +256,7 @@ public class ProjectTeam extends BaseEntity {
     }
 
     public boolean checkResultImage(List<Long> deleteResultImageIds) {
-        List<Long> imageIds = this.resultImages.stream()
-                .map(ProjectResultImage::getId)
-                .toList();
+        List<Long> imageIds = this.resultImages.stream().map(ProjectResultImage::getId).toList();
         return new HashSet<>(imageIds).containsAll(deleteResultImageIds);
     }
 }
