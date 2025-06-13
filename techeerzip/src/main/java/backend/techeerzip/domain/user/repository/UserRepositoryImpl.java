@@ -110,8 +110,8 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
             // 기본 유저 정보 조회
             String userJpql = """
                     SELECT DISTINCT u FROM User u
-                    LEFT JOIN FETCH u.projectMembers pm
-                    LEFT JOIN FETCH pm.projectTeam pt
+                    LEFT JOIN FETCH u.projectMembers pm ON pm.isDeleted = false
+                    LEFT JOIN FETCH pm.projectTeam pt ON pt.isDeleted = false
                     WHERE u.id = :userId
                     AND u.isDeleted = false
                     """;
@@ -124,10 +124,9 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
             // 스터디 멤버 정보 조회
             String studyJpql = """
                     SELECT sm FROM StudyMember sm
-                    LEFT JOIN FETCH sm.studyTeam st
+                    LEFT JOIN FETCH sm.studyTeam st ON st.isDeleted = false
                     WHERE sm.user.id = :userId
                     AND sm.isDeleted = false
-                    AND (st IS NULL OR st.isDeleted = false)
                     """;
 
             TypedQuery<StudyMember> studyQuery = entityManager.createQuery(studyJpql, StudyMember.class);
