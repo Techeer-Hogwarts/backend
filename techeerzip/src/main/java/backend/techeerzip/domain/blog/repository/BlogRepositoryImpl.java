@@ -29,10 +29,9 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
     @Override
     public List<Blog> findBlogsWithCursor(
             Long cursorId, String category, String sortBy, int limit) {
-        Blog cursorBlog =
-                cursorId != null
-                        ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
-                        : null;
+        Blog cursorBlog = cursorId != null
+                ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
+                : null;
 
         return queryFactory
                 .selectFrom(blog)
@@ -47,10 +46,9 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
 
     @Override
     public List<Blog> findPopularBlogsWithCursor(Long cursorId, int limit) {
-        Blog cursorBlog =
-                cursorId != null
-                        ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
-                        : null;
+        Blog cursorBlog = cursorId != null
+                ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
+                : null;
 
         // 2주 전 날짜 계산
         LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
@@ -70,7 +68,7 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
                 .orderBy(
                         blog.viewCount.add(blog.likeCount.multiply(10)).desc(),
                         blog.createdAt.desc() // 인기도가 같을 경우 최신순으로 정렬
-                        )
+                )
                 .limit(limit + 1)
                 .fetch();
     }
@@ -79,18 +77,18 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
         return switch (sortBy) {
             case "viewCount" -> blog.viewCount.lt(cursorBlog.getViewCount());
             case "name" -> blog.title.gt(cursorBlog.getTitle());
-            default -> blog.createdAt.lt(cursorBlog.getCreatedAt());
+            default -> blog.date.lt(cursorBlog.getDate());
         };
     }
 
     private OrderSpecifier<?>[] getOrderSpecifiers(String sortBy) {
         return switch (sortBy) {
             case "viewCount" ->
-                    new OrderSpecifier<?>[] {
-                        blog.viewCount.desc(), blog.createdAt.desc() // 조회수가 같을 경우 최신순으로 정렬
-                    };
-            case "name" -> new OrderSpecifier<?>[] {blog.title.asc()};
-            default -> new OrderSpecifier<?>[] {blog.createdAt.desc()};
+                new OrderSpecifier<?>[] {
+                        blog.viewCount.desc(), blog.date.desc() // 조회수가 같을 경우 작성일 기준으로 정렬
+                };
+            case "name" -> new OrderSpecifier<?>[] { blog.title.asc() };
+            default -> new OrderSpecifier<?>[] { blog.date.desc() };
         };
     }
 
@@ -111,26 +109,26 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
 
         switch (sortBy) {
             case "latest":
-                return blog.createdAt.lt(cursorBlog.getCreatedAt());
+                return blog.date.lt(cursorBlog.getDate());
             case "viewCount":
                 return blog.viewCount.lt(cursorBlog.getViewCount());
             case "name":
                 return blog.user.name.lt(cursorBlog.getUser().getName());
             default:
-                return blog.createdAt.lt(cursorBlog.getCreatedAt());
+                return blog.date.lt(cursorBlog.getDate());
         }
     }
 
     private OrderSpecifier<?> orderSpecifier(String sortBy) {
         switch (sortBy) {
             case "latest":
-                return blog.createdAt.desc();
+                return blog.date.desc();
             case "viewCount":
                 return blog.viewCount.desc();
             case "name":
                 return blog.user.name.asc();
             default:
-                return blog.createdAt.desc();
+                return blog.date.desc();
         }
     }
 }
