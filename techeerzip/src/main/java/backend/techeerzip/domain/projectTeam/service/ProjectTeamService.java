@@ -62,11 +62,11 @@ import backend.techeerzip.domain.projectTeam.exception.TeamApplicantCancelExcept
 import backend.techeerzip.domain.projectTeam.exception.TeamDuplicateDeleteUpdateException;
 import backend.techeerzip.domain.projectTeam.exception.TeamInvalidRecruitNumException;
 import backend.techeerzip.domain.projectTeam.exception.TeamMissingUpdateMemberException;
+import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectImageMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamStackMapper;
-import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectMainImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;

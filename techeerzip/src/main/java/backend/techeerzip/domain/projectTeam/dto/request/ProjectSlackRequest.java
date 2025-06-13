@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import backend.techeerzip.domain.projectTeam.type.TeamType;
-import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

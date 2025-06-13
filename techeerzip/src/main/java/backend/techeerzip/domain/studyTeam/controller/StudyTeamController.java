@@ -1,8 +1,5 @@
 package backend.techeerzip.domain.studyTeam.controller;
 
-import backend.techeerzip.domain.projectTeam.type.TeamType;
-import backend.techeerzip.domain.studyTeam.dto.request.StudySlackRequest.DM;
-import backend.techeerzip.infra.index.IndexEvent;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -19,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.projectTeam.type.TeamType;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyAddMembersRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyApplicantRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudySlackRequest;
+import backend.techeerzip.domain.studyTeam.dto.request.StudySlackRequest.DM;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyTeamApplyRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyTeamCreateRequest;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyTeamUpdateRequest;
@@ -32,6 +31,7 @@ import backend.techeerzip.domain.studyTeam.dto.response.StudyTeamUpdateResponse;
 import backend.techeerzip.domain.studyTeam.service.StudyTeamFacadeService;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.global.resolver.UserId;
+import backend.techeerzip.infra.index.IndexEvent;
 import backend.techeerzip.infra.slack.SlackEvent;
 import lombok.RequiredArgsConstructor;
 
@@ -67,8 +67,7 @@ public class StudyTeamController implements StudyTeamSwagger {
         log.info("StudyTeam createStudyTeam: Slack 이벤트 전송 완료");
 
         eventPublisher.publishEvent(
-                new IndexEvent.Create<>(
-                        TeamType.STUDY.getLow(), response.indexRequest()));
+                new IndexEvent.Create<>(TeamType.STUDY.getLow(), response.indexRequest()));
         log.info("StudyTeam createStudyTeam: Index 이벤트 전송 완료");
         return ResponseEntity.ok(response.id());
     }
@@ -111,9 +110,7 @@ public class StudyTeamController implements StudyTeamSwagger {
         log.info("StudyTeam deleteStudyTeam: 삭제 요청 - teamId={}, userId={}", studyTeamId, userId);
         studyTeamFacadeService.softDeleteTeam(studyTeamId, userId);
         log.info("StudyTeam deleteStudyTeam: 삭제 완료 - teamId={}", studyTeamId);
-        eventPublisher.publishEvent(
-                new IndexEvent.Delete(
-                        TeamType.STUDY.getLow(), studyTeamId));
+        eventPublisher.publishEvent(new IndexEvent.Delete(TeamType.STUDY.getLow(), studyTeamId));
         log.info("ProjectTeam deleteStudyTeam: 삭제 완료 - teamId={}", studyTeamId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -136,7 +133,8 @@ public class StudyTeamController implements StudyTeamSwagger {
                 studyTeamFacadeService.applyToStudy(request, userId);
         for (DM slackRequest : slackRequests) {
             eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-        }         log.info("StudyTeam applyToStudyTeam: Slack 이벤트 전송 완료");
+        }
+        log.info("StudyTeam applyToStudyTeam: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -151,7 +149,8 @@ public class StudyTeamController implements StudyTeamSwagger {
                 studyTeamFacadeService.cancelApplication(studyTeamId, userId);
         for (DM slackRequest : slackRequests) {
             eventPublisher.publishEvent(new SlackEvent.DM<>(slackRequest));
-        }         log.info("StudyTeam cancelApplication: Slack 이벤트 전송 완료");
+        }
+        log.info("StudyTeam cancelApplication: Slack 이벤트 전송 완료");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

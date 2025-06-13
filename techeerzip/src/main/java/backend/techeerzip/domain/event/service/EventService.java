@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.event.service;
 
-import backend.techeerzip.infra.index.IndexType;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,6 +20,7 @@ import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.index.IndexEvent;
+import backend.techeerzip.infra.index.IndexType;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -61,7 +61,8 @@ public class EventService {
         Event savedEvent = eventRepository.save(event);
 
         eventPublisher.publishEvent(
-                new IndexEvent.Create<>(IndexType.EVENT.getLow(), EventMapper.toIndexDto(savedEvent)));
+                new IndexEvent.Create<>(
+                        IndexType.EVENT.getLow(), EventMapper.toIndexDto(savedEvent)));
 
         logger.debug("이벤트 생성 완료 - eventId: {}", event.getId());
         return new EventCreateResponse(event);
@@ -78,8 +79,7 @@ public class EventService {
                         query.getCategory(),
                         query.getLimit());
 
-        List<EventResponse> eventResponses =
-                events.stream().map(EventResponse::new).toList();
+        List<EventResponse> eventResponses = events.stream().map(EventResponse::new).toList();
 
         logger.debug("이벤트 목록 조회 완료 - 조회된 개수: {} | context: {}", eventResponses.size(), CONTEXT);
         return new EventListResponse(eventResponses, query.getLimit());
@@ -145,7 +145,8 @@ public class EventService {
         Event updatedEvent = eventRepository.save(event);
 
         eventPublisher.publishEvent(
-                new IndexEvent.Create<>(IndexType.EVENT.getLow(), EventMapper.toIndexDto(updatedEvent)));
+                new IndexEvent.Create<>(
+                        IndexType.EVENT.getLow(), EventMapper.toIndexDto(updatedEvent)));
 
         logger.debug("이벤트 수정 완료 - eventId: {} | context: {}", eventId, CONTEXT);
         return new EventCreateResponse(event);

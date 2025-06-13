@@ -1,8 +1,5 @@
 package backend.techeerzip.domain.resume.service;
 
-import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
-import backend.techeerzip.infra.index.IndexEvent;
-import backend.techeerzip.infra.index.IndexType;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
 import backend.techeerzip.domain.resume.dto.response.ResumeCreateResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeListResponse;
 import backend.techeerzip.domain.resume.dto.response.ResumeResponse;
@@ -24,6 +22,8 @@ import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.googleDrive.service.GoogleDriveService;
+import backend.techeerzip.infra.index.IndexEvent;
+import backend.techeerzip.infra.index.IndexType;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -123,7 +123,8 @@ public class ResumeService {
 
         eventPublisher.publishEvent(
                 new IndexEvent.Create<>(
-                        IndexType.RESUME.getLow(), IndexMapper.toResumeRequest(createdResume, user)));
+                        IndexType.RESUME.getLow(),
+                        IndexMapper.toResumeRequest(createdResume, user)));
         this.logger.info(
                 "이력서 생성 완료 - ID: {}, Title: {}, Position: {}, Category: {}, IsMain: {}",
                 createdResume.getId(),
@@ -175,8 +176,7 @@ public class ResumeService {
         resume.delete();
 
         eventPublisher.publishEvent(
-                new IndexEvent.Delete(
-                        IndexType.RESUME.getLow(), resume.getId()));
+                new IndexEvent.Delete(IndexType.RESUME.getLow(), resume.getId()));
         logger.info("이력서 삭제 완료 - UserID: {}, ResumeID: {}", userId, resumeId);
     }
 

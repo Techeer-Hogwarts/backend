@@ -8,6 +8,7 @@ public enum TeamType {
     STUDY("study");
 
     private final String low;
+
     TeamType(String low) {
         this.low = low;
     }

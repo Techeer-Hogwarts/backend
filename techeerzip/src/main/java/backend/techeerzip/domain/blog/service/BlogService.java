@@ -1,6 +1,5 @@
 package backend.techeerzip.domain.blog.service;
 
-import backend.techeerzip.infra.index.IndexType;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -32,6 +31,7 @@ import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.repository.UserRepository;
 import backend.techeerzip.global.logger.CustomLogger;
 import backend.techeerzip.infra.index.IndexEvent;
+import backend.techeerzip.infra.index.IndexType;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -257,7 +257,8 @@ public class BlogService {
                     savedBlog.getTitle(),
                     CONTEXT);
             eventPublisher.publishEvent(
-                    new IndexEvent.Create<>(IndexType.BLOG.getLow(), BlogMapper.toIndexDto(savedBlog)));
+                    new IndexEvent.Create<>(
+                            IndexType.BLOG.getLow(), BlogMapper.toIndexDto(savedBlog)));
         } catch (BlogAlreadyExistsException e) {
             throw e;
         } catch (Exception e) {

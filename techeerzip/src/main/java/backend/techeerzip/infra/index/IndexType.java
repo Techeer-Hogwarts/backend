@@ -19,5 +19,4 @@ public enum IndexType {
     IndexType(String low) {
         this.low = low;
     }
-
 }

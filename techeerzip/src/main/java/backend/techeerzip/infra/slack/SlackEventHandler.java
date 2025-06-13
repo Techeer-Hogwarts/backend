@@ -1,7 +1,5 @@
 package backend.techeerzip.infra.slack;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
@@ -11,8 +9,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import backend.techeerzip.global.logger.CustomLogger;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -37,9 +37,7 @@ public class SlackEventHandler {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             String jsonPayload = new ObjectMapper().writeValueAsString(event.getPayload());
-            log.debug(
-                    "SlackEvent Channel 전송 Request\n {}",jsonPayload
-            );
+            log.debug("SlackEvent Channel 전송 Request\n {}", jsonPayload);
             HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
             restTemplate.postForEntity(channelUrl, request, Void.class);
         } catch (Exception e) {
@@ -57,9 +55,7 @@ public class SlackEventHandler {
 
             String jsonPayload = new ObjectMapper().writeValueAsString(event.getPayload());
             HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
-            log.debug(
-                    "SlackEvent DM 전송 Request\n {}",jsonPayload
-            );
+            log.debug("SlackEvent DM 전송 Request\n {}", jsonPayload);
             restTemplate.postForEntity(dmUrl, request, Void.class);
         } catch (Exception e) {
             log.error("Slack DM 메시지 전송 중 오류 발생: " + dmUrl + " " + e.getMessage(), e);

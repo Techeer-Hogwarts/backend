@@ -2,8 +2,6 @@ package backend.techeerzip.domain.studyTeam.dto.request;
 
 import java.util.List;
 
-import backend.techeerzip.domain.projectTeam.type.TeamType;
-import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
