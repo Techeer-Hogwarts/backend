@@ -23,42 +23,13 @@ ALTER TABLE "ProjectMember"
 
 
 
-UPDATE "ProjectMember"SET "teamRole" = 'FRONTEND'WHERE "teamRole" = 'Frontend';
+UPDATE "ProjectMember" SET "teamRole" = 'FRONTEND'WHERE "teamRole" = 'Frontend';
 UPDATE "ProjectMember" SET "teamRole" = 'BACKEND' WHERE "teamRole" = 'Backend';
 UPDATE "ProjectMember" SET "teamRole" = 'FULLSTACK' WHERE "teamRole" = 'FullStack';
 UPDATE "ProjectMember" SET "teamRole" = 'DEVOPS' WHERE "teamRole" = 'DevOps';
 UPDATE "ProjectMember" SET "teamRole" = 'DATA_ENGINEER' WHERE "teamRole" = 'DataEngineer';
 
 DROP VIEW "TeamUnionView";
-
-CREATE VIEW "TeamUnionView" AS
-SELECT
-    pt.uuid AS "globalId",
-    pt.id AS id,
-    pt."viewCount",
-    pt."likeCount",
-    pt."isDeleted",
-    pt."isRecruited",
-    pt."isFinished",
-    pt."createdAt",
-    pt."updatedAt",
-    'PROJECT' AS "teamType"
-FROM "ProjectTeam" pt
-
-UNION ALL
-
-SELECT
-    st.uuid::uuid AS "globalId",
-    st.id AS id,
-    st."viewCount",
-    st."likeCount",
-    st."isDeleted",
-    st."isRecruited",
-    st."isFinished",
-    st."createdAt",
-    st."updatedAt",
-    'STUDY' AS "teamType"
-FROM "StudyTeam" st;
 
 CREATE VIEW "TeamUnionView" AS
 SELECT

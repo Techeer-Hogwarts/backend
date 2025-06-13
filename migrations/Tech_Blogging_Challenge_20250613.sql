@@ -39,7 +39,8 @@ CREATE TABLE "TechBloggingAttendance" (
     "isDeleted" BOOLEAN NOT NULL DEFAULT FALSE,
     "createdAt" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY ("blogId") REFERENCES "Blog" ("id"),
-    FOREIGN KEY ("userId") REFERENCES "User" ("id"),
-    FOREIGN KEY ("techBloggingRoundId") REFERENCES "TechBloggingRound" ("id")
+    UNIQUE ("blogId", "userId", "techBloggingRoundId"),
+    FOREIGN KEY ("blogId") REFERENCES "Blog" ("id") ON DELETE CASCADE,
+    FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE,
+    FOREIGN KEY ("techBloggingRoundId") REFERENCES "TechBloggingRound" ("id") ON DELETE CASCADE
 );

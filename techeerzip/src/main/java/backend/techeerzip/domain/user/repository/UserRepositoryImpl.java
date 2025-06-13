@@ -117,11 +117,17 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
         return Optional.ofNullable(
                 queryFactory
                         .selectFrom(user)
+                        .distinct()
                         .leftJoin(user.projectMembers, projectMember)
+                        .fetchJoin()
                         .leftJoin(projectMember.projectTeam, projectTeam)
+                        .fetchJoin()
                         .leftJoin(user.studyMembers, studyMember)
+                        .fetchJoin()
                         .leftJoin(studyMember.studyTeam, studyTeam)
+                        .fetchJoin()
                         .leftJoin(user.experiences, userExperience)
+                        .fetchJoin()
                         .where(
                                 user.id.eq(userId),
                                 user.isDeleted.eq(false),

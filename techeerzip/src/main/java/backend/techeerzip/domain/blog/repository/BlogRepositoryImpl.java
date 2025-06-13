@@ -78,7 +78,7 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
     private BooleanExpression getCursorCondition(Blog cursorBlog, String sortBy) {
         return switch (sortBy) {
             case "viewCount" -> blog.viewCount.lt(cursorBlog.getViewCount());
-            case "name" -> blog.title.gt(cursorBlog.getTitle());
+            case "name" -> blog.title.lt(cursorBlog.getTitle());
             default -> blog.date.lt(cursorBlog.getDate());
         };
     }
@@ -115,7 +115,7 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
             case "viewCount":
                 return blog.viewCount.lt(cursorBlog.getViewCount());
             case "name":
-                return blog.user.name.lt(cursorBlog.getUser().getName());
+                return blog.title.lt(cursorBlog.getTitle());
             default:
                 return blog.date.lt(cursorBlog.getDate());
         }
@@ -128,7 +128,7 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
             case "viewCount":
                 return blog.viewCount.desc();
             case "name":
-                return blog.user.name.asc();
+                return blog.title.asc();
             default:
                 return blog.date.desc();
         }
