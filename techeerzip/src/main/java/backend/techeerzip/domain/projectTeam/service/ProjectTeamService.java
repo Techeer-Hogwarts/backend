@@ -402,7 +402,7 @@ public class ProjectTeamService {
         }
 
         if (!deleteResultImageIds.isEmpty()) {
-            if (!team.checkResultImage(deleteMainImageId)) {
+            if (!team.hasAllResultImageIds(deleteMainImageId)) {
                 throw new ProjectTeamResultImageException();
             }
             team.deleteResultImages(deleteResultImageIds);
