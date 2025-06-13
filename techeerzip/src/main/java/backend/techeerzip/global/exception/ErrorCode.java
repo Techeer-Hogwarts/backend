@@ -31,6 +31,7 @@ public enum ErrorCode {
     USER_NOT_RESUME(HttpStatus.BAD_REQUEST, "U004", "이력서 파일이 없습니다."),
     USER_UNAUTHORIZED_ADMIN(HttpStatus.FORBIDDEN, "U005", "권한이 없는 사용자입니다."),
     USER_PROFILE_IMG_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "U006", "프로필 이미지를 가져오지 못했습니다."),
+    USER_NOT_BOOTCAMP_PERIOD(HttpStatus.BAD_REQUEST, "U007", "현재 부트캠프 가입 가능 기간이 아닙니다."),
 
     // UserExperience
     USER_EXPERIENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "UE001", "해당 경력을 찾을 수 없습니다."),
