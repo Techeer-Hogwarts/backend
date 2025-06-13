@@ -108,26 +108,21 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
     public Optional<User> findByIdWithNonDeletedRelations(Long userId) {
         try {
             // 기본 유저 정보 조회
-            String userJpql =
-                    """
+            String userJpql = """
                     SELECT DISTINCT u FROM User u
                     LEFT JOIN FETCH u.projectMembers pm
                     LEFT JOIN FETCH pm.projectTeam pt
                     WHERE u.id = :userId
                     AND u.isDeleted = false
-                    AND (pm IS NULL OR pm.isDeleted = false)
-                    AND (pt IS NULL OR pt.isDeleted = false)
                     """;
 
-            User user =
-                    entityManager
-                            .createQuery(userJpql, User.class)
-                            .setParameter("userId", userId)
-                            .getSingleResult();
+            User user = entityManager
+                    .createQuery(userJpql, User.class)
+                    .setParameter("userId", userId)
+                    .getSingleResult();
 
             // 스터디 멤버 정보 조회
-            String studyJpql =
-                    """
+            String studyJpql = """
                     SELECT sm FROM StudyMember sm
                     LEFT JOIN FETCH sm.studyTeam st
                     WHERE sm.user.id = :userId
@@ -135,21 +130,19 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
                     AND (st IS NULL OR st.isDeleted = false)
                     """;
 
-            TypedQuery<StudyMember> studyQuery =
-                    entityManager.createQuery(studyJpql, StudyMember.class);
+            TypedQuery<StudyMember> studyQuery = entityManager.createQuery(studyJpql, StudyMember.class);
             studyQuery.setParameter("userId", userId);
             List<StudyMember> studyMembers = studyQuery.getResultList();
 
             // 경력 정보 조회
-            String experienceJpql =
-                    """
+            String experienceJpql = """
                     SELECT e FROM UserExperience e
                     WHERE e.userId = :userId
                     AND e.isDeleted = false
                     """;
 
-            TypedQuery<UserExperience> experienceQuery =
-                    entityManager.createQuery(experienceJpql, UserExperience.class);
+            TypedQuery<UserExperience> experienceQuery = entityManager.createQuery(experienceJpql,
+                    UserExperience.class);
             experienceQuery.setParameter("userId", userId);
             List<UserExperience> experiences = experienceQuery.getResultList();
 
