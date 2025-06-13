@@ -1,5 +1,8 @@
 package backend.techeerzip.domain.user.service;
 
+import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
+import backend.techeerzip.infra.index.IndexEvent;
+import backend.techeerzip.infra.index.IndexType;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -11,6 +14,7 @@ import java.util.stream.Stream;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -104,6 +108,7 @@ public class UserService {
     private static final String CONTEXT = "UserService";
 
     private final TaskService taskService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void signUp(
@@ -234,8 +239,10 @@ public class UserService {
                                                 .description(exp.getDescription())
                                                 .build())
                         .toList();
-
         userExperienceRepository.saveAll(experiencesData);
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>(
+                        IndexType.USER.getLow(), IndexMapper.toUserRequest(savedUser)));
         logger.info("경력 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
     }
 
@@ -317,6 +324,9 @@ public class UserService {
 
         response.addHeader("Set-Cookie", expiredAccessToken.toString());
         response.addHeader("Set-Cookie", expiredRefreshToken.toString());
+        eventPublisher.publishEvent(
+                new IndexEvent.Delete(
+                        IndexType.USER.getLow(), userId));
 
         logger.info("토큰 무효화 및 쿠키 삭제 완료 - userId: {}", userId, CONTEXT);
     }
@@ -513,6 +523,9 @@ public class UserService {
                                 }
                             });
         }
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>(
+                        IndexType.USER.getLow(), IndexMapper.toUserRequest(user)));
     }
 
     @Transactional
