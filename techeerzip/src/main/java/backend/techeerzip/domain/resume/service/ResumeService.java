@@ -1,9 +1,13 @@
 package backend.techeerzip.domain.resume.service;
 
+import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
+import backend.techeerzip.infra.index.IndexEvent;
+import backend.techeerzip.infra.index.IndexType;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +34,7 @@ public class ResumeService {
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
     private final GoogleDriveService googleDriveService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final String CONTEXT = "ResumeService";
 
@@ -116,8 +121,9 @@ public class ResumeService {
 
         Resume createdResume = resumeRepository.save(resume);
 
-        // TODO: 인덱스 업데이트
-
+        eventPublisher.publishEvent(
+                new IndexEvent.Create<>(
+                        IndexType.RESUME.getLow(), IndexMapper.toResumeRequest(createdResume, user)));
         this.logger.info(
                 "이력서 생성 완료 - ID: {}, Title: {}, Position: {}, Category: {}, IsMain: {}",
                 createdResume.getId(),
@@ -168,8 +174,9 @@ public class ResumeService {
 
         resume.delete();
 
-        // TODO: 인덱스 제거
-
+        eventPublisher.publishEvent(
+                new IndexEvent.Delete(
+                        IndexType.RESUME.getLow(), resume.getId()));
         logger.info("이력서 삭제 완료 - UserID: {}, ResumeID: {}", userId, resumeId);
     }
 

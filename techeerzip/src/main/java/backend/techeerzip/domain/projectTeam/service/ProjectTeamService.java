@@ -66,7 +66,7 @@ import backend.techeerzip.domain.projectTeam.mapper.ProjectImageMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectSlackMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamMapper;
 import backend.techeerzip.domain.projectTeam.mapper.ProjectTeamStackMapper;
-import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
+import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
 import backend.techeerzip.domain.projectTeam.repository.ProjectMainImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectResultImageRepository;
 import backend.techeerzip.domain.projectTeam.repository.ProjectTeamRepository;
@@ -214,7 +214,7 @@ public class ProjectTeamService {
 
         final List<ProjectMember> memberEntities =
                 mapToProjectMemberEntities(membersInfo, team, users);
-        teamEntity.addProjectMembers(memberEntities);
+        team.addProjectMembers(memberEntities);
         log.info("CreateProjectTeam: 프로젝트 멤버 저장 완료 - count={}", memberEntities.size());
 
         if (mainImage.size() != 1) {
@@ -223,20 +223,20 @@ public class ProjectTeamService {
         }
         final ProjectMainImage mainImgEntity =
                 ProjectImageMapper.toMainEntity(mainImage.getFirst(), team);
-        teamEntity.addProjectMainImages(List.of(mainImgEntity));
+        team.addProjectMainImages(List.of(mainImgEntity));
         log.info("CreateProjectTeam: 메인 이미지 저장 완료");
 
         if (!resultImages.isEmpty()) {
             final List<ProjectResultImage> resultImageEntities =
                     ProjectImageMapper.toResultEntities(resultImages, team);
-            teamEntity.addProjectResultImages(resultImageEntities);
+            team.addProjectResultImages(resultImageEntities);
             log.info("CreateProjectTeam: 결과 이미지 저장 완료 - count={}", resultImageEntities.size());
         }
 
         if (!teamStacks.isEmpty()) {
             final List<TeamStack> teamStackEntities =
                     teamStacks.stream().map(s -> ProjectTeamStackMapper.toEntity(s, team)).toList();
-            teamEntity.addTeamStacks(teamStackEntities);
+            team.addTeamStacks(teamStackEntities);
             log.info("CreateProjectTeam: 팀 스택 엔티티 저장 완료 - count={}", teamStackEntities.size());
         }
 
@@ -246,7 +246,7 @@ public class ProjectTeamService {
         return new ProjectTeamCreateResponse(
                 team.getId(),
                 ProjectSlackMapper.toChannelRequest(team, leaders),
-                TeamIndexMapper.toProjectRequest(team));
+                IndexMapper.toProjectRequest(team));
     }
 
     /**

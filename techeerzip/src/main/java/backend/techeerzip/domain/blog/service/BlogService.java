@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.blog.service;
 
+import backend.techeerzip.infra.index.IndexType;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -136,7 +137,7 @@ public class BlogService {
 
         blog.softDelete();
         logger.info("블로그 삭제 성공", CONTEXT);
-        eventPublisher.publishEvent(new IndexEvent.Delete("blog", blogId));
+        eventPublisher.publishEvent(new IndexEvent.Delete(IndexType.BLOG.getLow(), blogId));
         logger.info("인덱스 삭제 요청 성공", CONTEXT);
         return BlogMapper.toResponse(blog);
     }
@@ -256,7 +257,7 @@ public class BlogService {
                     savedBlog.getTitle(),
                     CONTEXT);
             eventPublisher.publishEvent(
-                    new IndexEvent.Create<>("blog", BlogMapper.toIndexDto(savedBlog)));
+                    new IndexEvent.Create<>(IndexType.BLOG.getLow(), BlogMapper.toIndexDto(savedBlog)));
         } catch (BlogAlreadyExistsException e) {
             throw e;
         } catch (Exception e) {

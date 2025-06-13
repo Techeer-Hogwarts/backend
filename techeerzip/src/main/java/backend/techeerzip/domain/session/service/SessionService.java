@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.session.service;
 
+import backend.techeerzip.infra.index.IndexType;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -48,7 +49,7 @@ public class SessionService {
                         user);
         Session savedSession = sessionRepository.save(session);
         eventPublisher.publishEvent(
-                new IndexEvent.Create<>("session", SessionMapper.toIndexDto(savedSession)));
+                new IndexEvent.Create<>(IndexType.SESSION.getLow(), SessionMapper.toIndexDto(savedSession)));
         return savedSession.getId();
     }
 
@@ -89,7 +90,7 @@ public class SessionService {
                 sessionRepository.findById(sessionId).orElseThrow(SessionNotFoundException::new);
         validateSessionAuthor(userId, session);
         sessionRepository.deleteById(sessionId);
-        eventPublisher.publishEvent(new IndexEvent.Delete("session", sessionId));
+        eventPublisher.publishEvent(new IndexEvent.Delete(IndexType.SESSION.getLow(), sessionId));
     }
 
     public SessionBestListResponse<SessionResponse> getAllBestSessions(
