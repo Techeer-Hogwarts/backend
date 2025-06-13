@@ -70,8 +70,12 @@ public class ProjectMemberService {
         final ProjectMember pm =
                 projectMemberRepository
                         .findByProjectTeamIdAndUserId(team.getId(), applicantId)
-                        .orElse(createApplicant(team, applicantId, teamRole, summary));
-        if (pm.isPending()) {
+                        .orElseGet(
+                                () -> {
+                                    log.info("StudyMemberService applyApplicant: 기존 지원자 없음, 새로 생성");
+                                    return createApplicant(team, applicantId, teamRole, summary);
+                                });
+        if (!pm.isPending()) {
             pm.toApplicant();
             log.info(
                     "ProjectMember applyApplicant: 기존 지원자 상태 변경됨 - teamId={}, userId={}",

@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import backend.techeerzip.domain.projectTeam.type.TeamType;
-import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -22,7 +20,7 @@ public class ProjectSlackRequest {
     public static class Channel {
 
         @NotNull private Long id;
-        @NotNull private TeamType type;
+        @NotNull private String type;
 
         @NotBlank
         @Size(max = 100)
@@ -58,10 +56,10 @@ public class ProjectSlackRequest {
     public static class DM {
 
         @NotNull private Long teamId;
-        @NotNull private TeamType type;
+        @NotNull private String type;
         @NotNull private String teamName;
         @NotNull private String leaderEmail;
         @NotNull private String applicantEmail;
-        @NotNull private StatusCategory result;
+        @NotNull private String result;
     }
 }

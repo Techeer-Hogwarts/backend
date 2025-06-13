@@ -3,7 +3,7 @@ package backend.techeerzip.domain.studyTeam.mapper;
 import java.util.List;
 
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
-import backend.techeerzip.domain.projectTeam.mapper.TeamIndexMapper;
+import backend.techeerzip.domain.projectTeam.mapper.IndexMapper;
 import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.studyTeam.dto.request.StudyData;
 import backend.techeerzip.domain.studyTeam.dto.response.StudySliceTeamsResponse;
@@ -54,7 +54,7 @@ public class StudyTeamMapper {
         return StudyTeamUpdateResponse.builder()
                 .id(studyTeamId)
                 .slackRequest(StudySlackMapper.toChannelRequest(team, leaders))
-                .indexRequest(TeamIndexMapper.toStudyRequest(team))
+                .indexRequest(IndexMapper.toStudyRequest(team))
                 .build();
     }
 
@@ -62,7 +62,7 @@ public class StudyTeamMapper {
             Long studyTeamId, StudyTeam team) {
         return StudyTeamUpdateResponse.builder()
                 .id(studyTeamId)
-                .indexRequest(TeamIndexMapper.toStudyRequest(team))
+                .indexRequest(IndexMapper.toStudyRequest(team))
                 .build();
     }
 

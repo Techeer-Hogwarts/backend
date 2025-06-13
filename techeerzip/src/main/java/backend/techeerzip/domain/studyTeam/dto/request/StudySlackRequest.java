@@ -2,8 +2,6 @@ package backend.techeerzip.domain.studyTeam.dto.request;
 
 import java.util.List;
 
-import backend.techeerzip.domain.projectTeam.type.TeamType;
-import backend.techeerzip.global.entity.StatusCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +16,7 @@ public class StudySlackRequest {
     public static class Channel {
 
         private Long id;
-        private TeamType type;
+        private String type;
         private String name;
         private String studyExplain;
         private List<String> leader;
@@ -36,10 +34,10 @@ public class StudySlackRequest {
     public static class DM {
 
         private Long teamId;
-        private TeamType type;
+        private String type;
         private String teamName;
         private String leaderEmail;
         private String applicantEmail;
-        private StatusCategory result;
+        private String result;
     }
 }

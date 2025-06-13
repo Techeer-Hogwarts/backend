@@ -57,6 +57,7 @@ public class TeamStackService {
      * @return Stack 엔티티와 isMain 정보를 포함한 WithStack DTO 리스트
      * @throws ProjectInvalidTeamStackException 존재하지 않는 스택 이름이 포함되어 있을 경우 (갯수 불일치)
      */
+    @Transactional
     public List<TeamStackInfo.WithStack> create(List<WithName> updateTeamStacksRequest) {
         log.info(
                 "ProjectTeam createTeamStacks: 생성 요청 시작 - size={}", updateTeamStacksRequest.size());
