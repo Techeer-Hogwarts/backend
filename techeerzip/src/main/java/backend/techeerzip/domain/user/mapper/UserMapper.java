@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.global.entity.StatusCategory;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -30,7 +31,10 @@ public class UserMapper {
                                 .year(user.getYear() != null ? user.getYear() : -1)
                                 .stack(user.getStack())
                                 .projectTeams(user.getProjectMembers().stream()
-                                                .filter(pm -> !pm.isDeleted() && !pm.getProjectTeam().isDeleted())
+                                                .filter(pm -> !pm.isDeleted()
+                                                                && !pm.getProjectTeam().isDeleted()
+                                                                && pm.getStatus() == StatusCategory.APPROVED
+                                                                && pm.getUser().getId().equals(user.getId()))
                                                 .map(pm -> GetUserResponse.ProjectTeamDTO.builder()
                                                                 .id(pm.getProjectTeam().getId())
                                                                 .name(pm.getProjectTeam().getName())
@@ -45,7 +49,10 @@ public class UserMapper {
                                                                 .build())
                                                 .toList())
                                 .studyTeams(user.getStudyMembers().stream()
-                                                .filter(sm -> !sm.isDeleted() && !sm.getStudyTeam().isDeleted())
+                                                .filter(sm -> !sm.isDeleted()
+                                                                && !sm.getStudyTeam().isDeleted()
+                                                                && sm.getStatus() == StatusCategory.APPROVED
+                                                                && sm.getUser().getId().equals(user.getId()))
                                                 .map(sm -> GetUserResponse.StudyTeamDTO.builder()
                                                                 .id(sm.getStudyTeam().getId())
                                                                 .name(sm.getStudyTeam().getName())
