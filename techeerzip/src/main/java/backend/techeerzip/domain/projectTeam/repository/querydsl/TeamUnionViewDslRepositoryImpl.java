@@ -124,9 +124,8 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
         final LocalDateTime date = request.getDateCursor();
         final Integer count = request.getCountCursor();
         final SortType sortType = request.getSortType();
-        final LocalDateTime updateAt =
-                Optional.ofNullable(request.getDateCursor())
-                        .orElse(LocalDateTime.of(9999, 12, 31, 23, 59));
+        final LocalDateTime createAt =
+                Optional.ofNullable(request.getCreateAt()).orElse(LocalDateTime.MAX);
         log.info(
                 "TeamUnionView buildCursorCondition: 커서 조건 생성 시작 - sortType={}, id={}, dateCursor={}, countCursor={}",
                 sortType,
@@ -136,8 +135,8 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
 
         return switch (sortType) {
             case UPDATE_AT_DESC -> buildCursorForDate(date, TU.updatedAt, id);
-            case VIEW_COUNT_DESC -> buildCursorForInt(count, TU.viewCount, updateAt, id);
-            case LIKE_COUNT_DESC -> buildCursorForInt(count, TU.likeCount, updateAt, id);
+            case VIEW_COUNT_DESC -> buildCursorForInt(count, TU.viewCount, createAt, id);
+            case LIKE_COUNT_DESC -> buildCursorForInt(count, TU.likeCount, createAt, id);
         };
     }
 
@@ -146,21 +145,21 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
      *
      * @param fieldValue 기준이 되는 count 값
      * @param expr 정렬에 사용할 필드
-     * @param updateAt 생성 시간 기준
+     * @param createdAt 생성 시간 기준
      * @param id 기준 ID
      * @return BooleanExpression 형태의 커서 조건
      */
     private BooleanExpression buildCursorForInt(
-            Integer fieldValue, NumberPath<Integer> expr, LocalDateTime updateAt, Long id) {
-        if (fieldValue == null || updateAt == null || id == null) return null;
+            Integer fieldValue, NumberPath<Integer> expr, LocalDateTime createdAt, Long id) {
+        if (fieldValue == null || createdAt == null || id == null) return null;
 
         return expr.lt(fieldValue)
                 .or(
                         expr.eq(fieldValue)
                                 .and(
-                                        TU.updatedAt
-                                                .lt(updateAt)
-                                                .or(TU.updatedAt.eq(updateAt).and(TU.id.lt(id)))));
+                                        TU.createdAt
+                                                .lt(createdAt)
+                                                .or(TU.createdAt.eq(createdAt).and(TU.id.lt(id)))));
     }
 
     /**
@@ -214,7 +213,6 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
                             .hasNext(true)
                             .id(last.getId())
                             .countCursor(last.getViewCount())
-                            .dateCursor(last.getUpdatedAt())
                             .sortType(sortType)
                             .build();
             case LIKE_COUNT_DESC ->
@@ -222,7 +220,6 @@ public class TeamUnionViewDslRepositoryImpl extends AbstractQuerydslRepository
                             .hasNext(true)
                             .id(last.getId())
                             .countCursor(last.getLikeCount())
-                            .dateCursor(last.getUpdatedAt())
                             .sortType(sortType)
                             .build();
         };

@@ -2,10 +2,8 @@ package backend.techeerzip.domain.projectTeam.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -168,7 +166,7 @@ public class ProjectTeam extends BaseEntity {
     }
 
     public boolean isMainImageId(Long deleteImageId) {
-        return !mainImages.isEmpty() && deleteImageId.equals(mainImages.getFirst().getId());
+        return!mainImages.isEmpty() && deleteImageId.equals(mainImages.getFirst().getId());
     }
 
     public void updateMainImage(ProjectMainImage updateImage) {
@@ -254,13 +252,5 @@ public class ProjectTeam extends BaseEntity {
 
     public void updateResultImage(List<ProjectResultImage> images) {
         resultImages.addAll(images);
-    }
-
-    public boolean hasAllResultImageIds(Collection<Long> targetIds) {
-        Set<Long> existingIds =
-                this.resultImages.stream()
-                        .map(ProjectResultImage::getId)
-                        .collect(Collectors.toSet());
-        return existingIds.containsAll(targetIds);
     }
 }
