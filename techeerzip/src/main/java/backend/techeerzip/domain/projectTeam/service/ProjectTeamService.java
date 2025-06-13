@@ -401,14 +401,17 @@ public class ProjectTeamService {
             log.info("ProjectTeam update: 메인 이미지 저장 완료, imageId={}", image.getId());
         }
 
-        if (!resultImages.isEmpty()) {
-            if (!team.getResultImages().stream()
-                    .allMatch(i -> deleteResultImageIds.contains(i.getId()))) {
+        if (!deleteResultImageIds.isEmpty()) {
+            if (!team.checkResultImage(deleteMainImageId)) {
                 throw new ProjectTeamResultImageException();
             }
+            team.deleteResultImages(deleteResultImageIds);
+            log.info("ProjectTeam update: 결과 이미지 삭제 완료, imageIds={}", deleteResultImageIds);
+        }
+
+        if (!resultImages.isEmpty()) {
             final List<ProjectResultImage> images =
                     ProjectImageMapper.toResultEntities(resultImages, team);
-            team.deleteResultImages(deleteResultImageIds);
             team.updateResultImage(images);
             log.info("ProjectTeam update: 결과 이미지 저장 완료, count={}", images.size());
         }

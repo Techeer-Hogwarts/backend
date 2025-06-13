@@ -44,8 +44,6 @@ public class GetTeamsQuery {
     @Min(1)
     private final int limit;
 
-    private final LocalDateTime createAt;
-
     @NotNull private final List<TeamType> teamTypes;
     private final SortType sortType;
     private final Boolean isRecruited;

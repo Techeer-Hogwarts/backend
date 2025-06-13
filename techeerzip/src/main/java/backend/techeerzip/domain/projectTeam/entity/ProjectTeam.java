@@ -2,6 +2,7 @@ package backend.techeerzip.domain.projectTeam.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -19,6 +20,7 @@ import backend.techeerzip.domain.projectTeam.dto.request.TeamData;
 import backend.techeerzip.domain.projectTeam.dto.response.LeaderInfo;
 import backend.techeerzip.domain.projectTeam.type.TeamRole;
 import backend.techeerzip.global.entity.BaseEntity;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -166,7 +168,7 @@ public class ProjectTeam extends BaseEntity {
     }
 
     public boolean isMainImageId(Long deleteImageId) {
-        return!mainImages.isEmpty() && deleteImageId.equals(mainImages.getFirst().getId());
+        return !mainImages.isEmpty() && deleteImageId.equals(mainImages.getFirst().getId());
     }
 
     public void updateMainImage(ProjectMainImage updateImage) {
@@ -252,5 +254,12 @@ public class ProjectTeam extends BaseEntity {
 
     public void updateResultImage(List<ProjectResultImage> images) {
         resultImages.addAll(images);
+    }
+
+    public boolean checkResultImage(List<Long> deleteResultImageIds) {
+        List<Long> imageIds = this.resultImages.stream()
+                .map(ProjectResultImage::getId)
+                .toList();
+        return new HashSet<>(imageIds).containsAll(deleteResultImageIds);
     }
 }
