@@ -1,5 +1,6 @@
 package backend.techeerzip.domain.user.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,6 +50,8 @@ import backend.techeerzip.domain.user.dto.response.GetPermissionResponse;
 import backend.techeerzip.domain.user.dto.response.GetProfileImgResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserProfileListResponse;
 import backend.techeerzip.domain.user.dto.response.GetUserResponse;
+import backend.techeerzip.domain.user.entity.BootcampPeriod;
+import backend.techeerzip.domain.user.entity.JoinReason;
 import backend.techeerzip.domain.user.entity.PermissionRequest;
 import backend.techeerzip.domain.user.entity.User;
 import backend.techeerzip.domain.user.exception.UserAlreadyExistsException;
@@ -264,6 +267,11 @@ public class UserService {
         String password = createExternalUserRequest.getPassword();
         String hashedPassword = passwordEncoder.encode(password);
 
+        Integer bootcampYear = null;
+        if (createExternalUserRequest.getJoinReason() == JoinReason.BOOTCAMP) {
+            bootcampYear = BootcampPeriod.calculateGeneration(LocalDate.now());
+        }
+
         User user =
                 User.builder()
                         .email(email)
@@ -271,6 +279,7 @@ public class UserService {
                         .name(name)
                         .role(role)
                         .isAuth(true)
+                        .bootcampYear(bootcampYear)
                         .build();
 
         userRepository.save(user);
