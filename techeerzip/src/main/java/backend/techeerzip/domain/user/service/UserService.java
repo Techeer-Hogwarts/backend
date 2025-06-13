@@ -348,7 +348,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public GetUserResponse getUserInfo(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        User user =
+                userRepository
+                        .findByIdWithNonDeletedRelations(userId)
+                        .orElseThrow(UserNotFoundException::new);
         return userMapper.toGetUserResponse(user);
     }
 

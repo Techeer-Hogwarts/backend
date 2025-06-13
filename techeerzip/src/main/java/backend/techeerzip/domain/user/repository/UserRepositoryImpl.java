@@ -1,8 +1,14 @@
 package backend.techeerzip.domain.user.repository;
 
+import static backend.techeerzip.domain.projectMember.entity.QProjectMember.projectMember;
+import static backend.techeerzip.domain.projectTeam.entity.QProjectTeam.projectTeam;
+import static backend.techeerzip.domain.studyMember.entity.QStudyMember.studyMember;
+import static backend.techeerzip.domain.studyTeam.entity.QStudyTeam.studyTeam;
 import static backend.techeerzip.domain.user.entity.QUser.user;
+import static backend.techeerzip.domain.userExperience.entity.QUserExperience.userExperience;
 
 import java.util.List;
+import java.util.Optional;
 
 import jakarta.persistence.EntityManager;
 
@@ -104,5 +110,35 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
             return new OrderSpecifier[] {user.year.asc(), user.name.asc()};
         }
         return new OrderSpecifier[] {user.year.asc(), user.name.asc()};
+    }
+
+    @Override
+    public Optional<User> findByIdWithNonDeletedRelations(Long userId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(user)
+                        .distinct()
+                        .leftJoin(user.projectMembers, projectMember)
+                        .fetchJoin()
+                        .leftJoin(projectMember.projectTeam, projectTeam)
+                        .fetchJoin()
+                        .leftJoin(user.studyMembers, studyMember)
+                        .fetchJoin()
+                        .leftJoin(studyMember.studyTeam, studyTeam)
+                        .fetchJoin()
+                        .leftJoin(user.experiences, userExperience)
+                        .fetchJoin()
+                        .where(
+                                user.id.eq(userId),
+                                user.isDeleted.eq(false),
+                                // 프로젝트 팀 관련 조건
+                                projectTeam.isDeleted.eq(false).or(projectTeam.isNull()),
+                                projectMember.isDeleted.eq(false).or(projectMember.isNull()),
+                                // 스터디 팀 관련 조건
+                                studyTeam.isDeleted.eq(false).or(studyTeam.isNull()),
+                                studyMember.isDeleted.eq(false).or(studyMember.isNull()),
+                                // 경력 관련 조건
+                                userExperience.isDeleted.eq(false).or(userExperience.isNull()))
+                        .fetchOne());
     }
 }

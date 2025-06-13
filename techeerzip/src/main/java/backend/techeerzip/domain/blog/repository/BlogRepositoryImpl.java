@@ -78,8 +78,8 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
     private BooleanExpression getCursorCondition(Blog cursorBlog, String sortBy) {
         return switch (sortBy) {
             case "viewCount" -> blog.viewCount.lt(cursorBlog.getViewCount());
-            case "name" -> blog.title.gt(cursorBlog.getTitle());
-            default -> blog.createdAt.lt(cursorBlog.getCreatedAt());
+            case "name" -> blog.title.lt(cursorBlog.getTitle());
+            default -> blog.date.lt(cursorBlog.getDate());
         };
     }
 
@@ -87,10 +87,10 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
         return switch (sortBy) {
             case "viewCount" ->
                     new OrderSpecifier<?>[] {
-                        blog.viewCount.desc(), blog.createdAt.desc() // 조회수가 같을 경우 최신순으로 정렬
+                        blog.viewCount.desc(), blog.date.desc() // 조회수가 같을 경우 작성일 기준으로 정렬
                     };
             case "name" -> new OrderSpecifier<?>[] {blog.title.asc()};
-            default -> new OrderSpecifier<?>[] {blog.createdAt.desc()};
+            default -> new OrderSpecifier<?>[] {blog.date.desc()};
         };
     }
 
@@ -111,26 +111,26 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
 
         switch (sortBy) {
             case "latest":
-                return blog.createdAt.lt(cursorBlog.getCreatedAt());
+                return blog.date.lt(cursorBlog.getDate());
             case "viewCount":
                 return blog.viewCount.lt(cursorBlog.getViewCount());
             case "name":
-                return blog.user.name.lt(cursorBlog.getUser().getName());
+                return blog.title.lt(cursorBlog.getTitle());
             default:
-                return blog.createdAt.lt(cursorBlog.getCreatedAt());
+                return blog.date.lt(cursorBlog.getDate());
         }
     }
 
     private OrderSpecifier<?> orderSpecifier(String sortBy) {
         switch (sortBy) {
             case "latest":
-                return blog.createdAt.desc();
+                return blog.date.desc();
             case "viewCount":
                 return blog.viewCount.desc();
             case "name":
-                return blog.user.name.asc();
+                return blog.title.asc();
             default:
-                return blog.createdAt.desc();
+                return blog.date.desc();
         }
     }
 }

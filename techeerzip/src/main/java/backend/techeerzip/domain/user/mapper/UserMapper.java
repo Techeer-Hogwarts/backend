@@ -29,8 +29,6 @@ public class UserMapper {
                 .stack(user.getStack())
                 .projectTeams(
                         user.getProjectMembers().stream()
-                                .filter(pm -> pm.getProjectTeam() != null)
-                                .filter(pm -> !pm.getProjectTeam().isDeleted())
                                 .map(
                                         pm ->
                                                 GetUserResponse.ProjectTeamDTO.builder()
@@ -59,8 +57,6 @@ public class UserMapper {
                                 .toList())
                 .studyTeams(
                         user.getStudyMembers().stream()
-                                .filter(sm -> sm.getStudyTeam() != null)
-                                .filter(sm -> !sm.getStudyTeam().isDeleted())
                                 .map(
                                         sm ->
                                                 GetUserResponse.StudyTeamDTO.builder()
@@ -89,7 +85,6 @@ public class UserMapper {
                                 .toList())
                 .experiences(
                         user.getExperiences().stream()
-                                .filter(exp -> !exp.isDeleted())
                                 .map(
                                         exp ->
                                                 GetUserResponse.ExperienceDTO.builder()

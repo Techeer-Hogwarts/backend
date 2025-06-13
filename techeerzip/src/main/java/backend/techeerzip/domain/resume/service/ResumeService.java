@@ -82,6 +82,12 @@ public class ResumeService {
             throw new ResumeInvalidTypeException();
         }
 
+        // 카테고리 유효성 검사
+        if (category == null || category.trim().isEmpty()) {
+            logger.warn("카테고리 누락");
+            throw new ResumeInvalidTypeException();
+        }
+
         // 유저 정보 조회
         User user =
                 userRepository
