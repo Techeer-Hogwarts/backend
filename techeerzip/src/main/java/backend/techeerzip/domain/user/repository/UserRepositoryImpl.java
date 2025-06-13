@@ -1,35 +1,26 @@
 package backend.techeerzip.domain.user.repository;
 
-import static backend.techeerzip.domain.projectMember.entity.QProjectMember.projectMember;
-import static backend.techeerzip.domain.projectTeam.entity.QProjectTeam.projectTeam;
-import static backend.techeerzip.domain.studyMember.entity.QStudyMember.studyMember;
-import static backend.techeerzip.domain.studyTeam.entity.QStudyTeam.studyTeam;
-import static backend.techeerzip.domain.user.entity.QUser.user;
-import static backend.techeerzip.domain.userExperience.entity.QUserExperience.userExperience;
-
 import java.util.List;
 import java.util.Optional;
-
-import jakarta.persistence.EntityManager;
 
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
+import backend.techeerzip.domain.studyMember.entity.StudyMember;
 import backend.techeerzip.domain.user.entity.User;
+import backend.techeerzip.domain.userExperience.entity.UserExperience;
 import backend.techeerzip.global.exception.CursorException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 
 @Repository
 public class UserRepositoryImpl extends QuerydslRepositorySupport implements UserRepositoryCustom {
 
-    private final JPAQueryFactory queryFactory;
+    private final EntityManager entityManager;
 
     public UserRepositoryImpl(EntityManager entityManager) {
         super(User.class);
-        this.queryFactory = new JPAQueryFactory(entityManager);
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -42,103 +33,127 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
             int limit,
             String sortBy) {
 
-        BooleanBuilder whereClause = new BooleanBuilder();
-        whereClause.and(user.isDeleted.eq(false));
+        StringBuilder jpql = new StringBuilder("SELECT u FROM User u WHERE u.isDeleted = false");
 
         if (positions != null && !positions.isEmpty()) {
-            whereClause.and(user.mainPosition.in(positions));
+            jpql.append(" AND u.mainPosition IN :positions");
         }
-
         if (years != null && !years.isEmpty()) {
-            whereClause.and(user.year.in(years));
+            jpql.append(" AND u.year IN :years");
         }
-
         if (universities != null && !universities.isEmpty()) {
-            whereClause.and(user.school.in(universities));
+            jpql.append(" AND u.school IN :universities");
         }
-
         if (grades != null && !grades.isEmpty()) {
-            whereClause.and(user.grade.in(grades));
+            jpql.append(" AND u.grade IN :grades");
         }
 
         if (cursorId != null) {
-            User cursorUser = queryFactory.selectFrom(user).where(user.id.eq(cursorId)).fetchOne();
+            User cursorUser = entityManager.find(User.class, cursorId);
             if (cursorUser == null) {
                 throw new CursorException();
             }
-            whereClause.and(getCursorCondition(sortBy, cursorUser));
+            jpql.append(getCursorCondition(sortBy));
         }
 
-        return queryFactory
-                .selectFrom(user)
-                .where(whereClause)
-                .orderBy(getSortOrder(sortBy))
-                .limit(limit + 1)
-                .fetch();
+        jpql.append(getSortOrder(sortBy));
+
+        TypedQuery<User> query = entityManager.createQuery(jpql.toString(), User.class);
+
+        if (positions != null && !positions.isEmpty()) {
+            query.setParameter("positions", positions);
+        }
+        if (years != null && !years.isEmpty()) {
+            query.setParameter("years", years);
+        }
+        if (universities != null && !universities.isEmpty()) {
+            query.setParameter("universities", universities);
+        }
+        if (grades != null && !grades.isEmpty()) {
+            query.setParameter("grades", grades);
+        }
+        if (cursorId != null) {
+            User cursorUser = entityManager.find(User.class, cursorId);
+            if ("name".equals(sortBy)) {
+                query.setParameter("cursorName", cursorUser.getName());
+            } else {
+                query.setParameter("cursorYear", cursorUser.getYear());
+                query.setParameter("cursorName", cursorUser.getName());
+            }
+        }
+
+        query.setMaxResults(limit + 1);
+        return query.getResultList();
     }
 
-    private BooleanBuilder getCursorCondition(String sortBy, User cursorUser) {
-        BooleanBuilder builder = new BooleanBuilder();
-
+    private String getCursorCondition(String sortBy) {
         if ("name".equals(sortBy)) {
-            builder.and(user.name.gt(cursorUser.getName()));
-        } else if ("year".equals(sortBy)) {
-            builder.and(
-                    user.year
-                            .gt(cursorUser.getYear())
-                            .or(
-                                    user.year
-                                            .eq(cursorUser.getYear())
-                                            .and(user.name.gt(cursorUser.getName()))));
+            return " AND u.name > :cursorName";
         } else {
-            // 기본 값: 기수 순
-            builder.and(
-                    user.year
-                            .gt(cursorUser.getYear())
-                            .or(
-                                    user.year
-                                            .eq(cursorUser.getYear())
-                                            .and(user.name.gt(cursorUser.getName()))));
+            return " AND (u.year > :cursorYear OR (u.year = :cursorYear AND u.name > :cursorName))";
         }
-        return builder;
     }
 
-    private OrderSpecifier<?>[] getSortOrder(String sortBy) {
+    private String getSortOrder(String sortBy) {
         if ("name".equals(sortBy)) {
-            return new OrderSpecifier[] {user.name.asc()};
-        } else if ("year".equals(sortBy)) {
-            return new OrderSpecifier[] {user.year.asc(), user.name.asc()};
+            return " ORDER BY u.name ASC";
+        } else {
+            return " ORDER BY u.year ASC, u.name ASC";
         }
-        return new OrderSpecifier[] {user.year.asc(), user.name.asc()};
     }
 
     @Override
     public Optional<User> findByIdWithNonDeletedRelations(Long userId) {
-        return Optional.ofNullable(
-                queryFactory
-                        .selectFrom(user)
-                        .distinct()
-                        .leftJoin(user.projectMembers, projectMember)
-                        .fetchJoin()
-                        .leftJoin(projectMember.projectTeam, projectTeam)
-                        .fetchJoin()
-                        .leftJoin(user.studyMembers, studyMember)
-                        .fetchJoin()
-                        .leftJoin(studyMember.studyTeam, studyTeam)
-                        .fetchJoin()
-                        .leftJoin(user.experiences, userExperience)
-                        .fetchJoin()
-                        .where(
-                                user.id.eq(userId),
-                                user.isDeleted.eq(false),
-                                // 프로젝트 팀 관련 조건
-                                projectTeam.isDeleted.eq(false).or(projectTeam.isNull()),
-                                projectMember.isDeleted.eq(false).or(projectMember.isNull()),
-                                // 스터디 팀 관련 조건
-                                studyTeam.isDeleted.eq(false).or(studyTeam.isNull()),
-                                studyMember.isDeleted.eq(false).or(studyMember.isNull()),
-                                // 경력 관련 조건
-                                userExperience.isDeleted.eq(false).or(userExperience.isNull()))
-                        .fetchOne());
+        // 기본 유저 정보 조회
+        String userJpql = """
+                SELECT u FROM User u
+                LEFT JOIN FETCH u.projectMembers pm
+                LEFT JOIN FETCH pm.projectTeam pt
+                WHERE u.id = :userId
+                AND u.isDeleted = false
+                AND (pm IS NULL OR pm.isDeleted = false)
+                AND (pt IS NULL OR pt.isDeleted = false)
+                """;
+
+        TypedQuery<User> userQuery = entityManager.createQuery(userJpql, User.class);
+        userQuery.setParameter("userId", userId);
+
+        User user = userQuery.getSingleResult();
+        if (user == null) {
+            return Optional.empty();
+        }
+
+        // 스터디 멤버 정보 조회
+        String studyJpql = """
+                SELECT sm FROM StudyMember sm
+                LEFT JOIN FETCH sm.studyTeam st
+                WHERE sm.user.id = :userId
+                AND sm.isDeleted = false
+                AND (st IS NULL OR st.isDeleted = false)
+                """;
+
+        TypedQuery<StudyMember> studyQuery = entityManager.createQuery(studyJpql, StudyMember.class);
+        studyQuery.setParameter("userId", userId);
+        List<StudyMember> studyMembers = studyQuery.getResultList();
+
+        // 경력 정보 조회
+        String experienceJpql = """
+                SELECT e FROM UserExperience e
+                WHERE e.userId = :userId
+                AND e.isDeleted = false
+                """;
+
+        TypedQuery<UserExperience> experienceQuery = entityManager.createQuery(experienceJpql, UserExperience.class);
+        experienceQuery.setParameter("userId", userId);
+        List<UserExperience> experiences = experienceQuery.getResultList();
+
+        // 결과 설정
+        user.getStudyMembers().clear();
+        user.getStudyMembers().addAll(studyMembers);
+
+        user.getExperiences().clear();
+        user.getExperiences().addAll(experiences);
+
+        return Optional.of(user);
     }
 }
