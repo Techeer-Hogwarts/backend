@@ -88,11 +88,16 @@ public class ResumeService {
             throw new ResumeInvalidTypeException();
         }
 
+        // 포지션 유효성 검사
+        if (position == null || position.trim().isEmpty()) {
+            logger.warn("포지션 누락");
+            throw new ResumeInvalidTypeException();
+        }
+
         // 유저 정보 조회
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         String fileName = getResumeFileName(user.getName(), title);
 
@@ -110,15 +115,14 @@ public class ResumeService {
             this.unsetMainResumeByUserId(userId);
         }
 
-        final Resume resume =
-                Resume.builder()
-                        .user(user)
-                        .title(fileName)
-                        .position(position)
-                        .url(driveUrl)
-                        .category(category)
-                        .isMain(isMain)
-                        .build();
+        final Resume resume = Resume.builder()
+                .user(user)
+                .title(fileName)
+                .position(position)
+                .url(driveUrl)
+                .category(category)
+                .isMain(isMain)
+                .build();
 
         Resume createdResume = resumeRepository.save(resume);
 
@@ -140,14 +144,13 @@ public class ResumeService {
     public ResumeResponse getResumeById(Long resumeId) {
         logger.info("이력서 조회 요청 처리 중 - ID: {}", resumeId);
 
-        Resume resume =
-                resumeRepository
-                        .findByIdAndIsDeletedFalse(resumeId)
-                        .orElseThrow(
-                                () -> {
-                                    logger.warn("이력서 조회 실패 - ID: {}", resumeId, CONTEXT);
-                                    return new ResumeNotFoundException();
-                                });
+        Resume resume = resumeRepository
+                .findByIdAndIsDeletedFalse(resumeId)
+                .orElseThrow(
+                        () -> {
+                            logger.warn("이력서 조회 실패 - ID: {}", resumeId, CONTEXT);
+                            return new ResumeNotFoundException();
+                        });
 
         logger.info("이력서 조회 완료 - ID: {}", resume.getId());
 
@@ -158,14 +161,13 @@ public class ResumeService {
     public void deleteResumeById(Long resumeId, Long userId) {
         logger.info("이력서 삭제 요청 처리 중 - UserID: {}, ResumeID: {}", userId, resumeId);
 
-        Resume resume =
-                resumeRepository
-                        .findByIdAndIsDeletedFalse(resumeId)
-                        .orElseThrow(
-                                () -> {
-                                    logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
-                                    return new ResumeNotFoundException();
-                                });
+        Resume resume = resumeRepository
+                .findByIdAndIsDeletedFalse(resumeId)
+                .orElseThrow(
+                        () -> {
+                            logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
+                            return new ResumeNotFoundException();
+                        });
 
         if (!resume.getUser().getId().equals(userId)) {
             logger.warn("이력서 삭제 권한 없음 - UserID: {}, ResumeID: {}", userId, resumeId);
@@ -182,14 +184,13 @@ public class ResumeService {
     @Transactional
     public void updateMainResume(Long resumeId, Long userId) {
         logger.info("메인 이력서 업데이트 요청 처리 중 - ResumeID: {}, UserID: {}", resumeId, userId);
-        Resume resume =
-                resumeRepository
-                        .findByIdAndIsDeletedFalse(resumeId)
-                        .orElseThrow(
-                                () -> {
-                                    logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
-                                    return new ResumeNotFoundException();
-                                });
+        Resume resume = resumeRepository
+                .findByIdAndIsDeletedFalse(resumeId)
+                .orElseThrow(
+                        () -> {
+                            logger.warn("이력서 조회 실패 - ResumeID: {}", resumeId, CONTEXT);
+                            return new ResumeNotFoundException();
+                        });
 
         if (!resume.getUser().getId().equals(userId)) {
             logger.warn("메인 이력서 업데이트 권한 없음 - UserID: {}, ResumeID: {}", userId, resumeId);
@@ -219,8 +220,7 @@ public class ResumeService {
                 limit,
                 CONTEXT);
 
-        List<Resume> resumes =
-                resumeRepository.findResumesWithCursor(position, year, category, cursorId, limit);
+        List<Resume> resumes = resumeRepository.findResumesWithCursor(position, year, category, cursorId, limit);
 
         List<ResumeResponse> responseList = resumes.stream().map(ResumeResponse::new).toList();
 
@@ -248,8 +248,7 @@ public class ResumeService {
                 limit,
                 CONTEXT);
 
-        List<Resume> userResumes =
-                resumeRepository.findUserResumesWithCursor(userId, cursorId, limit);
+        List<Resume> userResumes = resumeRepository.findUserResumesWithCursor(userId, cursorId, limit);
         List<ResumeResponse> responseList = userResumes.stream().map(ResumeResponse::new).toList();
 
         logger.info("{}개의 유저 이력서 목록 조회 성공", responseList.size());
