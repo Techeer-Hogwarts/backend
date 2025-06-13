@@ -32,7 +32,7 @@ public class SliceNextCursor {
     @Schema(description = "마지막 요소의 ID", example = "101")
     private final Long id;
 
-    @Schema(description = "커서 기준 날짜 (updatedAt 등)", example = "2024-10-01T12:00:00")
+    @Schema(description = "커서 기준 날짜 (updatedAt)", example = "2024-10-01T12:00:00")
     private final LocalDateTime dateCursor;
 
     @Schema(description = "커서 기준 정수값 (조회수, 좋아요 수 등)", example = "150")
