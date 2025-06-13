@@ -110,8 +110,8 @@ public class UserService {
             CreateUserWithResumeRequest createUserWithResumeRequest, MultipartFile file) {
         CreateUserRequest createUserRequest = createUserWithResumeRequest.getCreateUserRequest();
         CreateResumeRequest resumeRequest = createUserWithResumeRequest.getCreateResumeRequest();
-        List<CreateUserExperienceRequest> experiences =
-                createUserWithResumeRequest.getCreateUserExperienceRequest().getExperiences();
+        List<CreateUserExperienceRequest> experiences = createUserWithResumeRequest.getCreateUserExperienceRequest()
+                .getExperiences();
 
         if (!authService.checkTecheer(createUserRequest.getEmail())) {
             throw new AuthNotTecheerException();
@@ -169,40 +169,38 @@ public class UserService {
             logger.info("재가입 회원 정보 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
 
         } else {
-            User newUser =
-                    User.builder()
-                            .email(createUserRequest.getEmail())
-                            .password(hashedPassword)
-                            .name(createUserRequest.getName())
-                            .mainPosition(createUserRequest.getMainPosition())
-                            .subPosition(createUserRequest.getSubPosition())
-                            .grade(createUserRequest.getGrade())
-                            .githubUrl(createUserRequest.getGithubUrl())
-                            .tistoryUrl(createUserRequest.getTistoryUrl())
-                            .velogUrl(createUserRequest.getVelogUrl())
-                            .mediumUrl(createUserRequest.getMediumUrl())
-                            .school(createUserRequest.getSchool())
-                            .year(createUserRequest.getYear())
-                            .isLft(createUserRequest.getIsLft())
-                            .profileImage(profileImage)
-                            .isAuth(true)
-                            .bootcampYear(null)
-                            .role(defaultRole)
-                            .build();
+            User newUser = User.builder()
+                    .email(createUserRequest.getEmail())
+                    .password(hashedPassword)
+                    .name(createUserRequest.getName())
+                    .mainPosition(createUserRequest.getMainPosition())
+                    .subPosition(createUserRequest.getSubPosition())
+                    .grade(createUserRequest.getGrade())
+                    .githubUrl(createUserRequest.getGithubUrl())
+                    .tistoryUrl(createUserRequest.getTistoryUrl())
+                    .velogUrl(createUserRequest.getVelogUrl())
+                    .mediumUrl(createUserRequest.getMediumUrl())
+                    .school(createUserRequest.getSchool())
+                    .year(createUserRequest.getYear())
+                    .isLft(createUserRequest.getIsLft())
+                    .profileImage(profileImage)
+                    .isAuth(true)
+                    .bootcampYear(null)
+                    .role(defaultRole)
+                    .build();
 
             savedUser = userRepository.save(newUser);
             logger.info("신규 회원 정보 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
         }
 
         // 블로그 크롤링 실행
-        List<String> blogUrls =
-                Stream.of(
-                                savedUser.getTistoryUrl(),
-                                savedUser.getVelogUrl(),
-                                savedUser.getMediumUrl())
-                        .filter(Objects::nonNull)
-                        .filter(url -> !url.trim().isEmpty())
-                        .toList();
+        List<String> blogUrls = Stream.of(
+                savedUser.getTistoryUrl(),
+                savedUser.getVelogUrl(),
+                savedUser.getMediumUrl())
+                .filter(Objects::nonNull)
+                .filter(url -> !url.trim().isEmpty())
+                .toList();
 
         if (!blogUrls.isEmpty()) {
             taskService.requestSignUpBlogFetchForUser(savedUser.getId(), blogUrls);
@@ -218,24 +216,22 @@ public class UserService {
                 true);
         logger.info("이력서 저장 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
 
-        List<UserExperience> experiencesData =
-                experiences.stream()
-                        .map(
-                                exp ->
-                                        UserExperience.builder()
-                                                .userId(savedUser.getId())
-                                                .position(exp.getPosition())
-                                                .companyName(exp.getCompanyName())
-                                                .startDate(exp.getStartDate().atStartOfDay())
-                                                .endDate(
-                                                        exp.getEndDate() != null
-                                                                ? exp.getEndDate().atStartOfDay()
-                                                                : null)
-                                                .category(exp.getCategory())
-                                                .isFinished(exp.getEndDate() != null)
-                                                .description(exp.getDescription())
-                                                .build())
-                        .toList();
+        List<UserExperience> experiencesData = experiences.stream()
+                .map(
+                        exp -> UserExperience.builder()
+                                .userId(savedUser.getId())
+                                .position(exp.getPosition())
+                                .companyName(exp.getCompanyName())
+                                .startDate(exp.getStartDate().atStartOfDay())
+                                .endDate(
+                                        exp.getEndDate() != null
+                                                ? exp.getEndDate().atStartOfDay()
+                                                : null)
+                                .category(exp.getCategory())
+                                .isFinished(exp.getEndDate() != null)
+                                .description(exp.getDescription())
+                                .build())
+                .toList();
 
         userExperienceRepository.saveAll(experiencesData);
         logger.info("경력 등록 완료 - email: {}", createUserRequest.getEmail(), CONTEXT);
@@ -254,11 +250,10 @@ public class UserService {
             throw new UserAlreadyExistsException();
         }
 
-        Long roleId =
-                switch (createExternalUserRequest.getJoinReason()) {
-                    case COMPANY -> 4L;
-                    case BOOTCAMP -> 5L;
-                };
+        Long roleId = switch (createExternalUserRequest.getJoinReason()) {
+            case COMPANY -> 4L;
+            case BOOTCAMP -> 5L;
+        };
 
         Role role = roleRepository.findById(roleId).orElseThrow(RoleNotFoundException::new);
 
@@ -266,14 +261,13 @@ public class UserService {
         String password = createExternalUserRequest.getPassword();
         String hashedPassword = passwordEncoder.encode(password);
 
-        User user =
-                User.builder()
-                        .email(email)
-                        .password(hashedPassword)
-                        .name(name)
-                        .role(role)
-                        .isAuth(true)
-                        .build();
+        User user = User.builder()
+                .email(email)
+                .password(hashedPassword)
+                .name(name)
+                .role(role)
+                .isAuth(true)
+                .build();
 
         userRepository.save(user);
         logger.info("외부 회원가입 완료 - email: {}, role: {}", email, role.getName(), CONTEXT);
@@ -299,23 +293,21 @@ public class UserService {
 
         logger.info("유저 연관 데이터 삭제 완료 - userId: {}", userId, CONTEXT);
 
-        ResponseCookie expiredAccessToken =
-                ResponseCookie.from("access_token", "")
-                        .httpOnly(true)
-                        .secure(true)
-                        .path("/")
-                        .maxAge(0)
-                        .sameSite("None")
-                        .build();
+        ResponseCookie expiredAccessToken = ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
 
-        ResponseCookie expiredRefreshToken =
-                ResponseCookie.from("refresh_token", "")
-                        .httpOnly(true)
-                        .secure(true)
-                        .path("/")
-                        .maxAge(0)
-                        .sameSite("None")
-                        .build();
+        ResponseCookie expiredRefreshToken = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
 
         response.addHeader("Set-Cookie", expiredAccessToken.toString());
         response.addHeader("Set-Cookie", expiredRefreshToken.toString());
@@ -327,18 +319,15 @@ public class UserService {
     public void resetPassword(String email, String code, String newPassword) {
         authService.verifyCode(email, code);
 
-        User user =
-                userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException());
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException());
 
         user.setPassword(passwordEncoder.encode(newPassword));
     }
 
     @Transactional(readOnly = true)
     public GetUserResponse getUserInfo(Long userId) {
-        User user =
-                userRepository
-                        .findByIdWithNonDeletedRelations(userId)
-                        .orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findByIdAndIsDeletedFalse(userId)
+                .orElseThrow(UserNotFoundException::new);
         return userMapper.toGetUserResponse(user);
     }
 
@@ -385,16 +374,14 @@ public class UserService {
     public PermissionRequest createUserPermissionRequest(Long userId, Long roleId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        PermissionRequest permissionRequest =
-                PermissionRequest.builder().user(user).requestedRoleId(roleId).build();
+        PermissionRequest permissionRequest = PermissionRequest.builder().user(user).requestedRoleId(roleId).build();
 
         return permissionRequestRepository.save(permissionRequest);
     }
 
     @Transactional
     public List<GetPermissionResponse> getAllPendingPermissionRequests(Long currentUserId) {
-        User currentUser =
-                userRepository.findById(currentUserId).orElseThrow(UserNotFoundException::new);
+        User currentUser = userRepository.findById(currentUserId).orElseThrow(UserNotFoundException::new);
 
         Long roleId = currentUser.getRole().getId();
         if (roleId != 1) {
@@ -404,22 +391,20 @@ public class UserService {
 
         return permissionRequestRepository.findByStatus(StatusCategory.PENDING).stream()
                 .map(
-                        pr ->
-                                GetPermissionResponse.builder()
-                                        .id(pr.getId())
-                                        .userId(pr.getUser().getId())
-                                        .name(pr.getUser().getName())
-                                        .requestedRoleId(pr.getRequestedRoleId())
-                                        .status(pr.getStatus())
-                                        .createdAt(pr.getCreatedAt())
-                                        .build())
+                        pr -> GetPermissionResponse.builder()
+                                .id(pr.getId())
+                                .userId(pr.getUser().getId())
+                                .name(pr.getUser().getName())
+                                .requestedRoleId(pr.getRequestedRoleId())
+                                .status(pr.getStatus())
+                                .createdAt(pr.getCreatedAt())
+                                .build())
                 .toList();
     }
 
     @Transactional
     public void approveUserPermission(Long currentUserId, Long userId, Long newRoleId) {
-        User currentUser =
-                userRepository.findById(currentUserId).orElseThrow(UserNotFoundException::new);
+        User currentUser = userRepository.findById(currentUserId).orElseThrow(UserNotFoundException::new);
 
         Long roleId = currentUser.getRole().getId();
         if (roleId != 1) {
@@ -441,8 +426,7 @@ public class UserService {
             Long userId, UpdateUserWithExperienceRequest updateUserWithExperienceRequest) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        UpdateUserInfoRequest updateUserInfoRequest =
-                updateUserWithExperienceRequest.getUpdateUserInfoRequest();
+        UpdateUserInfoRequest updateUserInfoRequest = updateUserWithExperienceRequest.getUpdateUserInfoRequest();
 
         if (updateUserInfoRequest != null) {
             if (updateUserInfoRequest.getMainPosition() != null)
@@ -469,8 +453,7 @@ public class UserService {
 
         // 경력 ID 있으면 경력 수정, 없으면 추가
         if (updateUserWithExperienceRequest.getUpdateUserExperienceRequest() != null
-                && updateUserWithExperienceRequest.getUpdateUserExperienceRequest().getExperiences()
-                        != null) {
+                && updateUserWithExperienceRequest.getUpdateUserExperienceRequest().getExperiences() != null) {
 
             updateUserWithExperienceRequest
                     .getUpdateUserExperienceRequest()
@@ -478,11 +461,10 @@ public class UserService {
                     .forEach(
                             e -> {
                                 if (e.getExperienceId() != null) {
-                                    UserExperience existingExp =
-                                            userExperienceRepository
-                                                    .findById(e.getExperienceId())
-                                                    .orElseThrow(
-                                                            UserExperienceNotFoundException::new);
+                                    UserExperience existingExp = userExperienceRepository
+                                            .findById(e.getExperienceId())
+                                            .orElseThrow(
+                                                    UserExperienceNotFoundException::new);
 
                                     existingExp.setPosition(e.getPosition());
                                     existingExp.setCompanyName(e.getCompanyName());
@@ -498,21 +480,20 @@ public class UserService {
 
                                     userExperienceRepository.save(existingExp);
                                 } else {
-                                    UserExperience newExp =
-                                            UserExperience.builder()
-                                                    .userId(user.getId())
-                                                    .position(e.getPosition())
-                                                    .companyName(e.getCompanyName())
-                                                    .startDate(e.getStartDate().atStartOfDay())
-                                                    .endDate(
-                                                            e.getEndDate() != null
-                                                                    ? e.getEndDate().atStartOfDay()
-                                                                    : null)
-                                                    .category(e.getCategory())
-                                                    .isFinished(
-                                                            Boolean.TRUE.equals(e.getIsFinished()))
-                                                    .description(e.getDescription())
-                                                    .build();
+                                    UserExperience newExp = UserExperience.builder()
+                                            .userId(user.getId())
+                                            .position(e.getPosition())
+                                            .companyName(e.getCompanyName())
+                                            .startDate(e.getStartDate().atStartOfDay())
+                                            .endDate(
+                                                    e.getEndDate() != null
+                                                            ? e.getEndDate().atStartOfDay()
+                                                            : null)
+                                            .category(e.getCategory())
+                                            .isFinished(
+                                                    Boolean.TRUE.equals(e.getIsFinished()))
+                                            .description(e.getDescription())
+                                            .build();
 
                                     userExperienceRepository.save(newExp);
                                 }
@@ -522,10 +503,9 @@ public class UserService {
 
     @Transactional
     public void deleteExperience(Long experienceId) {
-        UserExperience experience =
-                userExperienceRepository
-                        .findById(experienceId)
-                        .orElseThrow(UserExperienceNotFoundException::new);
+        UserExperience experience = userExperienceRepository
+                .findById(experienceId)
+                .orElseThrow(UserExperienceNotFoundException::new);
         userExperienceRepository.delete(experience);
     }
 
@@ -546,33 +526,29 @@ public class UserService {
     @Transactional(readOnly = true)
     public GetUserProfileListResponse getAllProfiles(
             GetUserProfileListRequest getUserProfileListRequest) {
-        int limit =
-                getUserProfileListRequest.getLimit() != null
-                        ? getUserProfileListRequest.getLimit()
-                        : 10;
-        String sortBy =
-                getUserProfileListRequest.getSortBy() != null
-                        ? getUserProfileListRequest.getSortBy()
-                        : "year";
+        int limit = getUserProfileListRequest.getLimit() != null
+                ? getUserProfileListRequest.getLimit()
+                : 10;
+        String sortBy = getUserProfileListRequest.getSortBy() != null
+                ? getUserProfileListRequest.getSortBy()
+                : "year";
 
-        List<User> users =
-                userRepository
-                        .findUsersWithCursor(
-                                getUserProfileListRequest.getCursorId(),
-                                getUserProfileListRequest.getPosition(),
-                                getUserProfileListRequest.getYear(),
-                                getUserProfileListRequest.getUniversity(),
-                                getUserProfileListRequest.getGrade(),
-                                limit + 1,
-                                sortBy)
-                        .stream()
-                        .filter(
-                                user -> {
-                                    Long roleId =
-                                            user.getRole() != null ? user.getRole().getId() : null;
-                                    return roleId != null && roleId >= 0 && roleId <= 3;
-                                })
-                        .collect(Collectors.toList());
+        List<User> users = userRepository
+                .findUsersWithCursor(
+                        getUserProfileListRequest.getCursorId(),
+                        getUserProfileListRequest.getPosition(),
+                        getUserProfileListRequest.getYear(),
+                        getUserProfileListRequest.getUniversity(),
+                        getUserProfileListRequest.getGrade(),
+                        limit + 1,
+                        sortBy)
+                .stream()
+                .filter(
+                        user -> {
+                            Long roleId = user.getRole() != null ? user.getRole().getId() : null;
+                            return roleId != null && roleId >= 0 && roleId <= 3;
+                        })
+                .collect(Collectors.toList());
 
         boolean hasNext = users.size() > limit;
         if (hasNext) {
@@ -581,8 +557,7 @@ public class UserService {
 
         Long nextCursor = hasNext ? users.get(users.size() - 1).getId() : null;
 
-        List<GetUserResponse> responses =
-                users.stream().map(userMapper::toGetUserResponse).toList();
+        List<GetUserResponse> responses = users.stream().map(userMapper::toGetUserResponse).toList();
 
         return new GetUserProfileListResponse(responses, hasNext, nextCursor);
     }
@@ -590,8 +565,7 @@ public class UserService {
     public <T> Map<Long, User> getIdAndUserMap(List<T> usersInfo, Function<T, Long> idExtractor) {
         final List<Long> usersId = usersInfo.stream().map(idExtractor).toList();
         final List<User> users = userRepository.findAllById(usersId);
-        final Map<Long, User> userMap =
-                users.stream().collect(Collectors.toMap(User::getId, user -> user));
+        final Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, user -> user));
         for (Long id : usersId) {
             if (!userMap.containsKey(id)) {
                 throw new UserNotFoundException();
