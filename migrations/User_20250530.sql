@@ -3,3 +3,5 @@ ALTER TABLE "PermissionRequest" ALTER COLUMN "status" TYPE VARCHAR;
 
 -- 경력 설명란 필드 추가 / 기존 데이터들은 null 값
 ALTER TABLE "UserExperience" ADD COLUMN "description" TEXT;
+
+ALTER TABLE "User" ADD COLUMN "bootcampYear" INTEGER;
