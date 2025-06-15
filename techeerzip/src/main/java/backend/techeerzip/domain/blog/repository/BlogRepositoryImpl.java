@@ -29,10 +29,9 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
     @Override
     public List<Blog> findBlogsWithCursor(
             Long cursorId, String category, String sortBy, int limit) {
-        Blog cursorBlog =
-                cursorId != null
-                        ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
-                        : null;
+        Blog cursorBlog = cursorId != null
+                ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
+                : null;
 
         return queryFactory
                 .selectFrom(blog)
@@ -47,10 +46,9 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
 
     @Override
     public List<Blog> findPopularBlogsWithCursor(Long cursorId, int limit) {
-        Blog cursorBlog =
-                cursorId != null
-                        ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
-                        : null;
+        Blog cursorBlog = cursorId != null
+                ? queryFactory.selectFrom(blog).where(blog.id.eq(cursorId)).fetchOne()
+                : null;
 
         // 2주 전 날짜 계산
         LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
@@ -70,27 +68,60 @@ public class BlogRepositoryImpl extends QuerydslRepositorySupport implements Blo
                 .orderBy(
                         blog.viewCount.add(blog.likeCount.multiply(10)).desc(),
                         blog.date.desc() // 인기도가 같을 경우 최신순으로 정렬
-                        )
+                )
                 .limit(limit + 1)
                 .fetch();
     }
 
     private BooleanExpression getCursorCondition(Blog cursorBlog, String sortBy) {
         return switch (sortBy) {
-            case "viewCount" -> blog.viewCount.lt(cursorBlog.getViewCount());
-            case "name" -> blog.title.lt(cursorBlog.getTitle());
-            default -> blog.date.lt(cursorBlog.getDate());
+            case "viewCount" -> blog.viewCount
+                    .lt(cursorBlog.getViewCount())
+                    .or(
+                            blog.viewCount
+                                    .eq(cursorBlog.getViewCount())
+                                    .and(blog.date.lt(cursorBlog.getDate())))
+                    .or(
+                            blog.viewCount
+                                    .eq(cursorBlog.getViewCount())
+                                    .and(blog.date.eq(cursorBlog.getDate()))
+                                    .and(blog.id.lt(cursorBlog.getId())));
+            case "name" -> blog.title
+                    .gt(cursorBlog.getTitle())
+                    .or(
+                            blog.title
+                                    .eq(cursorBlog.getTitle())
+                                    .and(blog.date.lt(cursorBlog.getDate())))
+                    .or(
+                            blog.title
+                                    .eq(cursorBlog.getTitle())
+                                    .and(blog.date.eq(cursorBlog.getDate()))
+                                    .and(blog.id.lt(cursorBlog.getId())));
+            default -> blog.date
+                    .lt(cursorBlog.getDate())
+                    .or(
+                            blog.date
+                                    .eq(cursorBlog.getDate())
+                                    .and(blog.id.lt(cursorBlog.getId())));
         };
     }
 
     private OrderSpecifier<?>[] getOrderSpecifiers(String sortBy) {
         return switch (sortBy) {
-            case "viewCount" ->
-                    new OrderSpecifier<?>[] {
-                        blog.viewCount.desc(), blog.date.desc() // 조회수가 같을 경우 작성일 기준으로 정렬
-                    };
-            case "name" -> new OrderSpecifier<?>[] {blog.title.asc()};
-            default -> new OrderSpecifier<?>[] {blog.date.desc()};
+            case "viewCount" -> new OrderSpecifier<?>[] {
+                    blog.viewCount.desc(),
+                    blog.date.desc(),
+                    blog.id.desc()
+            };
+            case "name" -> new OrderSpecifier<?>[] {
+                    blog.title.asc(),
+                    blog.date.desc(),
+                    blog.id.desc()
+            };
+            default -> new OrderSpecifier<?>[] {
+                    blog.date.desc(),
+                    blog.id.desc()
+            };
         };
     }
 
