@@ -2,8 +2,8 @@ name: Prod CI
 
 on:
   push:
-    branches:
-      - main # 메인 브렌치에 브랜치 머지 시 자동으로 실행
+    tags:
+      - 'v*'  # This will match any tag starting with 'v' (e.g., v1.0.0, v2.1.0)
 
 jobs:
   build:
@@ -12,31 +12,13 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Show build number
-        run: |
-          echo "Build Number: ${{ github.run_number }}"
-      - name: Show pull request number
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          echo "PR Number: ${{ github.event.pull_request.number }}"
-      - name: Get PR Number for Main Branch Merge
-        id: get_pr_number
-        if: github.ref == 'refs/heads/main'
-        run: |
-          PR_NUMBER=$(gh pr list --repo ${{ github.repository }} --state closed --json number,mergeCommit --jq ".[] | select(.mergeCommit.oid == \"${{ github.sha }}\") | .number")
-          echo "PR_NUMBER=${PR_NUMBER}"
-          echo "PR_NUMBER"="${PR_NUMBER}" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set Docker Image Tag
         id: set_docker_image_tag
-        env:
-          PR_NUMBER: ${{ steps.get_pr_number.outputs.PR_NUMBER }}
         run: |
-          DOCKER_IMAGE_TAG="1.1.$PR_NUMBER"
+          # Extract tag name without 'refs/tags/' prefix
+          DOCKER_IMAGE_TAG="${GITHUB_REF#refs/tags/}"
           echo "Docker Image Tag: $DOCKER_IMAGE_TAG"
-          echo "DOCKER_IMAGE_TAG"="${DOCKER_IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -63,14 +45,15 @@ jobs:
           IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/techeerism-spring
           DOCKER_IMAGE_TAG: ${{ steps.set_docker_image_tag.outputs.DOCKER_IMAGE_TAG }}
           SLACK_SECRET: ${{ secrets.SLACK_DEPLOY_SECRET }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
         run: |
           commit_link="https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/commit/${{ github.sha }}"
           curl -X POST https://techeer-029051b54345.herokuapp.com/api/v1/deploy/image \
           -H "Content-Type: application/json" \
+          -H "X-API-Key: $X_API_KEY" \ 
           -d '{
                 "imageName": "'"$IMAGE_NAME"'",
                 "imageTag": "'"$DOCKER_IMAGE_TAG"'",
                 "commitLink": "'"$commit_link"'",
                 "environment": "production",
-                "secret": "'"$SLACK_SECRET"'"
               }'

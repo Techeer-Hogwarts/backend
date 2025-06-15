@@ -58,14 +58,15 @@ jobs:
           IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/techeerism-spring
           DOCKER_IMAGE_TAG: ${{ steps.set_docker_image_tag.outputs.DOCKER_IMAGE_TAG }}
           SLACK_SECRET: ${{ secrets.SLACK_DEPLOY_SECRET }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
         run: |
           commit_link="https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/commit/${{ github.sha }}"
           curl -X POST https://techeer-029051b54345.herokuapp.com/api/v1/deploy/image \
           -H "Content-Type: application/json" \
+          -H "X-API-Key: $X_API_KEY" \
           -d '{
                 "imageName": "'"$IMAGE_NAME"'",
                 "imageTag": "'"$DOCKER_IMAGE_TAG"'",
                 "commitLink": "'"$commit_link"'",
                 "environment": "staging",
-                "secret": "'"$SLACK_SECRET"'"
               }'
