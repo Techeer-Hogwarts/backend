@@ -40,7 +40,6 @@ jobs:
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/techeerism-spring:$DOCKER_IMAGE_TAG .
 
       - name: Send Image and Version to Slack
-        if: github.ref == 'refs/heads/main' # main 브랜치에 머지 시에만 실행
         env:
           IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/techeerism-spring
           DOCKER_IMAGE_TAG: ${{ steps.set_docker_image_tag.outputs.DOCKER_IMAGE_TAG }}
