@@ -49,7 +49,7 @@ jobs:
           commit_link="https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/commit/${{ github.sha }}"
           curl -X POST https://techeer-029051b54345.herokuapp.com/api/v1/deploy/image \
           -H "Content-Type: application/json" \
-          -H "X-API-Key: $X_API_KEY" \ 
+          -H "X-API-Key: $X_API_KEY" \
           -d '{
                 "imageName": "'"$IMAGE_NAME"'",
                 "imageTag": "'"$DOCKER_IMAGE_TAG"'",
