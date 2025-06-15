@@ -55,5 +55,5 @@ jobs:
                 "imageName": "'"$IMAGE_NAME"'",
                 "imageTag": "'"$DOCKER_IMAGE_TAG"'",
                 "commitLink": "'"$commit_link"'",
-                "environment": "production",
+                "environment": "production"
               }'
